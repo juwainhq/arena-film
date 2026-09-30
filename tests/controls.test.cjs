@@ -23,12 +23,14 @@ const intensityInputs = [...html.matchAll(/<input type="range" id="slider(Bloom|
 
 for (const [, name] of [...advancedInputs, ...intensityInputs]) sliders[name] = {value: '0'};
 
-test('the interface uses a black, white and red palette', () => {
-  assert.match(styles, /--bg:#000/);
-  assert.match(styles, /--text:#fff/);
-  assert.match(styles, /--accent:#d62828/);
-  assert.match(styles, /--negative:#ededed/);
-  assert.match(styles, /\.hdrBtn\.primary\{background:var\(--accent\);color:#fff/);
+test('the editor has an editorial monochrome layout with a restrained red accent', () => {
+  assert.match(styles, /--bg:\s*#000/);
+  assert.match(styles, /--text:\s*#fafafa/);
+  assert.match(styles, /--accent:\s*#d62828/);
+  assert.match(styles, /--negative:\s*#e8e8e8/);
+  assert.match(styles, /#dropZone h2\s*\{[^}]*font-family:\s*var\(--display\);[^}]*text-transform:\s*uppercase/);
+  assert.match(styles, /\.effectGroup\s*\{[^}]*border-top:\s*1px solid var\(--panel-border\);[^}]*border-radius:\s*0/);
+  assert.match(styles, /\.hdrBtn\.primary\s*\{[^}]*background:\s*transparent;/);
   assert.doesNotMatch(styles, /#f5a623|#6aafff|#ff8c00/);
   assert.match(html, /white subtracts · red adds/);
 });
