@@ -36,6 +36,13 @@ test('the editor has an editorial monochrome layout with a restrained red accent
   assert.match(html, /white subtracts · red adds/);
 });
 
+test('the header uses Juwain Haque branding without changing the editor identity', () => {
+  assert.match(html, /<div id="logo">Juwain Haque<\/div>/);
+  assert.match(styles, /#logo \{[^}]*letter-spacing: \.15em;[^}]*text-transform: uppercase/);
+  assert.doesNotMatch(html, /<div id="logo">[\s\S]*?CINEMATIC ENGINE<\/div>/);
+  assert.match(html, /<title>FILM LAB — Cinematic Effects<\/title>/);
+});
+
 test('every effect has a separate accessible ON/OFF switch and a visible accordion arrow', () => {
   const groups = ['color', 'bloom', 'hallation', 'grain', 'sharpen'];
   const switches = [...html.matchAll(/class="effectToggle" data-toggle="(\w+)" role="switch" aria-checked="true" aria-label="([^"]+)"/g)];

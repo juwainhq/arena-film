@@ -32,9 +32,7 @@ button { -webkit-tap-highlight-color: transparent; }
 
 /* A quiet, editorial navigation bar instead of a toolbar. */
 header { height: 72px; min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 0 clamp(24px,4.7vw,72px); border-bottom: 1px solid var(--panel-border); background: #000; z-index: 20; }
-#logo { display: flex; align-items: baseline; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; }
-#logo b { color: var(--text); font-weight: 500; }
-#logo span { margin-left: 14px; color: var(--text-dim2); font-size: 10px; font-weight: 500; letter-spacing: .19em; }
+#logo { font-size: 13px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; white-space: nowrap; }
 #headerActions { display: flex; align-items: center; gap: clamp(12px,2.6vw,38px); }
 .hdrBtn { padding: 10px 0; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: opacity .25s, border-color .25s, background .25s, color .25s; }
 .hdrBtn:hover { border-bottom-color: var(--text); }
@@ -180,8 +178,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 }
 @media (max-width: 600px) {
   header { height: 64px; min-height: 64px; gap: 10px; padding: 0 24px; }
-  #logo { gap: 4px; font-size: 11px; }
-  #logo span { display: none; }
+  #logo { font-size: 11px; letter-spacing: .13em; }
   #headerActions { gap: 12px; }
   .hdrBtn { font-size: 9px; letter-spacing: .08em; }
   .hdrBtn.primary { padding: 8px 10px; }
@@ -203,12 +200,20 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 }
 @media (max-width: 360px) {
   header { padding: 0 16px; }
+  #logo { font-size: 10px; letter-spacing: .1em; }
   #headerActions { gap: 7px; }
   .hdrBtn { font-size: 9px; letter-spacing: 0; }
   .hdrBtn.primary { padding: 7px; }
   #mainArea { padding: 26px 18px; }
   #dropZone h2 { font-size: 76px; }
   #sidebar { padding-left: 18px; padding-right: 18px; }
+}
+@media (max-width: 300px) {
+  header { gap: 6px; padding: 0 10px; }
+  #logo { font-size: 9px; letter-spacing: .04em; }
+  #headerActions { gap: 4px; }
+  .hdrBtn { font-size: 8px; }
+  .hdrBtn.primary { padding: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
@@ -218,7 +223,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 <body>
 <div id="app">
   <header>
-    <div id="logo"><b>FILM</b> LAB <span>— CINEMATIC ENGINE</span></div>
+    <div id="logo">Juwain Haque</div>
     <div id="headerActions">
       <button class="hdrBtn" id="hdrUploadBtn">＋ Upload</button>
       <button class="hdrBtn" id="hdrBeforeBtn">◑ Before</button>
