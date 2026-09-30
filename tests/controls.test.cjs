@@ -225,12 +225,11 @@ test('eighteen complete presets, legacy translations and v4 upgrades retain old 
 });
 
 test('older saved presets fade new sliders to zero while preserving custom sharpening', () => {
-  const frames = [], scopeChanges=[], inputs = {Fade:{value:70},ShadowTone:{value:-35},Sharp:{value:0},Exposure:{value:0}};
-  const chip = {textContent:'Old custom',classList:{toggle(){}},setAttribute(){}};
+  const frames = [], scopeChanges=[], selections=[], inputs = {Fade:{value:70},ShadowTone:{value:-35},Sharp:{value:0},Exposure:{value:0}};
   const state = vm.createContext({
-    ids:Object.keys(inputs), sliders:inputs, presetFrame:null,
+    ids:Object.keys(inputs), sliders:inputs, presetFrame:null, activePresetName:null,
     performance:{now:()=>0}, requestAnimationFrame(fn){frames.push(fn);return frames.length;},
-    cancelPresetAnimation(){}, document:{querySelectorAll:()=>[chip]},
+    cancelPresetAnimation(){}, syncPresetSelection(){ selections.push(state.activePresetName); },
     setDitherScope(scope){ scopeChanges.push(scope); },
     updateFromSliders(){}, updateSliderUI(){}, render(){}, showToast(){},
   });
@@ -239,6 +238,7 @@ test('older saved presets fade new sliders to zero while preserving custom sharp
   const apply = script.match(/function applyPreset\(name, values\)\{[\s\S]*?\n\}/)[0];
   vm.runInContext(`${getter}\n${setter}\n${apply}\nthis.apply=applyPreset;`,state);
   state.apply('Old custom',{Sharp:35,Exposure:20}); // saved before Fade and Dither existed
+  assert.equal(selections.at(-1),'Old custom');
   assert.equal(scopeChanges.at(-1),'full');
   assert.equal(frames.length,1);
   frames.shift()(170);
@@ -269,15 +269,72 @@ test('all built-in looks leave sharpening neutral while preserving their other e
   assert.equal(convert({Sharp:80}).Sharp, 80); // manual and saved custom settings remain available
 });
 
-test('feed and color-story presets are grouped and can be activated by keyboard like saved presets', () => {
-  assert.match(styles, /\.presetCategory \{[^}]*grid-column: 1 \/ -1;/);
-  assert.match(script, /if\(name==='Golden Hour'\) addHeading\('For your feed'\)/);
-  assert.match(script, /if\(name==='Teal & Ember'\) addHeading\('Color stories'\)/);
+test('six original presets stay visible; the rest are grouped in a keyboard-accessible dropdown', () => {
+  const featured=[...Object.keys(oldPresets),'Noir Crunch'];
+  assert.equal(featured.length,6);
+  assert.match(html, /id="presetChips" role="group" aria-label="Featured presets"/);
+  assert.match(html, /<label class="presetSelectLabel" for="presetSelect">More presets/);
+  assert.match(html, /<select id="presetSelect">/); // native keyboard/touch behavior
+  assert.match(script, /const featuredPresetNames=\[\.\.\.Object\.keys\(legacyBuiltInPresets\),'Noir Crunch'\]/);
+  assert.match(script, /if\(name==='Golden Hour'\) addGroup\('For your feed'\)/);
+  assert.match(script, /if\(name==='Teal & Ember'\) addGroup\('Color stories'\)/);
+  assert.match(script, /addGroup\('Saved presets'\)/);
   assert.match(script, /const target=Object\.fromEntries\(ids\.map\(k=>\[k,Number\(values\[k\]\?\?0\)\]\)\)/);
-  assert.match(script, /const chip=document\.createElement\('button'\); chip\.type='button';/);
-  assert.match(script, /ch\.setAttribute\('aria-pressed',String\(active\)\)/);
-  assert.match(script, /chip\.setAttribute\('aria-pressed','false'\)/);
   assert.match(script, /const dur=340/);
+
+  class Element {
+    constructor(tag){
+      this.tag=tag; this.children=[]; this.handlers={}; this.attributes={};
+      this.classList={toggle:(key,on)=>{this[key]=on;}};
+    }
+    replaceChildren(){this.children=[];}
+    appendChild(child){this.children.push(child); return child;}
+    setAttribute(key,value){this.attributes[key]=value;}
+    addEventListener(key,fn){this.handlers[key]=fn;}
+  }
+  const chips=new Element('div'),select=new Element('select'),count=new Element('span'),deleteBtn=new Element('button');
+  const elements={presetChips:chips,presetSelect:select,presetCount:count,deletePresetBtn:deleteBtn};
+  const state=vm.createContext({
+    builtInPresets:presets, legacyBuiltInPresets:oldPresets, featuredPresetNames:featured,
+    customPresets:[], activePresetName:null, availablePresets:new Map(),
+    $:id=>elements[id], document:{createElement:tag=>new Element(tag), querySelectorAll:selector=>selector==='#presetChips .chip'?chips.children:[]},
+  });
+  const notes=script.match(/const socialPresetNotes=\{[\s\S]*?\n\};/)[0];
+  const sync=script.match(/function syncPresetSelection\(\)\{[\s\S]*?\n\}/)[0];
+  const draw=script.match(/function renderChips\(\)\{[\s\S]*?\n\}/)[0];
+  vm.runInContext(`${notes}\n${sync}\n${draw}\nthis.draw=renderChips;this.sync=syncPresetSelection;`,state);
+  state.draw();
+  assert.deepEqual(chips.children.map(chip=>chip.textContent),featured);
+  assert.ok(chips.children.every(chip=>chip.type==='button' && chip.attributes['aria-pressed']==='false'));
+  assert.equal(select.children[0].disabled,true);
+  assert.equal(count.textContent,'12 looks');
+  assert.deepEqual(select.children.slice(1).map(group=>[group.label,group.children.map(opt=>opt.value)]),[
+    ['For your feed',['Golden Hour','Soft Portrait','Retro 2000','Cloudy Pastel','Moody Coffee','Neon Nights']],
+    ['Color stories',['Teal & Ember','Rosé Haze','Chrome Flash','Instant Film','Coastal Fade','After Hours']],
+  ]);
+  state.activePresetName='Golden Hour'; state.sync();
+  assert.equal(select.value,'Golden Hour'); assert.equal(deleteBtn.hidden,true);
+  state.activePresetName='Noir Crunch'; state.sync();
+  assert.equal(select.value,''); assert.equal(chips.children.at(-1).attributes['aria-pressed'],'true');
+
+  state.customPresets.push({name:'Weekend',values:{Exposure:23}}); state.draw();
+  assert.equal(count.textContent,'13 looks');
+  assert.deepEqual(select.children.at(-1).children.map(opt=>opt.value),['Weekend']);
+  assert.equal(select.children.at(-1).label,'Saved presets');
+  state.activePresetName='Weekend'; state.sync();
+  assert.equal(select.value,'Weekend'); assert.equal(deleteBtn.hidden,false);
+  state.customPresets=[]; state.draw();
+  assert.equal(select.value,''); assert.equal(deleteBtn.hidden,true);
+  assert.equal(count.textContent,'12 looks');
+});
+
+test('selecting, adjusting, saving, and deleting looks keeps both preset controls in sync', () => {
+  assert.match(script, /\$\('presetSelect'\)\.addEventListener\('change',e=>\{[\s\S]*?applyPreset\(name,availablePresets\.get\(name\)\)/);
+  assert.match(script, /activePresetName=name; syncPresetSelection\(\);\n  setDitherScope/);
+  assert.match(script, /activePresetName=null; syncPresetSelection\(\);\n  updateFromSliders/);
+  assert.match(script, /customPresets\.push\(\{name,values,version:2\}\); saveCustom\(\);\n  activePresetName=name; renderChips\(\)/);
+  assert.match(script, /\$\('deletePresetBtn'\)\.addEventListener\('click',\(\)=>\{ if\(activePresetName\) deleteCustomPreset\(activePresetName\); \}\)/);
+  assert.match(styles, /#deletePresetBtn\[hidden\] \{ display: none; \}/);
 });
 
 test('video processing retains a 60s cap, WebCodecs fallback and frame progress', () => {

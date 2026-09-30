@@ -135,8 +135,14 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .lightHint,:root[data-theme="light"] .darkHint { display: none; }
 :root[data-theme="light"] .lightHint { display: inline; }
 #presetChips { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); column-gap: 22px; }
-.presetCategory { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; margin-top: 16px; color: var(--text-dim2); font-size: 9px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
-.presetCategory::after { content: ''; flex: 1; height: 1px; background: var(--panel-border); }
+.presetSelectLabel { display: flex; justify-content: space-between; gap: 12px; margin: 22px 0 9px; color: var(--text-dim); font-size: 10px; font-weight: 600; letter-spacing: .17em; text-transform: uppercase; }
+#presetCount { color: var(--text-dim2); font: 500 10px 'JetBrains Mono',monospace; letter-spacing: 0; text-transform: none; }
+.presetSelectWrap { position: relative; }
+.presetSelectWrap::after { content: ''; position: absolute; top: 50%; right: 18px; width: 8px; height: 8px; border-right: 2px solid var(--text); border-bottom: 2px solid var(--text); transform: translateY(-75%) rotate(45deg); pointer-events: none; }
+#presetSelect { display: block; width: 100%; height: 44px; padding: 0 40px 0 13px; appearance: none; -webkit-appearance: none; border: 1px solid var(--border-strong); border-radius: 0; background: var(--bg); color: var(--text); font-family: var(--display); font-size: 12px; font-weight: 500; text-overflow: ellipsis; cursor: pointer; }
+#presetSelect:hover { background: var(--soft-bg); border-color: var(--text); }
+#presetSelect:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+#presetSelect option,#presetSelect optgroup { background: var(--bg); color: var(--text); }
 .chip { position: relative; width: 100%; padding: 13px 0; border: 0; border-bottom: 1px solid var(--panel-border); border-radius: 0; background: transparent; color: var(--text-dim); font-size: 10px; font-weight: 500; letter-spacing: .08em; text-align: left; text-transform: uppercase; white-space: nowrap; cursor: pointer; user-select: none; transition: color .25s, border-color .25s; }
 .chip:hover { color: var(--text); border-bottom-color: var(--border-hover); }
 .chip:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; }
@@ -145,6 +151,10 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .chip.custom { border-bottom-style: dashed; }
 #savePresetBtn { width: 100%; margin-top: 20px; padding: 11px 0; background: none; border: 0; border-bottom: 1px solid var(--panel-border); border-radius: 0; color: var(--text-dim2); text-align: left; font-size: 10px; font-weight: 600; letter-spacing: .17em; text-transform: uppercase; cursor: pointer; transition: color .25s, border-color .25s; }
 #savePresetBtn:hover { color: var(--text); border-bottom-color: var(--text); }
+#deletePresetBtn { width: 100%; padding: 11px 0; background: none; border: 0; border-bottom: 1px solid var(--panel-border); color: var(--accent); text-align: left; font-size: 10px; font-weight: 600; letter-spacing: .17em; text-transform: uppercase; cursor: pointer; }
+#deletePresetBtn[hidden] { display: none; }
+#deletePresetBtn:hover { border-bottom-color: var(--accent); }
+#deletePresetBtn:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
 #effectsWrap { display: flex; flex-direction: column; gap: 0; counter-reset: effect; }
 .effectGroup { counter-increment: effect; padding: 20px 0 18px; border: 0; border-top: 1px solid var(--panel-border); border-radius: 0; background: none; box-shadow: none; transition: border-color .25s; }
 .effectGroup:last-child { border-bottom: 1px solid var(--panel-border); }
@@ -359,8 +369,11 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
     <aside id="sidebar">
       <div>
         <div class="sectionLabel">Presets — full pipeline</div>
-        <div id="presetChips"></div>
-        <button id="savePresetBtn">+ Save current as preset</button>
+        <div id="presetChips" role="group" aria-label="Featured presets"></div>
+        <label class="presetSelectLabel" for="presetSelect">More presets <span id="presetCount">12 looks</span></label>
+        <div class="presetSelectWrap"><select id="presetSelect"><option value="">Choose a look</option></select></div>
+        <button type="button" id="savePresetBtn">+ Save current as preset</button>
+        <button type="button" id="deletePresetBtn" hidden>Delete selected saved preset</button>
       </div>
 
       <div id="effectsWrap">
@@ -1272,7 +1285,9 @@ function setDitherScope(value){
   if(ditherScope==='background' && photoForMask && !autoSubjectMask && !maskManuallyCleared && !maskAutoFailed && !maskDetectionPending) detectPerson();
   if(hasContent) render(performance.now());
 }
-document.querySelectorAll('input[name="ditherScope"]').forEach(input=>input.addEventListener('change',()=>{ if(input.checked) setDitherScope(input.value); }));
+document.querySelectorAll('input[name="ditherScope"]').forEach(input=>input.addEventListener('change',()=>{
+  if(input.checked){ setDitherScope(input.value); activePresetName=null; syncPresetSelection(); }
+}));
 protectSubjectBtn.addEventListener('click',()=>setMaskPaintMode('protect'));
 eraseSubjectBtn.addEventListener('click',()=>setMaskPaintMode('erase'));
 maskDoneBtn.addEventListener('click',()=>setMaskPaintMode(null));
@@ -1574,7 +1589,7 @@ function cancelPresetAnimation(){
 }
 function userChangedSliders(){
   cancelPresetAnimation();
-  document.querySelectorAll('.chip').forEach(chip=>{ chip.classList.remove('active'); chip.setAttribute('aria-pressed','false'); });
+  activePresetName=null; syncPresetSelection();
   updateFromSliders(); updateSliderUI();
   if(hasContent) render(performance.now());
 }
@@ -1727,6 +1742,9 @@ const builtInPresets={
     Grain:12,GrainSize:-26,GrainSpeed:-100,GrainColor:10
   })
 };
+// Keep the original six one-tap looks visible; everything else lives in the dropdown.
+const featuredPresetNames=[...Object.keys(legacyBuiltInPresets),'Noir Crunch'];
+let activePresetName=null, availablePresets=new Map();
 let customPresets=[];
 function upgradeV4Preset(p){
   if(p.version===2) return p;
@@ -1773,38 +1791,55 @@ const socialPresetNotes={
   'Coastal Fade':'Airy blue tones and softly lifted shadows',
   'After Hours':'Purple shadows and warm city-light halos'
 };
-function renderChips(){
-  const c=$('presetChips'); c.innerHTML='';
-  const all={...builtInPresets}; customPresets.forEach(cp=> all[cp.name]=cp.values);
-  let savedHeading=false;
-  function addHeading(text){
-    const heading=document.createElement('div'); heading.className='presetCategory';
-    heading.setAttribute('role','heading'); heading.setAttribute('aria-level','3');
-    heading.textContent=text; c.appendChild(heading);
-  }
-  Object.keys(all).forEach(name=>{
-    if(name==='Golden Hour') addHeading('For your feed');
-    if(name==='Teal & Ember') addHeading('Color stories');
-    if(!builtInPresets[name] && !savedHeading){ addHeading('Saved presets'); savedHeading=true; }
-    const isCustom=customPresets.some(x=>x.name===name);
-    const chip=document.createElement('button'); chip.type='button';
-    chip.className='chip'+(isCustom?' custom':''); chip.textContent=name;
-    chip.setAttribute('aria-pressed','false');
-    chip.addEventListener('click',()=>applyPreset(name, all[name]));
-    if(isCustom){
-      chip.addEventListener('contextmenu',e=>{ e.preventDefault(); if(confirm(`Delete "${name}"?`)){ customPresets=customPresets.filter(x=>x.name!==name); saveCustom(); renderChips(); } });
-      chip.title='Right-click to delete';
-    }else if(socialPresetNotes[name]) chip.title=socialPresetNotes[name];
-    c.appendChild(chip);
+function syncPresetSelection(){
+  document.querySelectorAll('#presetChips .chip').forEach(chip=>{
+    const active=chip.textContent===activePresetName;
+    chip.classList.toggle('active',active);
+    chip.setAttribute('aria-pressed',String(active));
   });
+  $('presetSelect').value=activePresetName && !featuredPresetNames.includes(activePresetName) ? activePresetName : '';
+  $('deletePresetBtn').hidden=!customPresets.some(p=>p.name===activePresetName);
+}
+function renderChips(){
+  const chips=$('presetChips'), select=$('presetSelect');
+  chips.replaceChildren(); select.replaceChildren();
+  availablePresets=new Map(Object.entries(builtInPresets));
+  customPresets.forEach(cp=>availablePresets.set(cp.name,cp.values));
+  const placeholder=document.createElement('option'); placeholder.value=''; placeholder.textContent='Choose a look'; placeholder.disabled=true;
+  select.appendChild(placeholder);
+  let group=null, moreCount=0;
+  function addGroup(label){
+    group=document.createElement('optgroup'); group.label=label; select.appendChild(group);
+  }
+  for(const [name,values] of availablePresets){
+    const isCustom=customPresets.some(p=>p.name===name);
+    if(featuredPresetNames.includes(name)){
+      const chip=document.createElement('button'); chip.type='button';
+      chip.className='chip'+(isCustom?' custom':''); chip.textContent=name;
+      chip.setAttribute('aria-pressed','false');
+      chip.addEventListener('click',()=>applyPreset(name,values));
+      if(isCustom){
+        chip.title='Right-click to delete';
+        chip.addEventListener('contextmenu',e=>{ e.preventDefault(); deleteCustomPreset(name); });
+      }else if(socialPresetNotes[name]) chip.title=socialPresetNotes[name];
+      chips.appendChild(chip);
+      continue;
+    }
+    if(name==='Golden Hour') addGroup('For your feed');
+    else if(name==='Teal & Ember') addGroup('Color stories');
+    else if(!Object.prototype.hasOwnProperty.call(builtInPresets,name) && group?.label!=='Saved presets') addGroup('Saved presets');
+    if(!group) addGroup('More looks');
+    const option=document.createElement('option'); option.value=name; option.textContent=name;
+    if(socialPresetNotes[name]) option.title=socialPresetNotes[name];
+    group.appendChild(option); moreCount++;
+  }
+  $('presetCount').textContent=`${moreCount} ${moreCount===1?'look':'looks'}`;
+  if(activePresetName && !availablePresets.has(activePresetName)) activePresetName=null;
+  syncPresetSelection();
 }
 function applyPreset(name, values){
   cancelPresetAnimation();
-  document.querySelectorAll('.chip').forEach(ch=>{
-    const active=ch.textContent===name;
-    ch.classList.toggle('active',active);
-    ch.setAttribute('aria-pressed',String(active));
-  });
+  activePresetName=name; syncPresetSelection();
   setDitherScope(values.DitherScope==='background'?'background':'full');
   const start=getCurrentValues();
   // Old saved presets have no newer sliders; animate those back to neutral.
@@ -1821,13 +1856,25 @@ function applyPreset(name, values){
   presetFrame=requestAnimationFrame(step);
   showToast(`Preset: ${name}`);
 }
+function deleteCustomPreset(name){
+  if(!customPresets.some(p=>p.name===name) || !confirm(`Delete "${name}"?`)) return;
+  customPresets=customPresets.filter(p=>p.name!==name);
+  if(activePresetName===name) activePresetName=null;
+  saveCustom(); renderChips(); showToast(`Deleted "${name}"`);
+}
 renderChips();
+$('presetSelect').addEventListener('change',e=>{
+  const name=e.target.value;
+  if(availablePresets.has(name)) applyPreset(name,availablePresets.get(name));
+});
 $('savePresetBtn').addEventListener('click',()=>{
   const name=prompt('Preset name:'); if(!name) return;
   const values={...getCurrentValues(),DitherScope:ditherScope};
   customPresets=customPresets.filter(c=>c.name!==name);
-  customPresets.push({name,values,version:2}); saveCustom(); renderChips(); showToast(`Saved "${name}"`);
+  customPresets.push({name,values,version:2}); saveCustom();
+  activePresetName=name; renderChips(); showToast(`Saved "${name}"`);
 });
+$('deletePresetBtn').addEventListener('click',()=>{ if(activePresetName) deleteCustomPreset(activePresetName); });
 
 window.addEventListener('keydown',e=>{
   // Space on a focused button must activate that button, not the Before shortcut.
