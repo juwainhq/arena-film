@@ -72,15 +72,17 @@ test('effect switches bypass rendering at neutral without changing slider values
     ['u_strength', 'sharpen', 'sharpen'], ['u_bloomStrength', 'bloom', 'bloom'],
     ['u_hallationStrength', 'hallation', 'hallation'], ['u_grainStrength', 'grain', 'grain'],
     ['u_exposure', 'color', 'exposure'], ['u_temperature', 'color', 'temperature'],
-    ['u_vignStrength', 'color', 'vignStrength'],
+    ['u_vignStrength', 'color', 'vignStrength'], ['u_vibrance', 'color', 'vibrance'],
+    ['u_fade', 'color', 'fade'], ['u_shadowTone', 'color', 'shadowTone'],
+    ['u_highlightTone', 'color', 'highlightTone'],
   ]) assert.ok(script.includes(`'${uniform}'),effectValue('${group}',params.${param})`), uniform);
   for (const param of ['contrast', 'saturation']) {
     assert.ok(script.includes(`'u_${param}'),effectValue('color',params.${param},1)`), param);
   }
 });
 
-test('all 32 controls start at 0 with centered -100 to +100 scales', () => {
-  assert.equal(advancedInputs.length, 28);
+test('all 36 controls start at 0 with centered -100 to +100 scales', () => {
+  assert.equal(advancedInputs.length, 32);
   assert.equal(intensityInputs.length, 4);
   assert.deepEqual(advancedInputs.map(m => m[1]).sort(), Object.keys(controls).sort());
   for (const [, name, min, max, value] of [...advancedInputs, ...intensityInputs]) {
@@ -101,6 +103,8 @@ test('zero is neutral, details have two-sided ranges and intensities are signed'
     sliders[name].value = '0';
   }
   assert.deepEqual(Array.from(controls.Exposure.range), [-2, 0, 2]);
+  assert.deepEqual(Array.from(controls.Fade.range), [-0.6, 0, 0.25]);
+  for (const name of ['Vibrance','ShadowTone','HighlightTone']) assert.deepEqual(Array.from(controls[name].range), [-1, 0, 1], name);
   assert.deepEqual(Array.from(controls.HallDir.range), [-180, 0, 180]);
   assert.equal(controls.BloomThresh.range[0], 0.3);
   assert.equal(controls.BloomThresh.range[2], 0.95);
@@ -109,6 +113,7 @@ test('zero is neutral, details have two-sided ranges and intensities are signed'
   assert.equal(controls.Saturation.range[1], 1);
   updateFromSliders();
   assert.equal(params.bloom, 0);
+  for (const name of ['vibrance','fade','shadowTone','highlightTone']) assert.equal(params[name], 0, `${name} starts neutral`);
   assert.equal(params.hallation, 0);
   assert.equal(params.grain, 0);
   assert.equal(params.sharpen, 0);
@@ -133,11 +138,34 @@ test('negative effects are rendered as subtraction, inverse grain, blur, or brig
   assert.match(script, /Math\.abs\(params\.hallation\)/);
 });
 
-test('twelve complete presets, legacy translations and v4 upgrades retain old looks', () => {
+test('color grading is signed, GPU-backed, and neutral for older looks', () => {
+  const shader = script.match(/const fsComposite=`([\s\S]*?)`;/)[1];
+  for (const name of ['u_vibrance','u_fade','u_shadowTone','u_highlightTone']) {
+    assert.match(shader, new RegExp(`uniform float ${name};`), `${name} declared`);
+    assert.ok(script.includes(`'${name}'),effectValue('color',params.`), `${name} bypasses with Color & Light`);
+  }
+  assert.match(shader, /if\(abs\(u_vibrance\)>0\.001\)/);
+  assert.match(shader, /if\(abs\(u_fade\)>0\.001 \|\| abs\(u_shadowTone\)>0\.001 \|\| abs\(u_highlightTone\)>0\.001\)/);
+  assert.match(shader, /u_shadowTone<0\.0[\s\S]*?u_shadowTone\*shadow/);
+  assert.match(shader, /u_highlightTone<0\.0[\s\S]*?u_highlightTone\*highlight/);
+  assert.match(shader, /if\(u_fade>0\.0\)[\s\S]*?col\+=col\*u_fade\*shadow/);
+});
+
+test('eighteen complete presets, legacy translations and v4 upgrades retain old looks', () => {
   const classic = ['Kodak Vision','Anamorphic','Matte Film','Clean Digital','Dream Glow','Noir Crunch'];
   const social = ['Golden Hour','Soft Portrait','Retro 2000','Cloudy Pastel','Moody Coffee','Neon Nights'];
-  assert.deepEqual(Object.keys(presets).sort(), [...classic,...social].sort());
-  assert.equal(Object.keys(presets['Noir Crunch']).length, 32);
+  const stories = ['Teal & Ember','Rosé Haze','Chrome Flash','Instant Film','Coastal Fade','After Hours'];
+  assert.deepEqual(Object.keys(presets).sort(), [...classic,...social,...stories].sort());
+  assert.equal(Object.keys(presets['Noir Crunch']).length, 36);
+  for (const name of [...classic,...social]) {
+    for (const key of ['Vibrance','Fade','ShadowTone','HighlightTone']) assert.equal(presets[name][key], 0, `${name}: legacy color unchanged`);
+  }
+  assert.ok(presets['Teal & Ember'].ShadowTone < 0 && presets['Teal & Ember'].HighlightTone > 0);
+  assert.ok(presets['Rosé Haze'].ShadowTone > 0 && presets['Rosé Haze'].Fade > 0);
+  assert.ok(presets['Chrome Flash'].HighlightTone < 0 && presets['Chrome Flash'].Fade < 0);
+  assert.ok(presets['Instant Film'].Fade > 0 && presets['Instant Film'].Grain > 0);
+  assert.ok(presets['Coastal Fade'].ShadowTone < 0 && presets['Coastal Fade'].HighlightTone < 0);
+  assert.ok(presets['After Hours'].ShadowTone > 0 && presets['After Hours'].HighlightTone > 0);
   assert.equal(presets['Noir Crunch'].Saturation, -100);
   assert.ok(presets['Noir Crunch'].Bloom < 0);
   assert.ok(presets['Golden Hour'].Temperature > 0 && presets['Golden Hour'].Bloom > 0);
@@ -148,7 +176,7 @@ test('twelve complete presets, legacy translations and v4 upgrades retain old lo
   assert.ok(presets['Neon Nights'].BloomAnam > 50 && presets['Neon Nights'].Hall > 0);
   assert.equal(presets['Cloudy Pastel'].Hall, 0); // missing parameters reset to neutral
   assert.equal(presets['Soft Portrait'].Grain, 0);
-  for (const name of social) assert.equal(presets[name].GrainSpeed, presets[name].Grain ? -100 : 0, `${name}: static grain`);
+  for (const name of [...social,...stories]) assert.equal(presets[name].GrainSpeed, presets[name].Grain ? -100 : 0, `${name}: static grain`);
   for (const [name, {range, legacyZero}] of Object.entries(controls)) {
     assert.equal(convert({[name]: legacyZero})[name], 0, `${name} neutral`);
   }
@@ -159,6 +187,7 @@ test('twelve complete presets, legacy translations and v4 upgrades retain old lo
     const converted = convert(values);
     for (const [name, {range, legacyZero}] of Object.entries(controls)) {
       const old = values[name], signed = converted[name];
+      if (old == null) { assert.equal(signed, undefined, `${name} was not in legacy presets`); continue; }
       assert.ok(signed >= -100 && signed <= 100, name);
       sliders[name].value = String(signed);
       if (name === 'HallDir') {
@@ -187,6 +216,32 @@ test('twelve complete presets, legacy translations and v4 upgrades retain old lo
   assert.match(script, /film_lab_presets_v4/);
 });
 
+test('older saved presets fade new sliders to zero while preserving custom sharpening', () => {
+  const frames = [], inputs = {Fade:{value:70},ShadowTone:{value:-35},Sharp:{value:0},Exposure:{value:0}};
+  const chip = {textContent:'Old custom',classList:{toggle(){}},setAttribute(){}};
+  const state = vm.createContext({
+    ids:Object.keys(inputs), sliders:inputs, presetFrame:null,
+    performance:{now:()=>0}, requestAnimationFrame(fn){frames.push(fn);return frames.length;},
+    cancelPresetAnimation(){}, document:{querySelectorAll:()=>[chip]},
+    updateFromSliders(){}, updateSliderUI(){}, render(){}, showToast(){},
+  });
+  const getter = script.match(/function getCurrentValues\(\)\{[\s\S]*?\n\}/)[0];
+  const setter = script.match(/function setValues\(o\)\{[\s\S]*?\n\}/)[0];
+  const apply = script.match(/function applyPreset\(name, values\)\{[\s\S]*?\n\}/)[0];
+  vm.runInContext(`${getter}\n${setter}\n${apply}\nthis.apply=applyPreset;`,state);
+  state.apply('Old custom',{Sharp:35,Exposure:20}); // saved before Fade and Shadow Tone existed
+  assert.equal(frames.length,1);
+  frames.shift()(170);
+  assert.ok(inputs.Fade.value>0 && inputs.Fade.value<70);
+  assert.ok(inputs.ShadowTone.value<0 && inputs.ShadowTone.value>-35);
+  frames.shift()(340);
+  assert.equal(inputs.Fade.value,0);
+  assert.equal(inputs.ShadowTone.value,0);
+  assert.equal(inputs.Sharp.value,35);
+  assert.equal(inputs.Exposure.value,20);
+  assert.equal(state.presetFrame,null);
+});
+
 test('all built-in looks leave sharpening neutral while preserving their other effects', () => {
   const sharpenControls = ['Sharp', 'SharpRadius', 'SharpEdge', 'SharpDetail', 'SharpLuma'];
   for (const [name, values] of Object.entries(presets)) {
@@ -204,9 +259,11 @@ test('all built-in looks leave sharpening neutral while preserving their other e
   assert.equal(convert({Sharp:80}).Sharp, 80); // manual and saved custom settings remain available
 });
 
-test('feed presets are grouped and can be activated by keyboard like saved presets', () => {
+test('feed and color-story presets are grouped and can be activated by keyboard like saved presets', () => {
   assert.match(styles, /\.presetCategory \{[^}]*grid-column: 1 \/ -1;/);
   assert.match(script, /if\(name==='Golden Hour'\) addHeading\('For your feed'\)/);
+  assert.match(script, /if\(name==='Teal & Ember'\) addHeading\('Color stories'\)/);
+  assert.match(script, /const target=Object\.fromEntries\(ids\.map\(k=>\[k,Number\(values\[k\]\?\?0\)\]\)\)/);
   assert.match(script, /const chip=document\.createElement\('button'\); chip\.type='button';/);
   assert.match(script, /ch\.setAttribute\('aria-pressed',String\(active\)\)/);
   assert.match(script, /chip\.setAttribute\('aria-pressed','false'\)/);

@@ -215,6 +215,16 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #toast { position: absolute; top: 32px; left: 50%; transform: translateX(-50%) translateY(-20px); z-index: 50; max-width: 90%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--panel-border); box-shadow: 0 14px 40px var(--shadow); color: var(--text); font-size: 11px; letter-spacing: .07em; text-align: center; opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* The portfolio's ambient dot + trailing ring. Never replace the native cursor. */
+.cursor-fx { display: none; position: fixed; top: 0; left: 0; z-index: 9999; opacity: 0; pointer-events: none; border-radius: 9999px; mix-blend-mode: difference; will-change: transform; }
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .cursor-fx { display: block; }
+}
+.cursor-fx-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: #fff; transition: opacity .3s ease; }
+.cursor-fx-ring { width: 36px; height: 36px; margin: -18px 0 0 -18px; border: 1px solid rgba(255,255,255,.65); transition: opacity .3s ease, width .3s cubic-bezier(.16,1,.3,1), height .3s cubic-bezier(.16,1,.3,1), margin .3s cubic-bezier(.16,1,.3,1), border-color .3s ease, background-color .3s ease; }
+.cursor-fx-ring.is-hover { width: 56px; height: 56px; margin: -28px 0 0 -28px; border-color: rgba(255,255,255,.95); background: rgba(255,255,255,.12); }
+.cursor-fx-ring.is-down { width: 28px; height: 28px; margin: -14px 0 0 -14px; }
+
 @media (min-width: 768px) {
   header { padding-inline: 40px; }
   #logo { font-size: 13px; }
@@ -349,6 +359,10 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
             <div class="subRow"><div class="subHead"><div class="subLabel">Contrast</div><div class="subVal" id="valContrast">0</div></div><input class="subSlider" type="range" id="sliderContrast" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Saturation</div><div class="subVal" id="valSaturation">0</div></div><input class="subSlider" type="range" id="sliderSaturation" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Temperature <span>cool → warm</span></div><div class="subVal" id="valTemperature">0</div></div><input class="subSlider" type="range" id="sliderTemperature" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Vibrance <span>muted → vivid</span></div><div class="subVal" id="valVibrance">0</div></div><input class="subSlider" type="range" id="sliderVibrance" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Fade <span>crush → lift blacks</span></div><div class="subVal" id="valFade">0</div></div><input class="subSlider" type="range" id="sliderFade" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Shadow Tone <span>teal → plum</span></div><div class="subVal" id="valShadowTone">0</div></div><input class="subSlider" type="range" id="sliderShadowTone" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Highlight Tone <span>ice → amber</span></div><div class="subVal" id="valHighlightTone">0</div></div><input class="subSlider" type="range" id="sliderHighlightTone" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div>
           </div>
@@ -437,6 +451,56 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
   </div>
 </div>
 <input type="file" id="fileInput" accept="image/*,.heic,.heif,image/heic,image/heif,video/*" hidden>
+<div id="cursorDot" class="cursor-fx cursor-fx-dot" aria-hidden="true"></div>
+<div id="cursorRing" class="cursor-fx cursor-fx-ring" aria-hidden="true"></div>
+<script id="cursorEffects">
+(() => {
+  if(!window.matchMedia) return;
+  const support=window.matchMedia('(pointer: fine) and (prefers-reduced-motion: no-preference)');
+  const dot=document.getElementById('cursorDot'), ring=document.getElementById('cursorRing');
+  let active=false, visible=false, frame=0;
+  let mouseX=innerWidth/2, mouseY=innerHeight/2, ringX=mouseX, ringY=mouseY;
+  function hide(){
+    visible=false; dot.style.opacity='0'; ring.style.opacity='0';
+    ring.classList.remove('is-hover','is-down');
+  }
+  function move(e){
+    mouseX=e.clientX; mouseY=e.clientY;
+    if(!visible){ visible=true; dot.style.opacity='1'; ring.style.opacity='1'; }
+    const target=e.target instanceof Element ? e.target : null;
+    ring.classList.toggle('is-hover',!!target?.closest('a, button, [role="button"], input, textarea, select, summary, .effectHeader, #dropZone, #glCanvas'));
+  }
+  const down=()=>ring.classList.add('is-down');
+  const up=()=>ring.classList.remove('is-down');
+  function tick(){
+    ringX+=(mouseX-ringX)*.16; ringY+=(mouseY-ringY)*.16;
+    dot.style.transform=`translate3d(${mouseX}px, ${mouseY}px, 0)`;
+    ring.style.transform=`translate3d(${ringX}px, ${ringY}px, 0)`;
+    frame=requestAnimationFrame(tick);
+  }
+  function sync(){
+    if(support.matches===active) return;
+    active=support.matches;
+    if(active){
+      window.addEventListener('mousemove',move,{passive:true});
+      window.addEventListener('mousedown',down);
+      window.addEventListener('mouseup',up);
+      window.addEventListener('blur',hide);
+      document.documentElement.addEventListener('mouseleave',hide);
+      frame=requestAnimationFrame(tick);
+    }else{
+      cancelAnimationFrame(frame); hide();
+      window.removeEventListener('mousemove',move);
+      window.removeEventListener('mousedown',down);
+      window.removeEventListener('mouseup',up);
+      window.removeEventListener('blur',hide);
+      document.documentElement.removeEventListener('mouseleave',hide);
+    }
+  }
+  support.addEventListener('change',sync);
+  sync();
+})();
+</script>
 <script>
 (() => {
 const themeToggle = document.getElementById('themeToggle');
@@ -467,7 +531,7 @@ const progressWrap=$('videoProgress'), progressFill=$('progressFill'), progressT
 
 // all sliders
 const ids = [
-  'Exposure','Contrast','Saturation','Temperature','VignStrength','VignSize',
+  'Exposure','Contrast','Saturation','Temperature','Vibrance','Fade','ShadowTone','HighlightTone','VignStrength','VignSize',
   'Bloom','BloomThresh','BloomSpread','BloomSoft','BloomTint','BloomBlend','BloomAnam',
   'Hall','HallThresh','HallSpread','HallTint','HallDir','HallFalloff','HallSat',
   'Grain','GrainSize','GrainRough','GrainSpeed','GrainColor','GrainLuma','GrainSoft',
@@ -492,6 +556,10 @@ const advancedControls={
   Contrast:{range:[0.5,1,1.5],legacyZero:50},
   Saturation:{range:[0,1,2],legacyZero:50},
   Temperature:{range:[-1,0,1],legacyZero:50},
+  Vibrance:{range:[-1,0,1],legacyZero:50},
+  Fade:{range:[-0.6,0,0.25],legacyZero:50},
+  ShadowTone:{range:[-1,0,1],legacyZero:50},
+  HighlightTone:{range:[-1,0,1],legacyZero:50},
   VignStrength:{range:[-0.15,0,0.35],legacyZero:0},
   VignSize:{range:[0.4,1.3,2.2],legacyZero:50},
   BloomThresh:{range:[0.3,0.755,0.95],legacyZero:70},
@@ -528,6 +596,10 @@ function updateFromSliders(){
   params.contrast=advancedValue('Contrast');
   params.saturation=advancedValue('Saturation');
   params.temperature=advancedValue('Temperature');
+  params.vibrance=advancedValue('Vibrance');
+  params.fade=advancedValue('Fade');
+  params.shadowTone=advancedValue('ShadowTone');
+  params.highlightTone=advancedValue('HighlightTone');
   params.vignStrength=advancedValue('VignStrength');
   params.vignSize=advancedValue('VignSize');
 
@@ -569,7 +641,7 @@ function updateSliderUI(){
       vals[n].classList.toggle('negative',value<0);
       vals[n].classList.toggle('positive',value>0);
     }
-    // Fill outward from the center for all 32 sliders. Negative is white
+    // Fill outward from the center for all 36 sliders. Negative is white
     // in dark mode and charcoal in light mode; positive stays red.
     const pct=50+value/2, from=Math.min(pct,50), to=Math.max(pct,50);
     const fill=value<0?'var(--negative)':'var(--accent)';
@@ -697,6 +769,7 @@ uniform float u_bloomStrength; uniform float u_hallationStrength; uniform float 
 uniform float u_grainStrength; uniform float u_grainSize; uniform float u_grainSpeed; uniform float u_grainColor; uniform float u_grainRough; uniform float u_grainLuma; uniform float u_grainSoft;
 uniform float u_time; uniform vec2 u_resolution;
 uniform float u_exposure; uniform float u_contrast; uniform float u_saturation; uniform float u_temperature; uniform float u_vignStrength; uniform float u_vignSize;
+uniform float u_vibrance; uniform float u_fade; uniform float u_shadowTone; uniform float u_highlightTone;
 out vec4 outColor;
 float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y); }
 float noise(vec2 p){
@@ -747,6 +820,28 @@ void main(){
   } else {
     col.r += u_temperature*0.08;
     col.b -= u_temperature*0.12;
+  }
+
+  // Vibrance favors muted colors instead of over-saturating already colorful areas.
+  if(abs(u_vibrance)>0.001){
+    float chroma=clamp(max(col.r,max(col.g,col.b))-min(col.r,min(col.g,col.b)),0.0,1.0);
+    float emphasis=u_vibrance>0.0 ? (1.0-chroma)*0.65 : 0.65;
+    float baseLuma=dot(col,vec3(0.2126,0.7152,0.0722));
+    col=mix(vec3(baseLuma),col,1.0+u_vibrance*emphasis);
+  }
+  // Split tone by luminance, and lift or deepen only the darkest parts.
+  // A zero setting skips grading entirely, preserving the original presets.
+  if(abs(u_fade)>0.001 || abs(u_shadowTone)>0.001 || abs(u_highlightTone)>0.001){
+    float gradeLuma=clamp(dot(col,vec3(0.2126,0.7152,0.0722)),0.0,1.0);
+    float shadow=1.0-smoothstep(0.1,0.7,gradeLuma);
+    float highlight=smoothstep(0.3,0.9,gradeLuma);
+    if(u_fade>0.0) col+=(1.0-col)*u_fade*shadow;
+    else col+=col*u_fade*shadow;
+    if(u_shadowTone<0.0) col+=vec3(-0.10,0.085,0.075)*(-u_shadowTone)*shadow; // teal
+    else col+=vec3(0.085,-0.045,0.11)*u_shadowTone*shadow; // plum
+    if(u_highlightTone<0.0) col+=vec3(-0.06,0.005,0.12)*(-u_highlightTone)*highlight; // ice
+    else col+=vec3(0.12,0.04,-0.075)*u_highlightTone*highlight; // amber
+    lum=dot(col,vec3(0.2126,0.7152,0.0722));
   }
 
   // The signed grain amount flips the noise pattern at negative values.
@@ -946,6 +1041,10 @@ function render(timeMs){
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_contrast'),effectValue('color',params.contrast,1));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_saturation'),effectValue('color',params.saturation,1));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_temperature'),effectValue('color',params.temperature));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_vibrance'),effectValue('color',params.vibrance));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_fade'),effectValue('color',params.fade));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_shadowTone'),effectValue('color',params.shadowTone));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_highlightTone'),effectValue('color',params.highlightTone));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_vignStrength'),effectValue('color',params.vignStrength));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_vignSize'),params.vignSize);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
@@ -1245,7 +1344,7 @@ function convertLegacyValues(values){
 }
 // Built-in looks leave sharpening completely neutral; manual and saved custom settings are unchanged.
 const withoutSharpening=values=>({...values,Sharp:0,SharpRadius:0,SharpEdge:0,SharpDetail:0,SharpLuma:0});
-// Every social look is a complete 32-control snapshot, so selecting one also clears
+// Every built-in look is a complete 36-control snapshot, so selecting one also clears
 // advanced settings left behind by another look. Unspecified controls stay neutral.
 const presetFromNeutral=values=>withoutSharpening({
   ...Object.fromEntries(Object.keys(advancedControls).map(name=>[name,0])),
@@ -1253,8 +1352,8 @@ const presetFromNeutral=values=>withoutSharpening({
   ...values
 });
 const builtInPresets={
-  ...Object.fromEntries(Object.entries(legacyBuiltInPresets).map(([name,values])=>[name,withoutSharpening(convertLegacyValues(values))])),
-  'Noir Crunch':withoutSharpening({
+  ...Object.fromEntries(Object.entries(legacyBuiltInPresets).map(([name,values])=>[name,presetFromNeutral(convertLegacyValues(values))])),
+  'Noir Crunch':presetFromNeutral({
     Exposure:-18,Contrast:65,Saturation:-100,Temperature:-12,VignStrength:60,VignSize:-20,
     Bloom:-25,BloomThresh:20,BloomSpread:-25,BloomSoft:-35,BloomTint:-40,BloomBlend:-10,BloomAnam:0,
     Hall:-10,HallThresh:-15,HallSpread:-25,HallTint:-55,HallDir:-12,HallFalloff:15,HallSat:-50,
@@ -1297,6 +1396,36 @@ const builtInPresets={
     Bloom:38,BloomThresh:10,BloomSpread:28,BloomSoft:12,BloomTint:-24,BloomBlend:25,BloomAnam:67,
     Hall:34,HallThresh:3,HallSpread:33,HallTint:-28,HallDir:11,HallFalloff:12,HallSat:32,
     Grain:12,GrainSize:-30,GrainRough:8,GrainSpeed:-100,GrainColor:13,GrainSoft:12
+  }),
+  // Color stories — use separate shadow and highlight tones for a distinct grade.
+  'Teal & Ember':presetFromNeutral({
+    Exposure:-7,Contrast:21,Saturation:4,Temperature:-9,Vibrance:27,Fade:-10,ShadowTone:-72,HighlightTone:74,
+    VignStrength:20,Bloom:16,BloomThresh:10,BloomTint:20,Hall:14,HallTint:33,
+    Grain:6,GrainSize:-18,GrainSpeed:-100,GrainColor:-100
+  }),
+  'Rosé Haze':presetFromNeutral({
+    Exposure:13,Contrast:-27,Saturation:-9,Temperature:19,Vibrance:-11,Fade:48,ShadowTone:55,HighlightTone:20,
+    VignStrength:-15,Bloom:25,BloomThresh:-35,BloomSpread:32,BloomSoft:22,Hall:3
+  }),
+  'Chrome Flash':presetFromNeutral({
+    Exposure:4,Contrast:31,Saturation:-6,Temperature:-28,Vibrance:24,Fade:-16,ShadowTone:-30,HighlightTone:-58,
+    VignStrength:18,Bloom:11,BloomThresh:23,Hall:10,HallThresh:13,
+    Grain:22,GrainSize:12,GrainRough:22,GrainSpeed:-100,GrainColor:-40
+  }),
+  'Instant Film':presetFromNeutral({
+    Exposure:6,Contrast:-19,Saturation:-25,Temperature:17,Vibrance:-14,Fade:62,ShadowTone:18,HighlightTone:39,
+    VignStrength:19,Bloom:12,BloomThresh:-5,
+    Grain:32,GrainSize:19,GrainRough:18,GrainSpeed:-100,GrainColor:-100,GrainSoft:12
+  }),
+  'Coastal Fade':presetFromNeutral({
+    Exposure:17,Contrast:-20,Saturation:4,Temperature:-17,Vibrance:28,Fade:27,ShadowTone:-39,HighlightTone:-37,
+    VignStrength:-13,Bloom:12,BloomThresh:-18,BloomSpread:14,
+    Grain:12,GrainSize:-23,GrainSpeed:-100,GrainColor:-100,GrainSoft:20
+  }),
+  'After Hours':presetFromNeutral({
+    Exposure:-24,Contrast:20,Saturation:7,Temperature:-18,Vibrance:30,Fade:6,ShadowTone:69,HighlightTone:47,
+    VignStrength:32,Bloom:22,BloomThresh:12,BloomAnam:34,Hall:26,HallThresh:8,HallTint:-14,
+    Grain:12,GrainSize:-26,GrainSpeed:-100,GrainColor:10
   })
 };
 let customPresets=[];
@@ -1328,7 +1457,7 @@ function getCurrentValues(){
   const o={}; ids.forEach(k=>{ o[k]=parseInt(sliders[k]?.value||0); }); return o;
 }
 function setValues(o){
-  ids.forEach(k=>{ if(sliders[k] && o[k]!=null) sliders[k].value=o[k]; });
+  ids.forEach(k=>{ sliders[k].value=o[k]??0; });
   updateFromSliders(); updateSliderUI();
 }
 const socialPresetNotes={
@@ -1337,7 +1466,13 @@ const socialPresetNotes={
   'Retro 2000':'Punchy cool flash color with textured grain',
   'Cloudy Pastel':'Light, cool, and softly muted',
   'Moody Coffee':'Warm shadows and subtle film texture',
-  'Neon Nights':'Cool color, red halation, and wide light streaks'
+  'Neon Nights':'Cool color, red halation, and wide light streaks',
+  'Teal & Ember':'Teal shadows and warm amber highlights',
+  'Rosé Haze':'Plum shadows, lifted blacks, and rosy diffusion',
+  'Chrome Flash':'Cool metallic flash color and textured grain',
+  'Instant Film':'Faded warm color with classic instant-film grain',
+  'Coastal Fade':'Airy blue tones and softly lifted shadows',
+  'After Hours':'Purple shadows and warm city-light halos'
 };
 function renderChips(){
   const c=$('presetChips'); c.innerHTML='';
@@ -1350,6 +1485,7 @@ function renderChips(){
   }
   Object.keys(all).forEach(name=>{
     if(name==='Golden Hour') addHeading('For your feed');
+    if(name==='Teal & Ember') addHeading('Color stories');
     if(!builtInPresets[name] && !savedHeading){ addHeading('Saved presets'); savedHeading=true; }
     const isCustom=customPresets.some(x=>x.name===name);
     const chip=document.createElement('button'); chip.type='button';
@@ -1371,12 +1507,14 @@ function applyPreset(name, values){
     ch.setAttribute('aria-pressed',String(active));
   });
   const start=getCurrentValues();
+  // Old saved presets have no newer sliders; animate those back to neutral.
+  const target=Object.fromEntries(ids.map(k=>[k,Number(values[k]??0)]));
   const dur=340, t0=performance.now();
   const ease=t=>1-Math.pow(1-t,3);
   function step(now){
     const p=Math.min((now-t0)/dur,1), e=ease(p);
     const cur={};
-    for(const k in values){ cur[k]=start[k]+(values[k]-start[k])*e; }
+    for(const k of ids){ cur[k]=start[k]+(target[k]-start[k])*e; }
     setValues(cur); render(now);
     presetFrame=p<1 ? requestAnimationFrame(step) : null;
   }
@@ -1493,7 +1631,7 @@ $('processVideoBtn').addEventListener('click',processVideo);
 updateFromSliders(); updateSliderUI(); render(performance.now());
 window.addEventListener('dragover',e=> e.preventDefault());
 window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ const f=e.dataTransfer.files[0]; if(f && (isHeicFile(f)||f.type.startsWith('image/')||f.type.startsWith('video/'))){ e.preventDefault(); handleFile(f); } } });
-console.log('Film Lab v4 — 32 signed controls — WebGL2', gl.getParameter(gl.VERSION));
+console.log('Film Lab v4 — 36 signed controls — WebGL2', gl.getParameter(gl.VERSION));
 })();
 </script>
 </body>
