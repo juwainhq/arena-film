@@ -6,6 +6,7 @@ const vm = require('node:vm');
 
 const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
 const script = html.split('<script>')[1].split('</script>')[0];
+const styles = html.split('<style>')[1].split('</style>')[0];
 const config = script.match(/const advancedControls=\{[\s\S]*?\n\};/)[0];
 const mapper = script.match(/function advancedValue\(name\)\{[\s\S]*?\n\}/)[0];
 const update = script.match(/function updateFromSliders\(\)\{[\s\S]*?\n\}/)[0];
@@ -21,6 +22,16 @@ const advancedInputs = [...html.matchAll(/<input class="subSlider" type="range" 
 const intensityInputs = [...html.matchAll(/<input type="range" id="slider(Bloom|Hall|Grain|Sharp)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
 
 for (const [, name] of [...advancedInputs, ...intensityInputs]) sliders[name] = {value: '0'};
+
+test('the interface uses a black, white and red palette', () => {
+  assert.match(styles, /--bg:#000/);
+  assert.match(styles, /--text:#fff/);
+  assert.match(styles, /--accent:#d62828/);
+  assert.match(styles, /--negative:#ededed/);
+  assert.match(styles, /\.hdrBtn\.primary\{background:var\(--accent\);color:#fff/);
+  assert.doesNotMatch(styles, /#f5a623|#6aafff|#ff8c00/);
+  assert.match(html, /white subtracts · red adds/);
+});
 
 test('all 32 controls start at 0 with centered -100 to +100 scales', () => {
   assert.equal(advancedInputs.length, 28);
