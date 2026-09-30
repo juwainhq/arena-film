@@ -11,6 +11,7 @@
   --bg:#0e0e0e;--panel:rgba(22,22,22,0.78);--panel-border:rgba(255,255,255,0.08);
   --text:#ededed;--text-dim:#8a8a8a;--text-dim2:#5a5a5a;
   --accent:#f5a623;--accent2:#ff8c00;--accent-glow:rgba(245,166,35,0.28);--accent-bg:rgba(245,166,35,0.12);
+  --negative:#6aafff;--negative-glow:rgba(106,175,255,0.28);--negative-bg:rgba(106,175,255,0.12);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
@@ -40,6 +41,7 @@ header{height:56px;min-height:56px;display:flex;align-items:center;justify-conte
 #sidebar::-webkit-scrollbar{width:4px} #sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:2px}
 .sectionLabel{font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-dim);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .sectionLabel:after{content:'';flex:1;height:1px;background:linear-gradient(90deg, rgba(255,255,255,0.08), transparent)}
+.sectionHint{font-size:10px;color:var(--text-dim2);margin:-4px 0 2px;line-height:1.5}
 #presetChips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{padding:6px 12px;border-radius:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:11.5px;font-weight:500;cursor:pointer;transition:all .22s;user-select:none;white-space:nowrap}
 .chip:hover{background:rgba(245,166,35,0.14);border-color:rgba(245,166,35,0.28);transform:translateY(-1px)}
@@ -58,7 +60,8 @@ header{height:56px;min-height:56px;display:flex;align-items:center;justify-conte
 .effectGroup.open .effectTitle .expand{transform:rotate(180deg);opacity:0.9}
 .effectHeadRight{display:flex;align-items:center;gap:6px}
 .sliderVal{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;color:var(--accent);background:var(--accent-bg);border:1px solid rgba(245,166,35,0.18);padding:2px 7px;border-radius:9px;min-width:34px;text-align:center}
-.mainSlider{margin-top:9px}
+.sliderVal.negative,.subVal.negative{color:var(--negative);background:var(--negative-bg);border-color:rgba(106,175,255,0.24)}
+.mainSlider{margin-top:9px;display:flex;flex-direction:column;gap:6px}
 .subControls{margin-top:0;max-height:0;overflow:hidden;opacity:0;transition:all .32s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;gap:10px}
 .effectGroup.open .subControls{margin-top:12px;max-height:1200px;opacity:1;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07)}
 .subRow{display:flex;flex-direction:column;gap:5px}
@@ -66,12 +69,20 @@ header{height:56px;min-height:56px;display:flex;align-items:center;justify-conte
 .subLabel{font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-dim);font-weight:600;display:flex;align-items:center;gap:5px}
 .subLabel span{opacity:0.6;font-weight:400;text-transform:none;letter-spacing:0}
 .subVal{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-dim);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);padding:1px 5px;border-radius:7px;min-width:30px;text-align:center}
+.subVal.positive{color:var(--accent);background:var(--accent-bg);border-color:rgba(245,166,35,0.18)}
+.subScale{display:flex;justify-content:space-between;padding:0 1px;font:9px 'JetBrains Mono',monospace;color:var(--text-dim2);user-select:none}
+.subScale span:nth-child(2){color:var(--text-dim)}
+.subScale span:first-child{color:var(--negative)}
+.subScale span:last-child{color:var(--accent)}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;outline:none;cursor:pointer}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--accent);border-radius:50%;border:2px solid #1a1a1a;box-shadow:0 2px 10px var(--accent-glow);cursor:pointer;transition:transform .15s;margin-top:-6px}
+input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:5px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--slider-thumb,var(--accent));border-radius:50%;border:2px solid #1a1a1a;box-shadow:0 2px 10px var(--slider-glow,var(--accent-glow));cursor:pointer;transition:transform .15s;margin-top:-6px}
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18)}
-input[type=range].subSlider{height:3px}
-input[type=range].subSlider::-webkit-slider-thumb{width:13px;height:13px;background:#c8c8c8;border-color:#1a1a1a;box-shadow:none}
-input[type=range].subSlider::-webkit-slider-thumb:hover{background:var(--accent)}
+input[type=range].subSlider{height:3px;margin:4px 0 0}
+input[type=range].subSlider::-webkit-slider-thumb{width:13px;height:13px;background:var(--slider-thumb,#c8c8c8);border-color:#1a1a1a;box-shadow:none}
+input[type=range].subSlider::-webkit-slider-thumb:hover{transform:scale(1.18)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--slider-thumb,var(--accent));border:2px solid #1a1a1a;border-radius:50%;cursor:pointer}
+input[type=range].subSlider::-moz-range-thumb{width:9px;height:9px;background:var(--slider-thumb,#c8c8c8)}
 .groupReset{font-size:9.5px;color:var(--text-dim2);background:transparent;border:1px solid rgba(255,255,255,0.08);padding:3px 8px;border-radius:10px;cursor:pointer;transition:all .2s;margin-left:auto}
 .groupReset:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}
 #actions{display:flex;flex-direction:column;gap:9px;margin-top:2px}
@@ -99,6 +110,15 @@ input[type=range].subSlider::-webkit-slider-thumb:hover{background:var(--accent)
   header{padding:0 12px}
   #logo span{display:none}
   #glCanvas{max-height:52vh}
+}
+@media (max-width: 520px){
+  header{gap:8px;padding:0 10px}
+  #logo{font-size:11px;letter-spacing:0.08em;gap:4px;white-space:nowrap}
+  #headerActions{gap:4px}
+  .hdrBtn{padding:7px 8px;font-size:11px;white-space:nowrap}
+  #mainArea{height:48vh;min-height:300px}
+  #sidebar{padding:16px 12px 32px}
+  #glCanvas{max-height:43vh}
 }
 </style>
 </head>
@@ -141,6 +161,7 @@ input[type=range].subSlider::-webkit-slider-thumb:hover{background:var(--accent)
 
       <div id="effectsWrap">
         <div class="sectionLabel">Effects — Intensity + Advanced</div>
+        <p class="sectionHint">All controls: 0 is neutral · blue subtracts · amber adds</p>
 
         <!-- OVERALL COLOR -->
         <div class="effectGroup open" data-group="color">
@@ -148,13 +169,13 @@ input[type=range].subSlider::-webkit-slider-thumb:hover{background:var(--accent)
             <div class="effectTitle"><i style="background:#fff"></i> Color & Light <span class="expand">⌄</span></div>
             <button class="groupReset" data-reset="color">Reset</button>
           </div>
-          <div class="subControls" style="max-height:1200px;opacity:1;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07)">
-            <div class="subRow"><div class="subHead"><div class="subLabel">Exposure <span>brightness</span></div><div class="subVal" id="valExposure">50</div></div><input class="subSlider" type="range" id="sliderExposure" min="0" max="100" value="50"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Contrast</div><div class="subVal" id="valContrast">50</div></div><input class="subSlider" type="range" id="sliderContrast" min="0" max="100" value="50"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Saturation</div><div class="subVal" id="valSaturation">50</div></div><input class="subSlider" type="range" id="sliderSaturation" min="0" max="100" value="50"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Temperature <span>cool → warm</span></div><div class="subVal" id="valTemperature">50</div></div><input class="subSlider" type="range" id="sliderTemperature" min="0" max="100" value="50"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength</div><div class="subVal" id="valVignStrength">15</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="0" max="100" value="15"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">50</div></div><input class="subSlider" type="range" id="sliderVignSize" min="0" max="100" value="50"></div>
+          <div class="subControls">
+            <div class="subRow"><div class="subHead"><div class="subLabel">Exposure <span>brightness</span></div><div class="subVal" id="valExposure">0</div></div><input class="subSlider" type="range" id="sliderExposure" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Contrast</div><div class="subVal" id="valContrast">0</div></div><input class="subSlider" type="range" id="sliderContrast" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Saturation</div><div class="subVal" id="valSaturation">0</div></div><input class="subSlider" type="range" id="sliderSaturation" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Temperature <span>cool → warm</span></div><div class="subVal" id="valTemperature">0</div></div><input class="subSlider" type="range" id="sliderTemperature" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div>
           </div>
         </div>
 
@@ -164,14 +185,14 @@ input[type=range].subSlider::-webkit-slider-thumb:hover{background:var(--accent)
             <div class="effectTitle"><i style="background:#f5a623"></i> Bloom <span class="expand">⌄</span></div>
             <div class="effectHeadRight"><div class="sliderVal" id="valBloom">0</div><button class="groupReset" data-reset="bloom">Reset</button></div>
           </div>
-          <div class="mainSlider"><input type="range" id="sliderBloom" min="0" max="100" value="0"></div>
+          <div class="mainSlider"><input type="range" id="sliderBloom" min="-100" max="100" value="0"></div>
           <div class="subControls">
-            <div class="subRow"><div class="subHead"><div class="subLabel">Threshold <span>bright cutoff</span></div><div class="subVal" id="valBloomThresh">70</div></div><input class="subSlider" type="range" id="sliderBloomThresh" min="0" max="100" value="70"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Spread <span>blur radius</span></div><div class="subVal" id="valBloomSpread">30</div></div><input class="subSlider" type="range" id="sliderBloomSpread" min="0" max="100" value="30"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>falloff</span></div><div class="subVal" id="valBloomSoft">35</div></div><input class="subSlider" type="range" id="sliderBloomSoft" min="0" max="100" value="35"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Tint <span>neutral → amber</span></div><div class="subVal" id="valBloomTint">20</div></div><input class="subSlider" type="range" id="sliderBloomTint" min="0" max="100" value="20"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Blend <span>add → screen</span></div><div class="subVal" id="valBloomBlend">0</div></div><input class="subSlider" type="range" id="sliderBloomBlend" min="0" max="100" value="0"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Anamorphic <span>horizontal stretch</span></div><div class="subVal" id="valBloomAnam">0</div></div><input class="subSlider" type="range" id="sliderBloomAnam" min="0" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Threshold <span>bright cutoff</span></div><div class="subVal" id="valBloomThresh">0</div></div><input class="subSlider" type="range" id="sliderBloomThresh" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Spread <span>blur radius</span></div><div class="subVal" id="valBloomSpread">0</div></div><input class="subSlider" type="range" id="sliderBloomSpread" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>falloff</span></div><div class="subVal" id="valBloomSoft">0</div></div><input class="subSlider" type="range" id="sliderBloomSoft" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Tint <span>cool → amber</span></div><div class="subVal" id="valBloomTint">0</div></div><input class="subSlider" type="range" id="sliderBloomTint" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Blend <span>strong add → screen</span></div><div class="subVal" id="valBloomBlend">0</div></div><input class="subSlider" type="range" id="sliderBloomBlend" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Anamorphic <span>vertical → horizontal</span></div><div class="subVal" id="valBloomAnam">0</div></div><input class="subSlider" type="range" id="sliderBloomAnam" min="-100" max="100" value="0"></div>
           </div>
         </div>
 
@@ -181,14 +202,14 @@ input[type=range].subSlider::-webkit-slider-thumb:hover{background:var(--accent)
             <div class="effectTitle"><i style="background:#ff6a2a"></i> Hallation <span class="expand">⌄</span></div>
             <div class="effectHeadRight"><div class="sliderVal" id="valHall">0</div><button class="groupReset" data-reset="hallation">Reset</button></div>
           </div>
-          <div class="mainSlider"><input type="range" id="sliderHall" min="0" max="100" value="0"></div>
+          <div class="mainSlider"><input type="range" id="sliderHall" min="-100" max="100" value="0"></div>
           <div class="subControls">
-            <div class="subRow"><div class="subHead"><div class="subLabel">Threshold</div><div class="subVal" id="valHallThresh">75</div></div><input class="subSlider" type="range" id="sliderHallThresh" min="0" max="100" value="75"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Bleed <span>anamorphic stretch</span></div><div class="subVal" id="valHallSpread">20</div></div><input class="subSlider" type="range" id="sliderHallSpread" min="0" max="100" value="20"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Warmth <span>red → orange</span></div><div class="subVal" id="valHallTint">50</div></div><input class="subSlider" type="range" id="sliderHallTint" min="0" max="100" value="50"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Direction <span>angle</span></div><div class="subVal" id="valHallDir">0</div></div><input class="subSlider" type="range" id="sliderHallDir" min="0" max="100" value="0"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Falloff <span>edge fade</span></div><div class="subVal" id="valHallFalloff">50</div></div><input class="subSlider" type="range" id="sliderHallFalloff" min="0" max="100" value="50"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Saturation <span>bleed color</span></div><div class="subVal" id="valHallSat">70</div></div><input class="subSlider" type="range" id="sliderHallSat" min="0" max="100" value="70"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Threshold</div><div class="subVal" id="valHallThresh">0</div></div><input class="subSlider" type="range" id="sliderHallThresh" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Bleed <span>anamorphic stretch</span></div><div class="subVal" id="valHallSpread">0</div></div><input class="subSlider" type="range" id="sliderHallSpread" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Warmth <span>red → orange</span></div><div class="subVal" id="valHallTint">0</div></div><input class="subSlider" type="range" id="sliderHallTint" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Direction <span>-180° → +180°</span></div><div class="subVal" id="valHallDir">0</div></div><input class="subSlider" type="range" id="sliderHallDir" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Falloff <span>edge fade</span></div><div class="subVal" id="valHallFalloff">0</div></div><input class="subSlider" type="range" id="sliderHallFalloff" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Saturation <span>bleed color</span></div><div class="subVal" id="valHallSat">0</div></div><input class="subSlider" type="range" id="sliderHallSat" min="-100" max="100" value="0"></div>
           </div>
         </div>
 
@@ -198,14 +219,14 @@ input[type=range].subSlider::-webkit-slider-thumb:hover{background:var(--accent)
             <div class="effectTitle"><i style="background:#aaa"></i> Film Grain <span class="expand">⌄</span></div>
             <div class="effectHeadRight"><div class="sliderVal" id="valGrain">0</div><button class="groupReset" data-reset="grain">Reset</button></div>
           </div>
-          <div class="mainSlider"><input type="range" id="sliderGrain" min="0" max="100" value="0"></div>
+          <div class="mainSlider"><input type="range" id="sliderGrain" min="-100" max="100" value="0"></div>
           <div class="subControls">
-            <div class="subRow"><div class="subHead"><div class="subLabel">Size <span>clump</span></div><div class="subVal" id="valGrainSize">30</div></div><input class="subSlider" type="range" id="sliderGrainSize" min="0" max="100" value="30"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Roughness <span>detail</span></div><div class="subVal" id="valGrainRough">50</div></div><input class="subSlider" type="range" id="sliderGrainRough" min="0" max="100" value="50"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Speed <span>animation</span></div><div class="subVal" id="valGrainSpeed">33</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="0" max="100" value="33"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Color <span>mono → chroma</span></div><div class="subVal" id="valGrainColor">35</div></div><input class="subSlider" type="range" id="sliderGrainColor" min="0" max="100" value="35"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Luma Influence <span>midtones</span></div><div class="subVal" id="valGrainLuma">50</div></div><input class="subSlider" type="range" id="sliderGrainLuma" min="0" max="100" value="50"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>blur grain</span></div><div class="subVal" id="valGrainSoft">20</div></div><input class="subSlider" type="range" id="sliderGrainSoft" min="0" max="100" value="20"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Size <span>clump</span></div><div class="subVal" id="valGrainSize">0</div></div><input class="subSlider" type="range" id="sliderGrainSize" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Roughness <span>detail</span></div><div class="subVal" id="valGrainRough">0</div></div><input class="subSlider" type="range" id="sliderGrainRough" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Speed <span>animation</span></div><div class="subVal" id="valGrainSpeed">0</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Color <span>mono → chroma</span></div><div class="subVal" id="valGrainColor">0</div></div><input class="subSlider" type="range" id="sliderGrainColor" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Luma Influence <span>midtones</span></div><div class="subVal" id="valGrainLuma">0</div></div><input class="subSlider" type="range" id="sliderGrainLuma" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>blur grain</span></div><div class="subVal" id="valGrainSoft">0</div></div><input class="subSlider" type="range" id="sliderGrainSoft" min="-100" max="100" value="0"></div>
           </div>
         </div>
 
@@ -215,12 +236,12 @@ input[type=range].subSlider::-webkit-slider-thumb:hover{background:var(--accent)
             <div class="effectTitle"><i style="background:#7ec8ff"></i> Sharpening <span class="expand">⌄</span></div>
             <div class="effectHeadRight"><div class="sliderVal" id="valSharp">0</div><button class="groupReset" data-reset="sharpen">Reset</button></div>
           </div>
-          <div class="mainSlider"><input type="range" id="sliderSharp" min="0" max="100" value="0"></div>
+          <div class="mainSlider"><input type="range" id="sliderSharp" min="-100" max="100" value="0"></div>
           <div class="subControls">
-            <div class="subRow"><div class="subHead"><div class="subLabel">Radius <span>detail scale</span></div><div class="subVal" id="valSharpRadius">25</div></div><input class="subSlider" type="range" id="sliderSharpRadius" min="0" max="100" value="25"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Edge Threshold <span>protect flat</span></div><div class="subVal" id="valSharpEdge">15</div></div><input class="subSlider" type="range" id="sliderSharpEdge" min="0" max="100" value="15"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Detail Boost</div><div class="subVal" id="valSharpDetail">50</div></div><input class="subSlider" type="range" id="sliderSharpDetail" min="0" max="100" value="50"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Luma Protect <span>shadow guard</span></div><div class="subVal" id="valSharpLuma">50</div></div><input class="subSlider" type="range" id="sliderSharpLuma" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Radius <span>detail scale</span></div><div class="subVal" id="valSharpRadius">0</div></div><input class="subSlider" type="range" id="sliderSharpRadius" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Edge Threshold <span>protect flat</span></div><div class="subVal" id="valSharpEdge">0</div></div><input class="subSlider" type="range" id="sliderSharpEdge" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Detail Boost</div><div class="subVal" id="valSharpDetail">0</div></div><input class="subSlider" type="range" id="sliderSharpDetail" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Luma Protect <span>shadow guard</span></div><div class="subVal" id="valSharpLuma">0</div></div><input class="subSlider" type="range" id="sliderSharpLuma" min="-100" max="100" value="0"></div>
           </div>
         </div>
 
@@ -264,107 +285,130 @@ ids.forEach(n=>{ sliders[n]=$('slider'+n); vals[n]=$('val'+n); });
 let sourceTexture=null, fboSharpened=null, fboBloomExtract=null, fboBloomBlurH=null, fboBloomBlurV=null, fboBloomBlurH2=null, fboBloomBlurV2=null, fboHallExtract=null, fboHallBlurH=null, fboHallBlurV=null;
 let isVideo=false, showOriginal=false, hasContent=false, animId=null;
 
-let params={
-  exposure:0, contrast:1, saturation:1, temperature:0, vignStrength:0.07, vignSize:1.0,
-  bloom:0, bloomThreshold:0.75, bloomSpread:1.0, bloomSoft:0.22, bloomTint:0.2, bloomBlend:0, bloomAnam:0,
-  hallation:0, hallThreshold:0.82, hallSpread:1.0, hallTint:0.5, hallDir:0, hallFalloff:0.5, hallSat:0.7,
-  grain:0, grainSize:1.5, grainRough:0.5, grainSpeed:1.0, grainColor:0.35, grainLuma:0.5, grainSoft:0.2,
-  sharpen:0, sharpenRadius:1.0, sharpenEdge:0.08, sharpenDetail:0.5, sharpenLuma:0.5
+// Every slider runs from -100 to +100. Intensity sliders are signed [-1,1],
+// while the detail sliders map zero to a useful neutral shader setting.
+// range = [shader value at -100, at 0, at +100]; legacyZero is the former
+// 0–100 detail-slider position of that neutral, for migrating old presets.
+const advancedControls={
+  Exposure:{range:[-2,0,2],legacyZero:50},
+  Contrast:{range:[0.5,1,1.5],legacyZero:50},
+  Saturation:{range:[0,1,2],legacyZero:50},
+  Temperature:{range:[-1,0,1],legacyZero:50},
+  VignStrength:{range:[-0.15,0,0.35],legacyZero:0},
+  VignSize:{range:[0.4,1.3,2.2],legacyZero:50},
+  BloomThresh:{range:[0.3,0.755,0.95],legacyZero:70},
+  BloomSpread:{range:[0.2,1.49,4.5],legacyZero:30},
+  BloomSoft:{range:[0.05,0.225,0.55],legacyZero:35},
+  BloomTint:{range:[-1,0,1],legacyZero:0},
+  BloomBlend:{range:[-1,0,1],legacyZero:0},
+  BloomAnam:{range:[-1,0,1],legacyZero:0},
+  HallThresh:{range:[0.3,0.7875,0.95],legacyZero:75},
+  HallSpread:{range:[0.2,1.26,5.5],legacyZero:20},
+  HallTint:{range:[0,0.5,1],legacyZero:50},
+  HallDir:{range:[-180,0,180],legacyZero:0},
+  HallFalloff:{range:[0,0.5,1],legacyZero:50},
+  HallSat:{range:[0,0.7,1],legacyZero:70},
+  GrainSize:{range:[0.5,1.7,4.5],legacyZero:30},
+  GrainRough:{range:[0,0.5,1],legacyZero:50},
+  GrainSpeed:{range:[0,1.155,3.5],legacyZero:33},
+  GrainColor:{range:[0,0.35,1],legacyZero:35},
+  GrainLuma:{range:[0,0.5,1],legacyZero:50},
+  GrainSoft:{range:[0,0.2,1],legacyZero:20},
+  SharpRadius:{range:[0.5,1.075,2.8],legacyZero:25},
+  SharpEdge:{range:[0,0.075,0.5],legacyZero:15},
+  SharpDetail:{range:[0,0.5,1],legacyZero:50},
+  SharpLuma:{range:[0,0.5,1],legacyZero:50}
 };
-function map(v,a,b){ return a + (v/100)*(b-a); }
-function unmap(r,a,b){ return ((r-a)/(b-a))*100; }
-
+const params={};
+function advancedValue(name){
+  const [min,neutral,max]=advancedControls[name].range;
+  const adjustment=Number(sliders[name].value)/100;
+  return neutral + adjustment*(adjustment<0 ? neutral-min : max-neutral);
+}
 function updateFromSliders(){
-  params.exposure = map(sliders.Exposure.value, -1, 1);
-  params.contrast = map(sliders.Contrast.value, 0.5, 1.5);
-  params.saturation = map(sliders.Saturation.value, 0, 2);
-  params.temperature = map(sliders.Temperature.value, -1, 1);
-  params.vignStrength = map(sliders.VignStrength.value, 0, 0.35);
-  params.vignSize = map(sliders.VignSize.value, 0.4, 2.2);
+  params.exposure=advancedValue('Exposure');
+  params.contrast=advancedValue('Contrast');
+  params.saturation=advancedValue('Saturation');
+  params.temperature=advancedValue('Temperature');
+  params.vignStrength=advancedValue('VignStrength');
+  params.vignSize=advancedValue('VignSize');
 
-  params.bloom = sliders.Bloom.value/100;
-  params.bloomThreshold = map(sliders.BloomThresh.value, 0.30, 0.95);
-  params.bloomSpread = map(sliders.BloomSpread.value, 0.2, 4.5);
-  params.bloomSoft = map(sliders.BloomSoft.value, 0.05, 0.55);
-  params.bloomTint = sliders.BloomTint.value/100;
-  params.bloomBlend = sliders.BloomBlend.value/100;
-  params.bloomAnam = sliders.BloomAnam.value/100;
+  params.bloom=Number(sliders.Bloom.value)/100;
+  params.bloomThreshold=advancedValue('BloomThresh');
+  params.bloomSpread=advancedValue('BloomSpread');
+  params.bloomSoft=advancedValue('BloomSoft');
+  params.bloomTint=advancedValue('BloomTint');
+  params.bloomBlend=advancedValue('BloomBlend');
+  params.bloomAnam=advancedValue('BloomAnam');
 
-  params.hallation = sliders.Hall.value/100;
-  params.hallThreshold = map(sliders.HallThresh.value, 0.30, 0.95);
-  params.hallSpread = map(sliders.HallSpread.value, 0.2, 5.5);
-  params.hallTint = sliders.HallTint.value/100;
-  params.hallDir = map(sliders.HallDir.value, 0, 360);
-  params.hallFalloff = sliders.HallFalloff.value/100;
-  params.hallSat = sliders.HallSat.value/100;
+  params.hallation=Number(sliders.Hall.value)/100;
+  params.hallThreshold=advancedValue('HallThresh');
+  params.hallSpread=advancedValue('HallSpread');
+  params.hallTint=advancedValue('HallTint');
+  params.hallDir=advancedValue('HallDir');
+  params.hallFalloff=advancedValue('HallFalloff');
+  params.hallSat=advancedValue('HallSat');
 
-  params.grain = sliders.Grain.value/100;
-  params.grainSize = map(sliders.GrainSize.value, 0.5, 4.5);
-  params.grainRough = sliders.GrainRough.value/100;
-  params.grainSpeed = map(sliders.GrainSpeed.value, 0, 3.5);
-  params.grainColor = sliders.GrainColor.value/100;
-  params.grainLuma = sliders.GrainLuma.value/100;
-  params.grainSoft = sliders.GrainSoft.value/100;
+  params.grain=Number(sliders.Grain.value)/100;
+  params.grainSize=advancedValue('GrainSize');
+  params.grainRough=advancedValue('GrainRough');
+  params.grainSpeed=advancedValue('GrainSpeed');
+  params.grainColor=advancedValue('GrainColor');
+  params.grainLuma=advancedValue('GrainLuma');
+  params.grainSoft=advancedValue('GrainSoft');
 
-  params.sharpen = sliders.Sharp.value/100;
-  params.sharpenRadius = map(sliders.SharpRadius.value, 0.5, 2.8);
-  params.sharpenEdge = map(sliders.SharpEdge.value, 0, 0.5);
-  params.sharpenDetail = sliders.SharpDetail.value/100;
-  params.sharpenLuma = sliders.SharpLuma.value/100;
+  params.sharpen=Number(sliders.Sharp.value)/100;
+  params.sharpenRadius=advancedValue('SharpRadius');
+  params.sharpenEdge=advancedValue('SharpEdge');
+  params.sharpenDetail=advancedValue('SharpDetail');
+  params.sharpenLuma=advancedValue('SharpLuma');
 }
 function updateSliderUI(){
   ids.forEach(n=>{
-    if(vals[n]) vals[n].textContent = sliders[n].value;
-  });
-  // main intensities show as 0-100 in amber badge (already)
-  vals.Bloom.textContent = sliders.Bloom.value;
-  vals.Hall.textContent = sliders.Hall.value;
-  vals.Grain.textContent = sliders.Grain.value;
-  vals.Sharp.textContent = sliders.Sharp.value;
-
-  // sync from params for tween
-  sliders.Exposure.value = unmap(params.exposure,-1,1);
-  sliders.Contrast.value = unmap(params.contrast,0.5,1.5);
-  sliders.Saturation.value = unmap(params.saturation,0,2);
-  sliders.Temperature.value = unmap(params.temperature,-1,1);
-  sliders.VignStrength.value = unmap(params.vignStrength,0,0.35);
-  sliders.VignSize.value = unmap(params.vignSize,0.4,2.2);
-  sliders.Bloom.value = params.bloom*100;
-  sliders.BloomThresh.value = unmap(params.bloomThreshold,0.30,0.95);
-  sliders.BloomSpread.value = unmap(params.bloomSpread,0.2,4.5);
-  sliders.BloomSoft.value = unmap(params.bloomSoft,0.05,0.55);
-  sliders.BloomTint.value = params.bloomTint*100;
-  sliders.BloomBlend.value = params.bloomBlend*100;
-  sliders.BloomAnam.value = params.bloomAnam*100;
-  sliders.Hall.value = params.hallation*100;
-  sliders.HallThresh.value = unmap(params.hallThreshold,0.30,0.95);
-  sliders.HallSpread.value = unmap(params.hallSpread,0.2,5.5);
-  sliders.HallTint.value = params.hallTint*100;
-  sliders.HallDir.value = unmap(params.hallDir,0,360);
-  sliders.HallFalloff.value = params.hallFalloff*100;
-  sliders.HallSat.value = params.hallSat*100;
-  sliders.Grain.value = params.grain*100;
-  sliders.GrainSize.value = unmap(params.grainSize,0.5,4.5);
-  sliders.GrainRough.value = params.grainRough*100;
-  sliders.GrainSpeed.value = unmap(params.grainSpeed,0,3.5);
-  sliders.GrainColor.value = params.grainColor*100;
-  sliders.GrainLuma.value = params.grainLuma*100;
-  sliders.GrainSoft.value = params.grainSoft*100;
-  sliders.Sharp.value = params.sharpen*100;
-  sliders.SharpRadius.value = unmap(params.sharpenRadius,0.5,2.8);
-  sliders.SharpEdge.value = unmap(params.sharpenEdge,0,0.5);
-  sliders.SharpDetail.value = params.sharpenDetail*100;
-  sliders.SharpLuma.value = params.sharpenLuma*100;
-
-  // gradient fill
-  Object.values(sliders).forEach(s=>{
-    if(!s) return;
-    const pct=s.value;
-    const isSub=s.classList.contains('subSlider');
-    const col=isSub?'rgba(255,255,255,0.85)':'var(--accent)';
-    s.style.background=`linear-gradient(90deg, ${col} 0%, ${col} ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+    const s=sliders[n], value=Number(s.value);
+    if(vals[n]){
+      vals[n].textContent=value>0 ? `+${value}` : String(value);
+      vals[n].classList.toggle('negative',value<0);
+      vals[n].classList.toggle('positive',value>0);
+    }
+    // Fill outward from the center for all 32 sliders. Negative is blue;
+    // positive is amber. A small tick remains visible at zero.
+    const pct=50+value/2, from=Math.min(pct,50), to=Math.max(pct,50);
+    const fill=value<0?'var(--negative)':'var(--accent)';
+    s.style.background=`linear-gradient(90deg, transparent 49.75%, rgba(255,255,255,0.5) 49.75%, rgba(255,255,255,0.5) 50.25%, transparent 50.25%), linear-gradient(90deg, transparent ${from}%, ${fill} ${from}%, ${fill} ${to}%, transparent ${to}%), rgba(255,255,255,0.08)`;
+    s.style.setProperty('--slider-thumb',value<0?'var(--negative)':value>0?'var(--accent)':s.classList.contains('subSlider')?'#c8c8c8':'var(--accent)');
+    s.style.setProperty('--slider-glow',value<0?'var(--negative-glow)':'var(--accent-glow)');
   });
 }
+
+// Label every signed scale and its range input for keyboard and screen-reader use.
+function addScale(container){
+  const scale=document.createElement('div');
+  scale.className='subScale'; scale.setAttribute('aria-hidden','true');
+  scale.innerHTML='<span>-100</span><span>0</span><span>+100</span>';
+  container.appendChild(scale);
+}
+document.querySelectorAll('.subRow').forEach(row=>{
+  const slider=row.querySelector('input');
+  const group=row.closest('.effectGroup').querySelector('.effectTitle').textContent.replace('⌄','').trim();
+  const label=row.querySelector('.subLabel').firstChild.textContent.trim();
+  slider.setAttribute('aria-label',`${group} — ${label}`);
+  slider.title='Double-click to reset to 0';
+  addScale(row);
+});
+const intensityHints={
+  Bloom:'Negative removes glow; positive adds glow',
+  Hall:'Negative removes halation; positive adds halation',
+  Grain:'Negative inverts grain; positive adds grain',
+  Sharp:'Negative softens; positive sharpens'
+};
+['Bloom','Hall','Grain','Sharp'].forEach(name=>{
+  const slider=sliders[name];
+  const group=slider.closest('.effectGroup').querySelector('.effectTitle').textContent.replace('⌄','').trim();
+  slider.setAttribute('aria-label',`${group} intensity`);
+  slider.title=intensityHints[name]+' · Double-click to reset to 0';
+  addScale(slider.parentNode);
+});
 
 // shaders
 const vsSrc=`#version 300 es
@@ -382,7 +426,7 @@ uniform float u_strength; uniform float u_radius; uniform float u_luma; uniform 
 out vec4 outColor;
 void main(){
   vec4 center=texture(u_image, v_texCoord);
-  if(u_strength<0.001){ outColor=center; return; }
+  if(abs(u_strength)<0.001){ outColor=center; return; }
   float r=max(u_radius,0.5);
   vec2 ts=u_texelSize*r;
   vec4 c0=texture(u_image, v_texCoord+vec2(-1.,-1.)*ts);
@@ -398,6 +442,12 @@ void main(){
   float lum=dot(center.rgb, vec3(0.2126,0.7152,0.0722));
   float edgeMask = smoothstep(u_edge, u_edge+0.15, length(detail.rgb));
   float protect = mix(1.0, smoothstep(0.0,0.6,lum), u_luma*0.75);
+  if(u_strength<0.0){
+    // Move toward the sampled blur, not a negative unsharp mask (which halos).
+    float amount=clamp(-u_strength*(0.75+u_detail*0.5)*protect*(1.0-u_edge*0.5),0.0,1.0);
+    outColor=vec4(mix(center.rgb, blur.rgb, amount), center.a);
+    return;
+  }
   float s = u_strength * (1.6 + u_detail*1.2) * protect * edgeMask;
   outColor=vec4(clamp(center.rgb+detail.rgb*s,0.,1.), center.a);
 }`;
@@ -462,20 +512,22 @@ void main(){
   vec4 hall=texture(u_hallation, v_texCoord);
   vec3 col=base.rgb;
 
-  // bloom tint: neutral to amber
+  // Signed tint: cooler on the left, amber on the right.
   vec3 bloomCol=bloom.rgb;
   vec3 amber=vec3(1.15,0.85,0.55);
-  bloomCol=mix(bloomCol, bloomCol*amber, u_bloomTint*0.6);
-  // anamorphic extra stretch already in blur, but boost
-  float anamBoost=1.0+u_bloomAnam*0.5;
+  vec3 cool=vec3(0.65,0.85,1.18);
+  bloomCol=mix(bloomCol, bloomCol*(u_bloomTint<0.0 ? cool : amber), abs(u_bloomTint)*0.6);
+  // Anamorphic stretch happens in the blur passes in either orientation.
+  float anamBoost=1.0+abs(u_bloomAnam)*0.5;
 
-  // blend modes
-  vec3 bloomAdd = bloomCol * u_bloomStrength * 1.35 * anamBoost;
-  vec3 bloomScreen = 1.0 - (1.0-col)*(1.0-bloomCol*u_bloomStrength*0.9);
-  vec3 bloomFinal = mix(bloomAdd, bloomScreen-col, u_bloomBlend);
-  col += bloomFinal;
+  // Blend sets the character of the glow; signed intensity adds or subtracts it.
+  float bloomAmount=abs(u_bloomStrength);
+  vec3 bloomAdd = bloomCol * bloomAmount * 1.35 * anamBoost * (1.0+max(-u_bloomBlend,0.0)*0.5);
+  vec3 bloomScreen = 1.0 - (1.0-col)*(1.0-bloomCol*bloomAmount*0.9);
+  vec3 bloomFinal = mix(bloomAdd, bloomScreen-col, max(u_bloomBlend,0.0));
+  col += sign(u_bloomStrength)*bloomFinal;
 
-  // hallation with falloff
+  // Signed hallation adds or removes a red/orange halo with falloff.
   vec2 uv=v_texCoord*2.-1.;
   float dist=length(uv);
   float fall = 1.0 - u_hallFalloff*dist*0.4;
@@ -499,8 +551,8 @@ void main(){
     col.b -= u_temperature*0.12;
   }
 
-  // grain
-  if(u_grainStrength>0.001){
+  // The signed grain amount flips the noise pattern at negative values.
+  if(abs(u_grainStrength)>0.001){
     float size=max(u_grainSize,0.5);
     vec2 guv=v_texCoord*u_resolution/size;
     float t=u_time*u_grainSpeed;
@@ -524,11 +576,11 @@ void main(){
     col+=finalGrain*intensity;
   }
 
-  // vignette with size control
+  // Zero is neutral; negative strength brightens the edges instead.
   float vignSize = max(u_vignSize,0.3);
   vec2 uv2 = uv / vignSize;
   float vign = 1.0 - dot(uv2,uv2)*u_vignStrength;
-  vign=clamp(vign,0.0,1.0);
+  vign=clamp(vign,0.0,1.5);
   col*=vign;
 
   outColor=vec4(clamp(col,0.,1.), base.a);
@@ -595,17 +647,18 @@ function render(timeMs){
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
   // bloom blur with anamorphic
-  const bloomBase = 1.0*params.bloomSpread + params.bloom*0.8;
-  const bloomLarge = 2.5*params.bloomSpread + params.bloom*1.2;
-  const anam = params.bloomAnam;
-  // first pass horizontal with anamorphic stretch
+  const bloomBase = 1.0*params.bloomSpread + Math.abs(params.bloom)*0.8;
+  const bloomLarge = 2.5*params.bloomSpread + Math.abs(params.bloom)*1.2;
+  const anamH = Math.max(params.bloomAnam,0);
+  const anamV = Math.max(-params.bloomAnam,0);
+  // Positive anamorphic stretches horizontally; negative stretches vertically.
   gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurH.fbo); gl.viewport(0,0,fboBloomBlurH.width,fboBloomBlurH.height);
   gl.useProgram(progBlur); bindQuad(progBlur);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,fboBloomExtract.tex);
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboBloomExtract.width,1/fboBloomExtract.height);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),1,0);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomBase*(1+anam*1.2));
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomBase*(1+anamH*1.2));
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurV.fbo); gl.viewport(0,0,fboBloomBlurV.width,fboBloomBlurV.height);
@@ -614,7 +667,7 @@ function render(timeMs){
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboBloomBlurH.width,1/fboBloomBlurH.height);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),0,1);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomBase);
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomBase*(1+anamV*1.2));
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurH2.fbo); gl.viewport(0,0,fboBloomBlurH2.width,fboBloomBlurH2.height);
@@ -623,7 +676,7 @@ function render(timeMs){
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboBloomBlurV.width,1/fboBloomBlurV.height);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),1,0);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomLarge*(1+anam*1.5));
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomLarge*(1+anamH*1.5));
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurV2.fbo); gl.viewport(0,0,fboBloomBlurV2.width,fboBloomBlurV2.height);
@@ -632,7 +685,7 @@ function render(timeMs){
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboBloomBlurH2.width,1/fboBloomBlurH2.height);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),0,1);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomLarge);
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomLarge*(1+anamV*1.5));
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
   // hallation extract
@@ -650,7 +703,7 @@ function render(timeMs){
   const ang = params.hallDir * Math.PI/180;
   const dirX = Math.cos(ang), dirY = Math.sin(ang);
   const dirPerpX = -dirY, dirPerpY = dirX;
-  const hallR = 1.2*params.hallSpread + params.hallation*3.5;
+  const hallR = 1.2*params.hallSpread + Math.abs(params.hallation)*3.5;
 
   gl.bindFramebuffer(gl.FRAMEBUFFER,fboHallBlurH.fbo); gl.viewport(0,0,fboHallBlurH.width,fboHallBlurH.height);
   gl.useProgram(progBlur); bindQuad(progBlur);
@@ -667,7 +720,7 @@ function render(timeMs){
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboHallBlurH.width,1/fboHallBlurH.height);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),dirPerpX,dirPerpY);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),0.6+params.hallation*0.6);
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),0.6+Math.abs(params.hallation)*0.6);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
   // composite
@@ -761,19 +814,22 @@ document.querySelectorAll('.effectHeader').forEach(h=>{
     h.closest('.effectGroup').classList.toggle('open');
   });
 });
+let presetFrame=null;
+function cancelPresetAnimation(){
+  if(presetFrame!==null){ cancelAnimationFrame(presetFrame); presetFrame=null; }
+}
+function userChangedSliders(){
+  cancelPresetAnimation();
+  document.querySelectorAll('.chip').forEach(chip=>chip.classList.remove('active'));
+  updateFromSliders(); updateSliderUI();
+  if(hasContent) render(performance.now());
+}
 document.querySelectorAll('.groupReset').forEach(btn=>{
   btn.addEventListener('click',e=>{
     e.stopPropagation();
-    const group=btn.dataset.reset;
-    const defaults={
-      color:{Exposure:50,Contrast:50,Saturation:50,Temperature:50,VignStrength:15,VignSize:50},
-      bloom:{Bloom:0,BloomThresh:70,BloomSpread:30,BloomSoft:35,BloomTint:20,BloomBlend:0,BloomAnam:0},
-      hallation:{Hall:0,HallThresh:75,HallSpread:20,HallTint:50,HallDir:0,HallFalloff:50,HallSat:70},
-      grain:{Grain:0,GrainSize:30,GrainRough:50,GrainSpeed:33,GrainColor:35,GrainLuma:50,GrainSoft:20},
-      sharpen:{Sharp:0,SharpRadius:25,SharpEdge:15,SharpDetail:50,SharpLuma:50}
-    };
-    const d=defaults[group];
-    if(d){ Object.keys(d).forEach(k=>{ if(sliders[k]) sliders[k].value=d[k]; }); updateFromSliders(); updateSliderUI(); render(performance.now()); showToast(`${group} reset`); }
+    btn.closest('.effectGroup').querySelectorAll('input[type=range]').forEach(s=>s.value=0);
+    userChangedSliders();
+    showToast(`${btn.dataset.reset} reset`);
   });
 });
 
@@ -800,21 +856,71 @@ $('downloadBtn').addEventListener('click',downloadImage);
 $('hdrDownloadBtn').addEventListener('click',downloadImage);
 
 Object.values(sliders).forEach(s=>{
-  if(!s) return;
-  s.addEventListener('input',()=>{ updateFromSliders(); updateSliderUI(); if(hasContent) render(performance.now()); });
+  s.addEventListener('input',userChangedSliders);
+  s.addEventListener('dblclick',()=>{ s.value=0; userChangedSliders(); });
 });
 
-// presets with full 32 values
-const builtInPresets={
+// Keep the existing looks by translating their former 0–100 settings to signed sliders.
+const legacyBuiltInPresets={
   "Kodak Vision": {Exposure:52,Contrast:48,Saturation:58,Temperature:62,VignStrength:22,VignSize:55,Bloom:45,BloomThresh:55,BloomSpread:35,BloomSoft:40,BloomTint:45,BloomBlend:10,BloomAnam:15,Hall:25,HallThresh:60,HallSpread:25,HallTint:70,HallDir:5,HallFalloff:45,HallSat:75,Grain:60,GrainSize:45,GrainRough:60,GrainSpeed:25,GrainColor:40,GrainLuma:55,GrainSoft:30,Sharp:15,SharpRadius:30,SharpEdge:20,SharpDetail:45,SharpLuma:60},
   "Anamorphic": {Exposure:50,Contrast:52,Saturation:50,Temperature:55,VignStrength:25,VignSize:50,Bloom:35,BloomThresh:65,BloomSpread:50,BloomSoft:30,BloomTint:25,BloomBlend:20,BloomAnam:65,Hall:85,HallThresh:45,HallSpread:85,HallTint:50,HallDir:0,HallFalloff:35,HallSat:80,Grain:15,GrainSize:20,GrainRough:30,GrainSpeed:35,GrainColor:30,GrainLuma:50,GrainSoft:20,Sharp:20,SharpRadius:35,SharpEdge:15,SharpDetail:50,SharpLuma:50},
   "Matte Film": {Exposure:48,Contrast:42,Saturation:42,Temperature:58,VignStrength:35,VignSize:60,Bloom:20,BloomThresh:75,BloomSpread:25,BloomSoft:35,BloomTint:30,BloomBlend:5,BloomAnam:10,Hall:20,HallThresh:80,HallSpread:20,HallTint:60,HallDir:10,HallFalloff:60,HallSat:60,Grain:85,GrainSize:80,GrainRough:75,GrainSpeed:20,GrainColor:20,GrainLuma:70,GrainSoft:45,Sharp:5,SharpRadius:20,SharpEdge:30,SharpDetail:30,SharpLuma:40},
   "Clean Digital": {Exposure:50,Contrast:55,Saturation:55,Temperature:50,VignStrength:10,VignSize:50,Bloom:0,BloomThresh:70,BloomSpread:30,BloomSoft:30,BloomTint:20,BloomBlend:0,BloomAnam:0,Hall:0,HallThresh:75,HallSpread:20,HallTint:50,HallDir:0,HallFalloff:50,HallSat:70,Grain:0,GrainSize:30,GrainRough:50,GrainSpeed:33,GrainColor:35,GrainLuma:50,GrainSoft:20,Sharp:75,SharpRadius:30,SharpEdge:10,SharpDetail:70,SharpLuma:70},
   "Dream Glow": {Exposure:54,Contrast:45,Saturation:62,Temperature:65,VignStrength:18,VignSize:58,Bloom:78,BloomThresh:40,BloomSpread:72,BloomSoft:68,BloomTint:65,BloomBlend:35,BloomAnam:30,Hall:35,HallThresh:55,HallSpread:40,HallTint:75,HallDir:2,HallFalloff:40,HallSat:85,Grain:25,GrainSize:35,GrainRough:40,GrainSpeed:30,GrainColor:50,GrainLuma:45,GrainSoft:60,Sharp:10,SharpRadius:25,SharpEdge:25,SharpDetail:40,SharpLuma:55}
 };
+function convertLegacyValues(values){
+  const converted={...values};
+  Object.entries(advancedControls).forEach(([name,{legacyZero}])=>{
+    if(values[name]==null) return;
+    const old=Number(values[name]);
+    if(name==='HallDir'){
+      // Convert the old 0..360° dial to the equivalent -180..+180° angle.
+      const angle=((old*3.6+180)%360)-180;
+      converted[name]=Math.round(angle/180*100);
+    }else if(name==='Exposure'){
+      // The new exposure range is twice as wide; preserve old preset stops.
+      converted[name]=Math.round(old-50);
+    }else{
+      converted[name]=Math.round(100*(old-legacyZero)/(old<legacyZero ? legacyZero : 100-legacyZero));
+    }
+  });
+  return converted;
+}
+const builtInPresets={
+  ...Object.fromEntries(Object.entries(legacyBuiltInPresets).map(([name,values])=>[name,convertLegacyValues(values)])),
+  'Noir Crunch':{
+    Exposure:-18,Contrast:65,Saturation:-100,Temperature:-12,VignStrength:60,VignSize:-20,
+    Bloom:-25,BloomThresh:20,BloomSpread:-25,BloomSoft:-35,BloomTint:-40,BloomBlend:-10,BloomAnam:0,
+    Hall:-10,HallThresh:-15,HallSpread:-25,HallTint:-55,HallDir:-12,HallFalloff:15,HallSat:-50,
+    Grain:55,GrainSize:-35,GrainRough:45,GrainSpeed:-30,GrainColor:-100,GrainLuma:25,GrainSoft:-30,
+    Sharp:55,SharpRadius:15,SharpEdge:-25,SharpDetail:55,SharpLuma:35
+  }
+};
 let customPresets=[];
-try{ customPresets=JSON.parse(localStorage.getItem('film_lab_presets_v3')||'[]'); }catch(e){ customPresets=[]; }
-function saveCustom(){ localStorage.setItem('film_lab_presets_v3', JSON.stringify(customPresets)); }
+function upgradeV4Preset(p){
+  if(p.version===2) return p;
+  // Earlier v4 presets used half the exposure and direction ranges.
+  const values={...p.values};
+  ['Exposure','HallDir'].forEach(name=>{
+    if(values[name]!=null) values[name]=Math.round(Number(values[name])/2);
+  });
+  return {...p,values,version:2};
+}
+function saveCustom(){ localStorage.setItem('film_lab_presets_v4', JSON.stringify(customPresets)); }
+try{
+  const saved=localStorage.getItem('film_lab_presets_v4');
+  if(saved!==null){
+    const items=JSON.parse(saved);
+    if(Array.isArray(items)){
+      customPresets=items.filter(p=>p && typeof p.name==='string' && p.values && typeof p.values==='object').map(upgradeV4Preset);
+      if(customPresets.length!==items.length || customPresets.some((p,i)=>p!==items[i])) saveCustom();
+    }
+  }else{
+    const old=JSON.parse(localStorage.getItem('film_lab_presets_v3')||'[]');
+    if(Array.isArray(old)) customPresets=old.filter(p=>p && typeof p.name==='string' && p.values && typeof p.values==='object').map(p=>({...p,values:convertLegacyValues(p.values),version:2}));
+    if(customPresets.length) saveCustom();
+  }
+}catch(e){ customPresets=[]; }
 function getCurrentValues(){
   const o={}; ids.forEach(k=>{ o[k]=parseInt(sliders[k]?.value||0); }); return o;
 }
@@ -836,18 +942,19 @@ function renderChips(){
   });
 }
 function applyPreset(name, values){
+  cancelPresetAnimation();
   document.querySelectorAll('.chip').forEach(ch=> ch.classList.toggle('active', ch.textContent===name));
   const start=getCurrentValues();
-  const dur=320, t0=performance.now();
+  const dur=340, t0=performance.now();
   const ease=t=>1-Math.pow(1-t,3);
   function step(now){
     const p=Math.min((now-t0)/dur,1), e=ease(p);
     const cur={};
     for(const k in values){ cur[k]=start[k]+(values[k]-start[k])*e; }
     setValues(cur); render(now);
-    if(p<1) requestAnimationFrame(step);
+    presetFrame=p<1 ? requestAnimationFrame(step) : null;
   }
-  requestAnimationFrame(step);
+  presetFrame=requestAnimationFrame(step);
   showToast(`Preset: ${name}`);
 }
 renderChips();
@@ -855,22 +962,16 @@ $('savePresetBtn').addEventListener('click',()=>{
   const name=prompt('Preset name:'); if(!name) return;
   const values=getCurrentValues();
   customPresets=customPresets.filter(c=>c.name!==name);
-  customPresets.push({name,values}); saveCustom(); renderChips(); showToast(`Saved "${name}"`);
+  customPresets.push({name,values,version:2}); saveCustom(); renderChips(); showToast(`Saved "${name}"`);
 });
 
 window.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT') return;
   if(e.code==='Space'){ e.preventDefault(); toggleBeforeAfter(); }
   else if(e.key.toLowerCase()==='r'){
-    if(e.shiftKey){ ids.forEach(k=>{ if(sliders[k]) sliders[k].value=0; }); }
-    else {
-      // reset main intensities
-      ['Bloom','Hall','Grain','Sharp'].forEach(k=>{ sliders[k].value=0; });
-      sliders.Exposure.value=50; sliders.Contrast.value=50; sliders.Saturation.value=50; sliders.Temperature.value=50; sliders.VignStrength.value=15; sliders.VignSize.value=50;
-    }
-    updateFromSliders(); updateSliderUI(); render(performance.now());
-    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-    showToast('Reset');
+    ids.forEach(k=>{ sliders[k].value=0; });
+    userChangedSliders();
+    showToast('All controls reset to 0');
   } else if(e.key.toLowerCase()==='d'){ downloadImage(); }
   else if(e.key.toLowerCase()==='e'){
     const anyClosed=document.querySelector('.effectGroup:not(.open)');
@@ -906,11 +1007,16 @@ function seekVideo(t){ return new Promise(res=>{ const on=()=>{ videoEl.removeEv
 async function processVideo(){
   if(!isVideo||!hasContent){ showToast('Upload video first'); return; }
   const dur=Math.min(videoEl.duration,60); if(!dur||isNaN(dur)){ showToast('Metadata not ready'); return; }
-  const fps=24, total=Math.floor(dur*fps);
+  const fps=24, total=Math.max(1,Math.floor(dur*fps));
   const ff=await loadFFmpeg(); if(!ff) return;
-  const hasWebCodecs=('VideoDecoder' in window && 'EncodedVideoChunk' in window) || ('MediaStreamTrackProcessor' in window);
-  progressWrap.classList.add('show'); progressFill.style.width='0%'; progressPct.textContent='0%'; progressText.textContent=`Extracting ${total} frames @ ${fps}fps — ${hasWebCodecs?'WebCodecs':'canvas fallback'}`;
-  videoEl.pause();
+  // VideoFrame is a WebCodecs image source; use it when WebGL supports the
+  // upload, and fall back to the video element + canvas for other browsers.
+  let useWebCodecs=typeof window.VideoFrame==='function';
+  progressWrap.classList.add('show'); progressFill.style.width='0%'; progressPct.textContent='0%'; progressText.textContent=`Extracting ${total} frames @ ${fps}fps — ${useWebCodecs?'WebCodecs':'canvas fallback'}`;
+  const wasPlaying=!videoEl.paused, wasShowingOriginal=showOriginal;
+  videoEl.pause(); showOriginal=false;
+  // The live preview loop must not overwrite an exported frame before toBlob.
+  if(animId!==null){ cancelAnimationFrame(animId); animId=null; }
   const writeFile=async(n,d)=>{ if(ff.writeFile) await ff.writeFile(n,d); else ff.FS('writeFile',n,d); };
   const readFile=async(n)=>{ if(ff.readFile) return await ff.readFile(n); else return ff.FS('readFile',n); };
   const exec=async(a)=>{ if(ff.exec) await ff.exec(a); else await ff.run(...a); };
@@ -918,11 +1024,22 @@ async function processVideo(){
     for(let i=0;i<total;i++){
       const t=i/fps; await seekVideo(t);
       gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-      try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl); }catch(e){}
+      if(useWebCodecs){
+        let frame=null;
+        try{
+          frame=new VideoFrame(videoEl,{timestamp:Math.round(t*1e6)});
+          gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,frame);
+        }catch(e){
+          useWebCodecs=false;
+          gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
+        }finally{ frame?.close(); }
+      }else{
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
+      }
       render(t*1000);
       const blob=await new Promise(r=> canvas.toBlob(r,'image/png',1.0)); const buf=await blob.arrayBuffer(); const u8=new Uint8Array(buf);
       const fname=`frame_${String(i).padStart(4,'0')}.png`; await writeFile(fname,u8);
-      const pct=Math.round((i+1)/total*70); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Frame ${i+1} of ${total}`;
+      const pct=Math.round((i+1)/total*70); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Frame ${i+1}/${total} · ${useWebCodecs?'WebCodecs':'canvas fallback'}`;
       await new Promise(r=> setTimeout(r,0));
     }
     progressText.textContent='Encoding WebM…'; progressFill.style.width='75%';
@@ -931,11 +1048,17 @@ async function processVideo(){
     progressFill.style.width='95%'; progressText.textContent='Finalizing…';
     const data=await readFile('output.webm'); const outBlob=new Blob([data.buffer?data:data],{type:'video/webm'}); const outUrl=URL.createObjectURL(outBlob);
     const a=document.createElement('a'); a.href=outUrl; a.download=`film-lab-${Date.now()}.webm`; a.click();
+    setTimeout(()=> URL.revokeObjectURL(outUrl),60000);
     for(let i=0;i<total;i++){ const fn=`frame_${String(i).padStart(4,'0')}.png`; try{ if(ff.deleteFile) await ff.deleteFile(fn); else ff.FS('unlink',fn); }catch(e){} }
     try{ if(ff.deleteFile) await ff.deleteFile('output.webm'); else ff.FS('unlink','output.webm'); }catch(e){}
     progressFill.style.width='100%'; progressPct.textContent='100%'; progressText.textContent=`Done! ${total} frames → WebM`; showToast(`Video: ${total} frames → WebM`,4000);
     setTimeout(()=> progressWrap.classList.remove('show'),3000);
   }catch(err){ console.error(err); progressText.textContent='Error: '+err.message; showToast('Failed: '+err.message,5000); }
+  finally{
+    showOriginal=wasShowingOriginal;
+    if(wasPlaying) videoEl.play().catch(()=>{});
+    startLoop();
+  }
 }
 $('processVideoBtn').addEventListener('click',processVideo);
 
@@ -943,7 +1066,7 @@ $('processVideoBtn').addEventListener('click',processVideo);
 updateFromSliders(); updateSliderUI(); render(performance.now());
 window.addEventListener('dragover',e=> e.preventDefault());
 window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ const f=e.dataTransfer.files[0]; if(f && (f.type.startsWith('image/')||f.type.startsWith('video/'))){ e.preventDefault(); handleFile(f); } } });
-console.log('Film Lab v3 — 32 controls — WebGL2', gl.getParameter(gl.VERSION));
+console.log('Film Lab v4 — 32 signed controls — WebGL2', gl.getParameter(gl.VERSION));
 })();
 </script>
 </body>
