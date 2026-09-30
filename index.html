@@ -211,7 +211,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
           <p><span>Drop a photo or video, or <b>click to browse</b></span></p>
         </div>
         <div class="dropBottom">
-          <div class="hint">JPG · PNG · WEBM · MP4<br>STILL / MOTION · 60S MAX VIDEO</div>
+          <div class="hint">JPG · PNG · HEIC · HEIF<br>WEBM · MP4 · 60S MAX VIDEO</div>
           <span class="dropCue">UPLOAD MEDIA</span>
         </div>
       </div>
@@ -336,7 +336,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
     </aside>
   </div>
 </div>
-<input type="file" id="fileInput" accept="image/*,video/*" hidden>
+<input type="file" id="fileInput" accept="image/*,.heic,.heif,image/heic,image/heif,video/*" hidden>
 <script>
 (() => {
 const canvas = document.getElementById('glCanvas');
@@ -842,13 +842,96 @@ function startLoop(){
 }
 function showToast(m,ms=3200){ toastEl.textContent=m; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'),ms); }
 
+function isHeicFile(file){
+  return /\.hei[cf]$/i.test(file.name||'') || /^image\/hei[cf](?:-sequence)?$/i.test(file.type||'');
+}
+
+// Load the local decoder only when native image decoding cannot open a HEIC/HEIF.
+// The CDN is a fallback for people who copy only index.html without the vendor directory.
+let heicDecoderPromise=null;
+function loadHeicDecoder(){
+  if(typeof window.heic2any==='function') return Promise.resolve(window.heic2any);
+  if(!heicDecoderPromise){
+    heicDecoderPromise=new Promise((resolve,reject)=>{
+      const sources=['vendor/heic2any.min.js','https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js'];
+      const trySource=index=>{
+        const script=document.createElement('script');
+        script.src=sources[index]; script.async=true;
+        script.onload=()=>{
+          if(typeof window.heic2any==='function') resolve(window.heic2any);
+          else if(index+1<sources.length) trySource(index+1);
+          else reject(new Error('HEIC decoder unavailable'));
+        };
+        script.onerror=()=>{
+          script.remove();
+          if(index+1<sources.length) trySource(index+1);
+          else reject(new Error('HEIC decoder unavailable'));
+        };
+        document.head.appendChild(script);
+      };
+      trySource(0);
+    }).catch(err=>{ heicDecoderPromise=null; throw err; });
+  }
+  return heicDecoderPromise;
+}
+
+let fileLoadId=0;
+async function convertHeic(file,loadId){
+  showToast('Decoding HEIC / HEIF photo…',6000);
+  try{
+    const decode=await loadHeicDecoder();
+    if(loadId!==fileLoadId) return;
+    const converted=await decode({blob:file,toType:'image/png'});
+    if(loadId!==fileLoadId) return;
+    const png=Array.isArray(converted)?converted[0]:converted;
+    if(!(png instanceof Blob) || !png.size) throw new Error('HEIC conversion returned no image');
+    loadImage(png,file,loadId,true);
+  }catch(err){
+    if(loadId!==fileLoadId) return;
+    console.error('HEIC / HEIF decoding failed',err);
+    showToast('Could not open this HEIC / HEIF photo',5000);
+  }
+}
+
+function loadImage(blob,originalFile,loadId,converted=false){
+  const url=URL.createObjectURL(blob);
+  const img=new Image();
+  img.onload=()=>{
+    if(loadId!==fileLoadId){ URL.revokeObjectURL(url); return; }
+    try{
+      const w=img.naturalWidth, h=img.naturalHeight;
+      if(!w||!h) throw new Error('Image has no dimensions');
+      canvas.width=w; canvas.height=h; recreateFBOs(w,h);
+      gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
+      isVideo=false; hasContent=true;
+      dropZone.style.display='none'; canvasWrap.style.display='flex';
+      $('processVideoBtn').style.display='none';
+      $('downloadBtn').innerHTML='⤓ Download PNG';
+      startLoop(); showToast(isHeicFile(originalFile)?'HEIC / HEIF photo loaded':'Image loaded');
+    }catch(err){
+      if(isHeicFile(originalFile) && !converted) convertHeic(originalFile,loadId);
+      else { console.error('Image loading failed',err); showToast('Could not display this image',5000); }
+    }finally{ URL.revokeObjectURL(url); }
+  };
+  img.onerror=()=>{
+    URL.revokeObjectURL(url);
+    if(loadId!==fileLoadId) return;
+    if(isHeicFile(originalFile) && !converted) convertHeic(originalFile,loadId);
+    else showToast('Could not open this image',5000);
+  };
+  img.src=url;
+}
+
 function handleFile(file){
   if(!file) return;
-  const isVid=file.type.startsWith('video/');
+  const loadId=++fileLoadId;
+  const isVid=file.type.startsWith('video/') && !isHeicFile(file);
   if(isVid){
     const url=URL.createObjectURL(file);
     videoEl.src=url; videoEl.load();
     videoEl.onloadedmetadata=()=>{
+      if(loadId!==fileLoadId) return;
       const dur=videoEl.duration;
       if(dur>60) showToast(`Video ${dur.toFixed(1)}s capped at 60s`,4500);
       const w=videoEl.videoWidth, h=videoEl.videoHeight;
@@ -861,26 +944,12 @@ function handleFile(file){
       $('downloadBtn').innerHTML='⤓ Download Frame PNG';
       videoEl.play().catch(()=>{}); startLoop(); showToast('Video loaded — live preview');
     };
-  } else {
-    const img=new Image();
-    img.onload=()=>{
-      const w=img.naturalWidth, h=img.naturalHeight;
-      canvas.width=w; canvas.height=h; recreateFBOs(w,h);
-      gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
-      isVideo=false; hasContent=true;
-      dropZone.style.display='none'; canvasWrap.style.display='flex';
-      $('processVideoBtn').style.display='none';
-      $('downloadBtn').innerHTML='⤓ Download PNG';
-      startLoop(); showToast('Image loaded');
-    };
-    img.src=URL.createObjectURL(file);
-  }
+  } else loadImage(file,file,loadId);
 }
 dropZone.addEventListener('click',()=>fileInput.click());
 dropZone.addEventListener('dragover',e=>{ e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop',e=>{ e.preventDefault(); dropZone.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
+dropZone.addEventListener('drop',e=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
 fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) handleFile(f); e.target.value=''; });
 
 document.querySelectorAll('.effectHeader').forEach(h=>{
@@ -1140,7 +1209,7 @@ $('processVideoBtn').addEventListener('click',processVideo);
 // init
 updateFromSliders(); updateSliderUI(); render(performance.now());
 window.addEventListener('dragover',e=> e.preventDefault());
-window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ const f=e.dataTransfer.files[0]; if(f && (f.type.startsWith('image/')||f.type.startsWith('video/'))){ e.preventDefault(); handleFile(f); } } });
+window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ const f=e.dataTransfer.files[0]; if(f && (isHeicFile(f)||f.type.startsWith('image/')||f.type.startsWith('video/'))){ e.preventDefault(); handleFile(f); } } });
 console.log('Film Lab v4 — 32 signed controls — WebGL2', gl.getParameter(gl.VERSION));
 })();
 </script>
