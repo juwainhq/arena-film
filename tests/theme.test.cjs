@@ -13,10 +13,8 @@ const controller = mainScript.slice(mainScript.indexOf('const themeToggle ='), m
 function themeUI(saved, blocked = false) {
   const values = new Map();
   if (saved) values.set('film_lab_theme', saved);
-  const label = {textContent: ''};
   const button = {
-    attributes: {}, handlers: {}, title: '',
-    querySelector(selector) { assert.equal(selector, '.themeLabel'); return label; },
+    attributes: {}, handlers: {},
     setAttribute(name, value) { this.attributes[name] = value; },
     addEventListener(name, fn) { this.handlers[name] = fn; },
   };
@@ -32,7 +30,7 @@ function themeUI(saved, blocked = false) {
   });
   vm.runInContext(bootstrap, context);
   vm.runInContext(controller, context);
-  return {values, root, button, label, listeners};
+  return {values, root, button, listeners};
 }
 
 test('header uses the portfolio navigation gutters and type while keeping mobile actions visible', () => {
@@ -58,33 +56,40 @@ test('both themes cover the editor with legible negative sliders and native colo
   assert.match(styles, /:root\[data-theme="light"\] \.darkHint \{ display: none; \}/);
 });
 
+test('icon-only switch uses the portfolio sun/moon glyphs and motion', () => {
+  const markup = html.match(/<button type="button" id="themeToggle"[\s\S]*?<\/button>/)[0];
+  assert.equal((markup.match(/<svg /g) || []).length, 2);
+  assert.doesNotMatch(markup, /<span|>Light<|>Dark</);
+  assert.match(markup, /<circle cx="12" cy="12" r="4"\/>/); // Lucide Sun
+  assert.match(markup, /<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"\/>/); // Lucide Moon
+  assert.match(styles, /#themeToggle svg \{[^}]*width: 18px; height: 18px;[^}]*stroke-width: 1\.5;[^}]*transition: opacity \.5s ease-out, transform \.5s ease-out;/);
+  assert.match(styles, /:root\[data-theme="light"\] #themeToggle \.moonIcon \{ opacity: 1; transform: rotate\(0\) scale\(1\); \}/);
+});
+
 test('theme toggle defaults to dark, updates its accessible label, and persists across reloads', () => {
-  const {values, root, button, label, listeners} = themeUI();
+  const {values, root, button, listeners} = themeUI();
   assert.equal(root.dataset.theme, 'dark');
-  assert.equal(button.attributes['aria-label'], 'Switch to light mode');
-  assert.equal(label.textContent, 'Light');
+  assert.equal(button.attributes['aria-label'], 'Switch to light theme');
   button.handlers.click();
   assert.equal(root.dataset.theme, 'light');
   assert.equal(values.get('film_lab_theme'), 'light');
-  assert.equal(button.attributes['aria-label'], 'Switch to dark mode');
-  assert.equal(button.title, 'Switch to dark mode');
-  assert.equal(label.textContent, 'Dark');
+  assert.equal(button.attributes['aria-label'], 'Switch to dark theme');
   assert.equal(themeUI(values.get('film_lab_theme')).root.dataset.theme, 'light');
   button.handlers.click();
   assert.equal(root.dataset.theme, 'dark');
   assert.equal(values.get('film_lab_theme'), 'dark');
   listeners.storage({key: 'film_lab_theme', newValue: 'light'});
   assert.equal(root.dataset.theme, 'light');
-  assert.equal(label.textContent, 'Dark');
+  assert.equal(button.attributes['aria-label'], 'Switch to dark theme');
   listeners.storage({key: 'film_lab_theme', newValue: null});
   assert.equal(root.dataset.theme, 'dark');
 });
 
 test('theme still works when localStorage is unavailable', () => {
-  const {root, button, label} = themeUI(null, true);
+  const {root, button} = themeUI(null, true);
   button.handlers.click();
   assert.equal(root.dataset.theme, 'light');
-  assert.equal(label.textContent, 'Dark');
+  assert.equal(button.attributes['aria-label'], 'Switch to dark theme');
 });
 
 test('keyboard shortcuts let Space activate a focused theme button', () => {

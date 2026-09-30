@@ -14,10 +14,11 @@ const converter = script.match(/function convertLegacyValues\(values\)\{[\s\S]*?
 const upgrade = script.match(/function upgradeV4Preset\(p\)\{[\s\S]*?\n\}/)[0];
 const legacyPresets = script.match(/const legacyBuiltInPresets=\{[\s\S]*?\n\};/)[0];
 const withoutSharpening = script.match(/const withoutSharpening=values=>[^\n]+;/)[0];
+const presetFromNeutral = script.match(/const presetFromNeutral=values=>withoutSharpening\(\{[\s\S]*?\n\}\);/)[0];
 const builtIns = script.match(/const builtInPresets=\{[\s\S]*?\n\};/)[0];
 const sliders = {}, params = {};
 const context = vm.createContext({sliders, params});
-vm.runInContext(`${config}\n${mapper}\n${update}\n${converter}\n${upgrade}\n${legacyPresets}\n${withoutSharpening}\n${builtIns}\nthis.controls=advancedControls;this.mapValue=advancedValue;this.update=updateFromSliders;this.convert=convertLegacyValues;this.upgrade=upgradeV4Preset;this.oldPresets=legacyBuiltInPresets;this.presets=builtInPresets;`, context);
+vm.runInContext(`${config}\n${mapper}\n${update}\n${converter}\n${upgrade}\n${legacyPresets}\n${withoutSharpening}\n${presetFromNeutral}\n${builtIns}\nthis.controls=advancedControls;this.mapValue=advancedValue;this.update=updateFromSliders;this.convert=convertLegacyValues;this.upgrade=upgradeV4Preset;this.oldPresets=legacyBuiltInPresets;this.presets=builtInPresets;`, context);
 const {controls, mapValue, update: updateFromSliders, convert, upgrade: upgradeV4Preset, oldPresets, presets} = context;
 const advancedInputs = [...html.matchAll(/<input class="subSlider" type="range" id="slider(\w+)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
 const intensityInputs = [...html.matchAll(/<input type="range" id="slider(Bloom|Hall|Grain|Sharp)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
@@ -132,11 +133,22 @@ test('negative effects are rendered as subtraction, inverse grain, blur, or brig
   assert.match(script, /Math\.abs\(params\.hallation\)/);
 });
 
-test('six complete presets, legacy translations and v4 upgrades retain old looks', () => {
-  assert.deepEqual(Object.keys(presets).sort(), ['Kodak Vision','Anamorphic','Matte Film','Clean Digital','Dream Glow','Noir Crunch'].sort());
+test('twelve complete presets, legacy translations and v4 upgrades retain old looks', () => {
+  const classic = ['Kodak Vision','Anamorphic','Matte Film','Clean Digital','Dream Glow','Noir Crunch'];
+  const social = ['Golden Hour','Soft Portrait','Retro 2000','Cloudy Pastel','Moody Coffee','Neon Nights'];
+  assert.deepEqual(Object.keys(presets).sort(), [...classic,...social].sort());
   assert.equal(Object.keys(presets['Noir Crunch']).length, 32);
   assert.equal(presets['Noir Crunch'].Saturation, -100);
   assert.ok(presets['Noir Crunch'].Bloom < 0);
+  assert.ok(presets['Golden Hour'].Temperature > 0 && presets['Golden Hour'].Bloom > 0);
+  assert.ok(presets['Soft Portrait'].Contrast < 0 && presets['Soft Portrait'].Bloom > 0);
+  assert.ok(presets['Retro 2000'].Grain > 0 && presets['Retro 2000'].Saturation > 0);
+  assert.ok(presets['Cloudy Pastel'].Temperature < 0 && presets['Cloudy Pastel'].Saturation < 0);
+  assert.ok(presets['Moody Coffee'].Exposure < 0 && presets['Moody Coffee'].Bloom < 0);
+  assert.ok(presets['Neon Nights'].BloomAnam > 50 && presets['Neon Nights'].Hall > 0);
+  assert.equal(presets['Cloudy Pastel'].Hall, 0); // missing parameters reset to neutral
+  assert.equal(presets['Soft Portrait'].Grain, 0);
+  for (const name of social) assert.equal(presets[name].GrainSpeed, presets[name].Grain ? -100 : 0, `${name}: static grain`);
   for (const [name, {range, legacyZero}] of Object.entries(controls)) {
     assert.equal(convert({[name]: legacyZero})[name], 0, `${name} neutral`);
   }
@@ -178,7 +190,8 @@ test('six complete presets, legacy translations and v4 upgrades retain old looks
 test('all built-in looks leave sharpening neutral while preserving their other effects', () => {
   const sharpenControls = ['Sharp', 'SharpRadius', 'SharpEdge', 'SharpDetail', 'SharpLuma'];
   for (const [name, values] of Object.entries(presets)) {
-    assert.equal(Object.keys(values).length, 32, `${name} is complete`);
+    assert.deepEqual(Object.keys(values).sort(), [...Object.keys(controls),'Bloom','Hall','Grain','Sharp'].sort(), `${name} is complete`);
+    for (const [key, value] of Object.entries(values)) assert.ok(Number.isInteger(value) && value >= -100 && value <= 100, `${name}: ${key}`);
     for (const key of sharpenControls) assert.equal(values[key], 0, `${name}: ${key}`);
     if (oldPresets[name]) {
       const previous = convert(oldPresets[name]);
@@ -189,6 +202,15 @@ test('all built-in looks leave sharpening neutral while preserving their other e
   }
   assert.match(script, /if\(abs\(u_strength\)<0\.001\)\{ outColor=center; return; \}/);
   assert.equal(convert({Sharp:80}).Sharp, 80); // manual and saved custom settings remain available
+});
+
+test('feed presets are grouped and can be activated by keyboard like saved presets', () => {
+  assert.match(styles, /\.presetCategory \{[^}]*grid-column: 1 \/ -1;/);
+  assert.match(script, /if\(name==='Golden Hour'\) addHeading\('For your feed'\)/);
+  assert.match(script, /const chip=document\.createElement\('button'\); chip\.type='button';/);
+  assert.match(script, /ch\.setAttribute\('aria-pressed',String\(active\)\)/);
+  assert.match(script, /chip\.setAttribute\('aria-pressed','false'\)/);
+  assert.match(script, /const dur=340/);
 });
 
 test('video processing retains a 60s cap, WebCodecs fallback and frame progress', () => {

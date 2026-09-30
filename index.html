@@ -72,16 +72,19 @@ button { -webkit-tap-highlight-color: transparent; }
 header { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 16px 24px; border-bottom: 1px solid var(--panel-border); background: var(--bg); z-index: 20; }
 #logo { font-size: 12px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; white-space: nowrap; }
 #headerActions { display: flex; align-items: center; gap: 32px; margin-left: auto; }
-.hdrBtn,#themeToggle { background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: opacity .25s, border-color .25s, background .25s, color .25s; }
-.hdrBtn { padding: 9px 0; }
-.hdrBtn:hover,#themeToggle:hover { opacity: .55; border-bottom-color: var(--text); }
+.hdrBtn { padding: 9px 0; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: opacity .25s, border-color .25s, background .25s, color .25s; }
+.hdrBtn:hover { opacity: .55; border-bottom-color: var(--text); }
 .hdrBtn:focus-visible,#themeToggle:focus-visible { outline: 1px solid var(--text); outline-offset: 4px; }
 .hdrBtn.primary { padding: 9px 12px; background: transparent; border: 1px solid var(--border-strong); color: var(--text); }
 .hdrBtn.primary:hover { opacity: 1; background: var(--text); border-color: var(--text); color: var(--inverse); }
-#themeToggle { display: inline-flex; align-items: center; gap: 8px; padding: 9px 0; }
-#themeToggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-#themeToggle .moonIcon,:root[data-theme="light"] #themeToggle .sunIcon { display: none; }
-:root[data-theme="light"] #themeToggle .moonIcon { display: block; }
+/* Same 18px Lucide sun/moon toggle and motion as the portfolio navigation. */
+#themeToggle { position: relative; display: inline-block; flex: none; width: 30px; height: 30px; margin-right: -6px; padding: 6px; background: none; border: 0; color: var(--text); cursor: pointer; transition: opacity .3s; }
+#themeToggle:hover { opacity: .5; }
+#themeToggle svg { position: absolute; inset: 6px; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; transition: opacity .5s ease-out, transform .5s ease-out; }
+#themeToggle .sunIcon { opacity: 1; transform: rotate(0) scale(1); }
+#themeToggle .moonIcon { opacity: 0; transform: rotate(90deg) scale(.5); }
+:root[data-theme="light"] #themeToggle .sunIcon { opacity: 0; transform: rotate(-90deg) scale(.5); }
+:root[data-theme="light"] #themeToggle .moonIcon { opacity: 1; transform: rotate(0) scale(1); }
 
 #content { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 #mainArea { flex: 1; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; background: var(--bg); overflow: hidden; padding: clamp(28px,4.7vw,72px); }
@@ -132,8 +135,11 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .lightHint,:root[data-theme="light"] .darkHint { display: none; }
 :root[data-theme="light"] .lightHint { display: inline; }
 #presetChips { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); column-gap: 22px; }
-.chip { position: relative; padding: 13px 0; border: 0; border-bottom: 1px solid var(--panel-border); border-radius: 0; background: transparent; color: var(--text-dim); font-size: 10px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; cursor: pointer; user-select: none; transition: color .25s, border-color .25s; }
+.presetCategory { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; margin-top: 16px; color: var(--text-dim2); font-size: 9px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
+.presetCategory::after { content: ''; flex: 1; height: 1px; background: var(--panel-border); }
+.chip { position: relative; width: 100%; padding: 13px 0; border: 0; border-bottom: 1px solid var(--panel-border); border-radius: 0; background: transparent; color: var(--text-dim); font-size: 10px; font-weight: 500; letter-spacing: .08em; text-align: left; text-transform: uppercase; white-space: nowrap; cursor: pointer; user-select: none; transition: color .25s, border-color .25s; }
 .chip:hover { color: var(--text); border-bottom-color: var(--border-hover); }
+.chip:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; }
 .chip.active { color: var(--text); border-bottom-color: var(--text); }
 .chip.active::after { content: ''; position: absolute; right: 0; top: 50%; width: 4px; height: 4px; margin-top: -2px; background: var(--accent); border-radius: 50%; }
 .chip.custom { border-bottom-style: dashed; }
@@ -282,10 +288,9 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
       <button type="button" class="hdrBtn" id="hdrBeforeBtn">◑ Before</button>
       <button type="button" class="hdrBtn primary" id="hdrDownloadBtn">⤓ Export</button>
     </div>
-    <button type="button" id="themeToggle" aria-label="Switch to light mode" title="Switch to light mode">
-      <svg class="sunIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-      <svg class="moonIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>
-      <span class="themeLabel" aria-hidden="true">Light</span>
+    <button type="button" id="themeToggle" aria-label="Switch to light theme" title="Toggle color theme">
+      <svg class="sunIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      <svg class="moonIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
     </button>
   </header>
   <div id="content">
@@ -437,10 +442,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 const themeToggle = document.getElementById('themeToggle');
 function syncThemeButton(){
   const isLight=document.documentElement.dataset.theme==='light';
-  const label=`Switch to ${isLight?'dark':'light'} mode`;
-  themeToggle.querySelector('.themeLabel').textContent=isLight?'Dark':'Light';
-  themeToggle.setAttribute('aria-label',label);
-  themeToggle.title=label;
+  themeToggle.setAttribute('aria-label',`Switch to ${isLight?'dark':'light'} theme`);
 }
 themeToggle.addEventListener('click',()=>{
   const next=document.documentElement.dataset.theme==='light'?'dark':'light';
@@ -1175,7 +1177,7 @@ function cancelPresetAnimation(){
 }
 function userChangedSliders(){
   cancelPresetAnimation();
-  document.querySelectorAll('.chip').forEach(chip=>chip.classList.remove('active'));
+  document.querySelectorAll('.chip').forEach(chip=>{ chip.classList.remove('active'); chip.setAttribute('aria-pressed','false'); });
   updateFromSliders(); updateSliderUI();
   if(hasContent) render(performance.now());
 }
@@ -1243,6 +1245,13 @@ function convertLegacyValues(values){
 }
 // Built-in looks leave sharpening completely neutral; manual and saved custom settings are unchanged.
 const withoutSharpening=values=>({...values,Sharp:0,SharpRadius:0,SharpEdge:0,SharpDetail:0,SharpLuma:0});
+// Every social look is a complete 32-control snapshot, so selecting one also clears
+// advanced settings left behind by another look. Unspecified controls stay neutral.
+const presetFromNeutral=values=>withoutSharpening({
+  ...Object.fromEntries(Object.keys(advancedControls).map(name=>[name,0])),
+  Bloom:0,Hall:0,Grain:0,Sharp:0,
+  ...values
+});
 const builtInPresets={
   ...Object.fromEntries(Object.entries(legacyBuiltInPresets).map(([name,values])=>[name,withoutSharpening(convertLegacyValues(values))])),
   'Noir Crunch':withoutSharpening({
@@ -1250,6 +1259,44 @@ const builtInPresets={
     Bloom:-25,BloomThresh:20,BloomSpread:-25,BloomSoft:-35,BloomTint:-40,BloomBlend:-10,BloomAnam:0,
     Hall:-10,HallThresh:-15,HallSpread:-25,HallTint:-55,HallDir:-12,HallFalloff:15,HallSat:-50,
     Grain:55,GrainSize:-35,GrainRough:45,GrainSpeed:-30,GrainColor:-100,GrainLuma:25,GrainSoft:-30
+  }),
+  // Bright, warm and softly glowing — works especially well for outdoor portraits.
+  'Golden Hour':presetFromNeutral({
+    Exposure:10,Contrast:-7,Saturation:13,Temperature:39,VignStrength:-9,VignSize:8,
+    Bloom:28,BloomThresh:-30,BloomSpread:24,BloomSoft:25,BloomTint:60,BloomBlend:18,BloomAnam:10,
+    Hall:14,HallThresh:-22,HallSpread:20,HallTint:58,HallFalloff:16,HallSat:25,
+    Grain:7,GrainSize:-25,GrainSpeed:-100,GrainColor:-100,GrainSoft:24
+  }),
+  // Airy and flattering, with light diffusion and gently brightened edges.
+  'Soft Portrait':presetFromNeutral({
+    Exposure:14,Contrast:-25,Saturation:-8,Temperature:16,VignStrength:-18,VignSize:18,
+    Bloom:21,BloomThresh:-36,BloomSpread:37,BloomSoft:38,BloomTint:18,BloomBlend:34,
+    Hall:4,HallThresh:-18,HallSpread:9
+  }),
+  // Direct-flash energy: crisp color, compact highlights and textured grain.
+  'Retro 2000':presetFromNeutral({
+    Exposure:5,Contrast:24,Saturation:24,Temperature:-11,VignStrength:32,VignSize:-20,
+    Bloom:12,BloomThresh:22,BloomSpread:-20,BloomSoft:-25,BloomTint:-28,
+    Hall:16,HallThresh:10,HallSpread:-24,HallTint:-15,
+    Grain:27,GrainSize:24,GrainRough:34,GrainSpeed:-100,GrainColor:28,GrainLuma:16,GrainSoft:-22
+  }),
+  // Cool, faded tones and lifted exposure for an understated pastel feed.
+  'Cloudy Pastel':presetFromNeutral({
+    Exposure:21,Contrast:-36,Saturation:-21,Temperature:-22,VignStrength:-14,VignSize:15,
+    Bloom:15,BloomThresh:-26,BloomSpread:28,BloomSoft:34,BloomTint:-18,BloomBlend:28
+  }),
+  // Deep cafe shadows, warm highlights and subtle static monochrome texture.
+  'Moody Coffee':presetFromNeutral({
+    Exposure:-24,Contrast:23,Saturation:-29,Temperature:23,VignStrength:37,VignSize:-16,
+    Bloom:-13,BloomThresh:5,BloomSpread:-15,Hall:10,HallThresh:15,HallTint:28,
+    Grain:17,GrainSize:-5,GrainRough:27,GrainSpeed:-100,GrainColor:-100,GrainSoft:-11
+  }),
+  // Cool night color with horizontal bloom and saturated red-orange halation.
+  'Neon Nights':presetFromNeutral({
+    Exposure:-19,Contrast:39,Saturation:19,Temperature:-34,VignStrength:39,VignSize:-20,
+    Bloom:38,BloomThresh:10,BloomSpread:28,BloomSoft:12,BloomTint:-24,BloomBlend:25,BloomAnam:67,
+    Hall:34,HallThresh:3,HallSpread:33,HallTint:-28,HallDir:11,HallFalloff:12,HallSat:32,
+    Grain:12,GrainSize:-30,GrainRough:8,GrainSpeed:-100,GrainColor:13,GrainSoft:12
   })
 };
 let customPresets=[];
@@ -1284,22 +1331,45 @@ function setValues(o){
   ids.forEach(k=>{ if(sliders[k] && o[k]!=null) sliders[k].value=o[k]; });
   updateFromSliders(); updateSliderUI();
 }
+const socialPresetNotes={
+  'Golden Hour':'Sun-kissed warmth, bloom, and a little grain',
+  'Soft Portrait':'Airy softness, warm skin tones, and bright edges',
+  'Retro 2000':'Punchy cool flash color with textured grain',
+  'Cloudy Pastel':'Light, cool, and softly muted',
+  'Moody Coffee':'Warm shadows and subtle film texture',
+  'Neon Nights':'Cool color, red halation, and wide light streaks'
+};
 function renderChips(){
   const c=$('presetChips'); c.innerHTML='';
   const all={...builtInPresets}; customPresets.forEach(cp=> all[cp.name]=cp.values);
+  let savedHeading=false;
+  function addHeading(text){
+    const heading=document.createElement('div'); heading.className='presetCategory';
+    heading.setAttribute('role','heading'); heading.setAttribute('aria-level','3');
+    heading.textContent=text; c.appendChild(heading);
+  }
   Object.keys(all).forEach(name=>{
-    const chip=document.createElement('div'); chip.className='chip'+(customPresets.find(x=>x.name===name)?' custom':''); chip.textContent=name;
+    if(name==='Golden Hour') addHeading('For your feed');
+    if(!builtInPresets[name] && !savedHeading){ addHeading('Saved presets'); savedHeading=true; }
+    const isCustom=customPresets.some(x=>x.name===name);
+    const chip=document.createElement('button'); chip.type='button';
+    chip.className='chip'+(isCustom?' custom':''); chip.textContent=name;
+    chip.setAttribute('aria-pressed','false');
     chip.addEventListener('click',()=>applyPreset(name, all[name]));
-    if(customPresets.find(x=>x.name===name)){
+    if(isCustom){
       chip.addEventListener('contextmenu',e=>{ e.preventDefault(); if(confirm(`Delete "${name}"?`)){ customPresets=customPresets.filter(x=>x.name!==name); saveCustom(); renderChips(); } });
       chip.title='Right-click to delete';
-    }
+    }else if(socialPresetNotes[name]) chip.title=socialPresetNotes[name];
     c.appendChild(chip);
   });
 }
 function applyPreset(name, values){
   cancelPresetAnimation();
-  document.querySelectorAll('.chip').forEach(ch=> ch.classList.toggle('active', ch.textContent===name));
+  document.querySelectorAll('.chip').forEach(ch=>{
+    const active=ch.textContent===name;
+    ch.classList.toggle('active',active);
+    ch.setAttribute('aria-pressed',String(active));
+  });
   const start=getCurrentValues();
   const dur=340, t0=performance.now();
   const ease=t=>1-Math.pow(1-t,3);
