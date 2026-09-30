@@ -61,12 +61,23 @@ header { height: 72px; min-height: 72px; display: flex; align-items: center; jus
 .dropCue::after { content: ''; width: 40px; height: 1px; background: rgba(255,255,255,.7); transition: width .4s cubic-bezier(.16,1,.3,1); }
 #dropZone:hover .dropCue::after,#dropZone.dragover .dropCue::after { width: 66px; }
 #dropZone.dragover h2 { color: var(--text-dim); }
-#canvasWrap { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-#canvasWrap::before { content: '01 / LIVE CANVAS'; position: absolute; top: 0; left: 0; font-size: 10px; font-weight: 600; letter-spacing: .27em; color: var(--text-dim2); pointer-events: none; }
-#canvasWrap::after { content: 'FILM LAB / WEBGL 2'; position: absolute; bottom: 0; right: 0; font-size: 10px; letter-spacing: .24em; color: var(--text-dim2); pointer-events: none; }
-#glCanvas { display: block; max-width: 100%; max-height: calc(100% - 52px); background: #000; border-radius: 0; box-shadow: 0 0 0 1px var(--panel-border); }
+#canvasWrap { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+#canvasWrap::before { content: '01 / LIVE CANVAS'; position: absolute; top: 0; left: 0; z-index: 2; font-size: 10px; font-weight: 600; letter-spacing: .27em; color: var(--text-dim2); pointer-events: none; }
+#canvasWrap::after { content: 'FILM LAB / WEBGL 2'; position: absolute; bottom: 0; left: 0; z-index: 2; font-size: 10px; letter-spacing: .24em; color: var(--text-dim2); pointer-events: none; }
+#glCanvas { display: block; max-width: 100%; max-height: calc(100% - 52px); background: #000; border-radius: 0; box-shadow: 0 0 0 1px var(--panel-border); cursor: zoom-in; }
+#canvasWrap.zoomed #glCanvas { cursor: grab; touch-action: none; }
+#canvasWrap.dragging #glCanvas { cursor: grabbing; }
 #beforeLabel { position: absolute; top: 0; left: 50%; transform: translateX(-50%); display: none; z-index: 5; padding: 4px 10px; background: #000; border: 1px solid var(--panel-border); color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
 #beforeLabel.show { display: block; }
+#zoomControls { position: absolute; right: 0; bottom: 0; z-index: 6; display: flex; align-items: center; opacity: .78; transition: opacity .2s; }
+#canvasWrap:hover #zoomControls,#zoomControls:focus-within { opacity: 1; }
+.zoomInstructions { margin-right: 14px; color: var(--text-dim); font-size: 9px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; pointer-events: none; }
+#zoomControls button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.38); border-radius: 0; background: #000; color: var(--text); font-size: 18px; cursor: pointer; transition: color .2s, background .2s, opacity .2s; }
+#zoomControls button + button { border-left: 0; }
+#zoomControls button:hover { background: var(--text); color: #000; }
+#zoomControls button:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; z-index: 1; }
+#zoomControls button:disabled { opacity: .35; cursor: default; background: #000; color: var(--text); }
+#zoomControls #zoomResetBtn { width: 56px; font: 500 10px 'JetBrains Mono',monospace; }
 #videoEl { display: none; }
 
 /* Flat lists and fine rules echo the portfolio's work and services sections. */
@@ -187,6 +198,8 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
   #glCanvas { max-height: 47vh; }
   #canvasWrap::before { top: auto; bottom: 0; }
   #canvasWrap::after { display: none; }
+  #zoomControls { opacity: 1; }
+  .zoomInstructions { display: none; }
 }
 @media (max-width: 360px) {
   header { padding: 0 16px; }
@@ -229,8 +242,14 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         </div>
       </div>
       <div id="canvasWrap" style="display:none">
-        <canvas id="glCanvas"></canvas>
+        <canvas id="glCanvas" title="Scroll to zoom in or out. Drag to pan when zoomed."></canvas>
         <div id="beforeLabel">BEFORE</div>
+        <div id="zoomControls" role="group" aria-label="Preview zoom controls">
+          <span class="zoomInstructions" aria-hidden="true">Scroll to zoom · drag when zoomed</span>
+          <button type="button" id="zoomOutBtn" aria-label="Zoom out" title="Zoom out">−</button>
+          <button type="button" id="zoomResetBtn" aria-label="Reset preview zoom to 100%" title="Reset zoom to fit">100%</button>
+          <button type="button" id="zoomInBtn" aria-label="Zoom in" title="Zoom in">+</button>
+        </div>
       </div>
       <video id="videoEl" muted playsinline loop></video>
       <div id="videoProgress">
@@ -357,6 +376,7 @@ const gl = canvas.getContext('webgl2', {preserveDrawingBuffer:true, antialias:fa
 if(!gl){ alert('WebGL 2 not supported'); return; }
 const $ = id => document.getElementById(id);
 const dropZone=$('dropZone'), canvasWrap=$('canvasWrap'), fileInput=$('fileInput'), videoEl=$('videoEl'), beforeLabel=$('beforeLabel'), toastEl=$('toast');
+const zoomControls=$('zoomControls'), zoomOutBtn=$('zoomOutBtn'), zoomResetBtn=$('zoomResetBtn'), zoomInBtn=$('zoomInBtn');
 const progressWrap=$('videoProgress'), progressFill=$('progressFill'), progressText=$('progressText'), progressPct=$('progressPct');
 
 // all sliders
@@ -372,6 +392,8 @@ ids.forEach(n=>{ sliders[n]=$('slider'+n); vals[n]=$('val'+n); });
 
 let sourceTexture=null, fboSharpened=null, fboBloomExtract=null, fboBloomBlurH=null, fboBloomBlurV=null, fboBloomBlurH2=null, fboBloomBlurV2=null, fboHallExtract=null, fboHallBlurH=null, fboHallBlurV=null;
 let isVideo=false, showOriginal=false, hasContent=false, animId=null;
+const MIN_PREVIEW_ZOOM=0.5, MAX_PREVIEW_ZOOM=5;
+let previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null;
 const effectEnabled={color:true,bloom:true,hallation:true,grain:true,sharpen:true};
 function effectValue(group,value,neutral=0){ return effectEnabled[group]?value:neutral; }
 
@@ -920,7 +942,7 @@ function loadImage(blob,originalFile,loadId,converted=false){
       gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
       isVideo=false; hasContent=true;
-      dropZone.style.display='none'; canvasWrap.style.display='flex';
+      dropZone.style.display='none'; canvasWrap.style.display='flex'; resetPreviewZoom();
       $('processVideoBtn').style.display='none';
       $('downloadBtn').innerHTML='⤓ Download PNG';
       startLoop(); showToast(isHeicFile(originalFile)?'HEIC / HEIF photo loaded':'Image loaded');
@@ -954,7 +976,7 @@ function handleFile(file){
       gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
       isVideo=true; hasContent=true;
-      dropZone.style.display='none'; canvasWrap.style.display='flex';
+      dropZone.style.display='none'; canvasWrap.style.display='flex'; resetPreviewZoom();
       $('processVideoBtn').style.display='flex';
       $('downloadBtn').innerHTML='⤓ Download Frame PNG';
       videoEl.play().catch(()=>{}); startLoop(); showToast('Video loaded — live preview');
@@ -966,6 +988,79 @@ dropZone.addEventListener('dragover',e=>{ e.preventDefault(); dropZone.classList
 dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop',e=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
 fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) handleFile(f); e.target.value=''; });
+
+// Zoom only the displayed canvas. The WebGL pixels and PNG/video exports stay full size.
+function clampPreviewPan(){
+  const maxX=Math.max(0,(canvas.clientWidth*previewZoom-canvasWrap.clientWidth)/2);
+  const maxY=Math.max(0,(canvas.clientHeight*previewZoom-canvasWrap.clientHeight)/2);
+  previewPanX=Math.max(-maxX,Math.min(maxX,previewPanX));
+  previewPanY=Math.max(-maxY,Math.min(maxY,previewPanY));
+}
+function updatePreviewZoom(){
+  clampPreviewPan();
+  canvas.style.transform=`translate3d(${previewPanX}px,${previewPanY}px,0) scale(${previewZoom})`;
+  canvasWrap.classList.toggle('zoomed',previewZoom>1);
+  const percent=Math.round(previewZoom*100);
+  zoomResetBtn.textContent=`${percent}%`;
+  zoomResetBtn.setAttribute('aria-label',`Preview at ${percent} percent. Reset zoom to 100 percent`);
+  zoomOutBtn.disabled=previewZoom<=MIN_PREVIEW_ZOOM;
+  zoomInBtn.disabled=previewZoom>=MAX_PREVIEW_ZOOM;
+}
+function zoomPreviewTo(next,clientX,clientY){
+  next=Math.max(MIN_PREVIEW_ZOOM,Math.min(MAX_PREVIEW_ZOOM,next));
+  if(Math.abs(next-previewZoom)<0.0001) return;
+  const rect=canvas.getBoundingClientRect();
+  const centerX=rect.left+rect.width/2, centerY=rect.top+rect.height/2;
+  previewPanX+=(clientX-centerX)*(1-next/previewZoom);
+  previewPanY+=(clientY-centerY)*(1-next/previewZoom);
+  previewZoom=next;
+  if(previewZoom<=1) previewPanX=previewPanY=0;
+  updatePreviewZoom();
+}
+function resetPreviewZoom(){
+  previewZoom=1; previewPanX=previewPanY=0; previewDrag=null;
+  canvasWrap.classList.remove('dragging');
+  updatePreviewZoom();
+}
+function zoomAtCenter(factor){
+  const rect=canvasWrap.getBoundingClientRect();
+  zoomPreviewTo(previewZoom*factor,rect.left+rect.width/2,rect.top+rect.height/2);
+}
+zoomOutBtn.addEventListener('click',()=>zoomAtCenter(1/1.25));
+zoomInBtn.addEventListener('click',()=>zoomAtCenter(1.25));
+zoomResetBtn.addEventListener('click',resetPreviewZoom);
+zoomControls.addEventListener('dblclick',e=>e.stopPropagation()); // retain double-click-to-upload on the picture
+canvas.addEventListener('wheel',e=>{
+  if(!hasContent) return;
+  const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?canvasWrap.clientHeight:1);
+  const next=Math.max(MIN_PREVIEW_ZOOM,Math.min(MAX_PREVIEW_ZOOM,previewZoom*Math.exp(-delta*0.0016)));
+  if(Math.abs(next-previewZoom)<0.0001) return;
+  e.preventDefault(); // zoom only when the wheel is over the picture, not the sidebar
+  zoomPreviewTo(next,e.clientX,e.clientY);
+},{passive:false});
+canvas.addEventListener('pointerdown',e=>{
+  if(previewZoom<=1 || (e.pointerType==='mouse' && e.button!==0)) return;
+  previewDrag={id:e.pointerId,x:e.clientX,y:e.clientY,panX:previewPanX,panY:previewPanY};
+  canvas.setPointerCapture(e.pointerId);
+  canvasWrap.classList.add('dragging');
+  if(e.pointerType!=='mouse') e.preventDefault();
+});
+canvas.addEventListener('pointermove',e=>{
+  if(!previewDrag || previewDrag.id!==e.pointerId) return;
+  previewPanX=previewDrag.panX+e.clientX-previewDrag.x;
+  previewPanY=previewDrag.panY+e.clientY-previewDrag.y;
+  updatePreviewZoom();
+});
+function finishPreviewDrag(e){
+  if(!previewDrag || previewDrag.id!==e.pointerId) return;
+  previewDrag=null; canvasWrap.classList.remove('dragging');
+  if(canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+}
+canvas.addEventListener('pointerup',finishPreviewDrag);
+canvas.addEventListener('pointercancel',finishPreviewDrag);
+canvas.addEventListener('lostpointercapture',()=>{previewDrag=null;canvasWrap.classList.remove('dragging');});
+window.addEventListener('resize',()=>{if(hasContent) updatePreviewZoom();});
+updatePreviewZoom();
 
 function setGroupOpen(group,open){
   group.classList.toggle('open',open);

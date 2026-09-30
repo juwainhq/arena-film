@@ -6,4 +6,6 @@ All 32 sliders run from -100 to +100, centered at neutral 0. Red adds an effect;
 
 Photos can be imported as JPG, PNG, HEIC, or HEIF (including uppercase extensions and files with an empty MIME type). If the browser cannot decode HEIC/HEIF natively, Film Lab lazily converts it to PNG in the browser with the bundled [heic2any 0.0.4](vendor/LICENSE.heic2any.md) decoder; the photo is never uploaded to a server. If you copy only `index.html` without `vendor/`, the decoder can fall back to a CDN when online. Photo export remains PNG. Video export (up to 60 seconds) lazily loads ffmpeg.wasm from a CDN, so it needs network access; WebCodecs `VideoFrame` is used for frame uploads where supported, with a video-element/canvas fallback.
 
+Hover over the preview and scroll to zoom from 50% to 500%, or use the − / + buttons (also available on touch screens). Drag the picture to pan when zoomed in; click the percentage to reset to fit. Double-clicking the picture still opens the file picker. Zoom changes only the preview, never the exported pixels.
+
 Run the dependency-free control and HEIC tests with `node --test tests/*.test.cjs`.
