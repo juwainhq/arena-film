@@ -8,161 +8,97 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0e0e0e;
-  --bg2:#151515;
-  --panel:rgba(22,22,22,0.72);
-  --panel-border:rgba(255,255,255,0.08);
-  --text:#ededed;
-  --text-dim:#8a8a8a;
-  --text-dim2:#5a5a5a;
-  --accent:#f5a623;
-  --accent2:#ff8c00;
-  --accent-glow:rgba(245,166,35,0.28);
-  --accent-bg:rgba(245,166,35,0.12);
-  --radius:14px;
+  --bg:#0e0e0e;--panel:rgba(22,22,22,0.78);--panel-border:rgba(255,255,255,0.08);
+  --text:#ededed;--text-dim:#8a8a8a;--text-dim2:#5a5a5a;
+  --accent:#f5a623;--accent2:#ff8c00;--accent-glow:rgba(245,166,35,0.28);--accent-bg:rgba(245,166,35,0.12);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
 #app{display:flex;flex-direction:column;height:100vh;width:100vw}
-header{
-  height:56px;min-height:56px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 22px;
-  border-bottom:1px solid var(--panel-border);
-  background:rgba(14,14,14,0.92);
-  backdrop-filter:blur(20px) saturate(1.2);
-  z-index:20;
-}
+header{height:56px;min-height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid var(--panel-border);background:rgba(14,14,14,0.92);backdrop-filter:blur(20px);z-index:20}
 #logo{font-weight:800;letter-spacing:0.14em;font-size:13px;display:flex;align-items:center;gap:10px}
-#logo b{color:var(--accent)}
-#logo span{opacity:0.35;font-weight:400;letter-spacing:0.06em;font-size:11px;margin-left:4px}
+#logo b{color:var(--accent)}#logo span{opacity:0.35;font-weight:400;font-size:11px;margin-left:4px}
 #headerActions{display:flex;gap:8px;align-items:center}
-.hdrBtn{
-  padding:8px 14px;border-radius:20px;
-  border:1px solid var(--panel-border);
-  background:rgba(255,255,255,0.06);
-  color:var(--text);font-size:12px;font-weight:500;
-  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;
-}
+.hdrBtn{padding:8px 14px;border-radius:20px;border:1px solid var(--panel-border);background:rgba(255,255,255,0.06);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
 .hdrBtn:hover{background:rgba(255,255,255,0.10);transform:translateY(-1px)}
 .hdrBtn.primary{background:var(--accent);color:#0e0e0e;border-color:var(--accent);font-weight:600}
-.hdrBtn.primary:hover{background:#ffaf2e;box-shadow:0 4px 16px var(--accent-glow)}
 #content{display:flex;flex:1;overflow:hidden;min-height:0}
-#mainArea{
-  flex:1;position:relative;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(1200px 800px at 50% 35%, #1e1e1e 0%, #141414 35%, #0e0e0e 75%);
-  overflow:hidden;padding:20px;
-}
-#dropZone{
-  width:min(520px,92%);border:1.5px dashed rgba(245,166,35,0.22);border-radius:20px;
-  padding:52px 28px;text-align:center;background:rgba(255,255,255,0.02);backdrop-filter:blur(10px);
-  cursor:pointer;transition:all .32s cubic-bezier(.16,1,.3,1);
-}
-#dropZone:hover,#dropZone.dragover{border-color:var(--accent);background:rgba(245,166,35,0.06);transform:translateY(-3px) scale(1.01);box-shadow:0 18px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,166,35,0.12) inset}
+#mainArea{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(1200px 800px at 50% 35%, #1e1e1e 0%, #141414 35%, #0e0e0e 75%);overflow:hidden;padding:20px}
+#dropZone{width:min(520px,92%);border:1.5px dashed rgba(245,166,35,0.22);border-radius:20px;padding:52px 28px;text-align:center;background:rgba(255,255,255,0.02);backdrop-filter:blur(10px);cursor:pointer;transition:all .32s cubic-bezier(.16,1,.3,1)}
+#dropZone:hover,#dropZone.dragover{border-color:var(--accent);background:rgba(245,166,35,0.06);transform:translateY(-3px) scale(1.01)}
 #dropIcon{width:64px;height:64px;margin:0 auto 18px;border-radius:18px;background:linear-gradient(135deg, rgba(245,166,35,0.18), rgba(245,166,35,0.05));border:1px solid rgba(245,166,35,0.18);display:flex;align-items:center;justify-content:center;font-size:28px}
-#dropZone h2{font-size:18px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px}
+#dropZone h2{font-size:18px;font-weight:600;margin-bottom:8px}
 #dropZone p{font-size:13px;color:var(--text-dim);line-height:1.5}
-#dropZone p b{color:var(--accent);font-weight:600}
-#dropZone .hint{margin-top:16px;font-size:11px;color:var(--text-dim2);letter-spacing:0.04em}
+#dropZone p b{color:var(--accent)}
+#dropZone .hint{margin-top:16px;font-size:11px;color:var(--text-dim2)}
 #canvasWrap{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-#glCanvas{max-width:100%;max-height:100%;width:auto;height:auto;background:#000;border-radius:6px;box-shadow:0 30px 90px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);display:block}
+#glCanvas{max-width:100%;max-height:100%;background:#000;border-radius:6px;box-shadow:0 30px 90px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);display:block}
 #beforeLabel{position:absolute;top:18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.72);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.10);padding:6px 14px;border-radius:20px;font-size:10px;letter-spacing:0.14em;font-weight:700;display:none;z-index:5}
 #beforeLabel.show{display:block}
 #videoEl{display:none}
-#sidebar{
-  width:380px;min-width:340px;background:var(--panel);backdrop-filter:blur(26px) saturate(1.5);
-  border-left:1px solid var(--panel-border);display:flex;flex-direction:column;gap:22px;
-  padding:20px 18px 20px;overflow-y:auto;overflow-x:hidden;
-}
-#sidebar::-webkit-scrollbar{width:4px}
-#sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:2px}
-.sectionLabel{font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-dim);font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+#sidebar{width:400px;min-width:360px;background:var(--panel);backdrop-filter:blur(26px) saturate(1.5);border-left:1px solid var(--panel-border);display:flex;flex-direction:column;gap:20px;padding:18px 16px 20px;overflow-y:auto}
+#sidebar::-webkit-scrollbar{width:4px} #sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:2px}
+.sectionLabel{font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-dim);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .sectionLabel:after{content:'';flex:1;height:1px;background:linear-gradient(90deg, rgba(255,255,255,0.08), transparent)}
-#presetChips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:7px 13px;border-radius:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:12px;font-weight:500;cursor:pointer;transition:all .22s cubic-bezier(.16,1,.3,1);user-select:none;white-space:nowrap}
+#presetChips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:6px 12px;border-radius:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:11.5px;font-weight:500;cursor:pointer;transition:all .22s;user-select:none;white-space:nowrap}
 .chip:hover{background:rgba(245,166,35,0.14);border-color:rgba(245,166,35,0.28);transform:translateY(-1px)}
 .chip.active{background:var(--accent);color:#0e0e0e;border-color:var(--accent);font-weight:600;box-shadow:0 4px 14px var(--accent-glow)}
 .chip.custom{border-style:dashed}
-#savePresetBtn{margin-top:10px;width:100%;padding:8px 12px;border-radius:20px;background:transparent;border:1px dashed rgba(255,255,255,0.14);color:var(--text-dim);font-size:11.5px;font-weight:500;cursor:pointer;transition:all .2s}
+#savePresetBtn{margin-top:10px;width:100%;padding:8px 12px;border-radius:20px;background:transparent;border:1px dashed rgba(255,255,255,0.14);color:var(--text-dim);font-size:11.5px;cursor:pointer;transition:all .2s}
 #savePresetBtn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
-
-/* effect groups */
-#effectsWrap{display:flex;flex-direction:column;gap:14px}
-.effectGroup{
-  background:rgba(255,255,255,0.035);
-  border:1px solid rgba(255,255,255,0.07);
-  border-radius:14px;
-  padding:12px 12px 12px;
-  transition:all .25s cubic-bezier(.16,1,.3,1);
-}
-.effectGroup:hover{border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.045)}
-.effectGroup.open{border-color:rgba(245,166,35,0.18);background:rgba(255,255,255,0.05);box-shadow:0 4px 20px rgba(0,0,0,0.25)}
+#effectsWrap{display:flex;flex-direction:column;gap:12px}
+.effectGroup{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:11px 11px 11px;transition:all .25s}
+.effectGroup:hover{border-color:rgba(255,255,255,0.12)}
+.effectGroup.open{border-color:rgba(245,166,35,0.22);background:rgba(255,255,255,0.05);box-shadow:0 6px 24px rgba(0,0,0,0.28)}
 .effectHeader{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
-.effectTitle{font-size:13px;font-weight:600;letter-spacing:0.01em;display:flex;align-items:center;gap:9px}
-.effectTitle i{width:7px;height:7px;border-radius:50%;display:inline-block;box-shadow:0 0 10px currentColor}
-.effectTitle .expand{font-size:11px;opacity:0.5;transition:transform .25s;margin-left:4px}
+.effectTitle{font-size:12.5px;font-weight:650;letter-spacing:0.01em;display:flex;align-items:center;gap:8px}
+.effectTitle i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.effectTitle .expand{font-size:11px;opacity:0.5;transition:transform .25s;margin-left:2px}
 .effectGroup.open .effectTitle .expand{transform:rotate(180deg);opacity:0.9}
-.effectHeadRight{display:flex;align-items:center;gap:8px}
-.sliderVal{
-  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--accent);
-  background:var(--accent-bg);border:1px solid rgba(245,166,35,0.18);
-  padding:2px 8px;border-radius:10px;min-width:36px;text-align:center;
-}
-.mainSlider{margin-top:10px}
-.subControls{
-  margin-top:0;max-height:0;overflow:hidden;opacity:0;
-  transition:all .32s cubic-bezier(.16,1,.3,1);
-  display:flex;flex-direction:column;gap:12px;
-}
-.effectGroup.open .subControls{margin-top:14px;max-height:600px;opacity:1;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07)}
-.subRow{display:flex;flex-direction:column;gap:6px}
+.effectHeadRight{display:flex;align-items:center;gap:6px}
+.sliderVal{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;color:var(--accent);background:var(--accent-bg);border:1px solid rgba(245,166,35,0.18);padding:2px 7px;border-radius:9px;min-width:34px;text-align:center}
+.mainSlider{margin-top:9px}
+.subControls{margin-top:0;max-height:0;overflow:hidden;opacity:0;transition:all .32s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;gap:10px}
+.effectGroup.open .subControls{margin-top:12px;max-height:1200px;opacity:1;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07)}
+.subRow{display:flex;flex-direction:column;gap:5px}
 .subHead{display:flex;justify-content:space-between;align-items:center}
-.subLabel{font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);font-weight:600}
-.subVal{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);padding:1px 6px;border-radius:8px;min-width:32px;text-align:center}
-input[type=range]{
-  -webkit-appearance:none;appearance:none;width:100%;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;outline:none;cursor:pointer;
-}
-input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:16px;height:16px;background:var(--accent);border-radius:50%;border:2px solid #1a1a1a;
-  box-shadow:0 2px 10px var(--accent-glow);cursor:pointer;transition:transform .15s, box-shadow .15s;margin-top:-6px;
-}
+.subLabel{font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-dim);font-weight:600;display:flex;align-items:center;gap:5px}
+.subLabel span{opacity:0.6;font-weight:400;text-transform:none;letter-spacing:0}
+.subVal{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-dim);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);padding:1px 5px;border-radius:7px;min-width:30px;text-align:center}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--accent);border-radius:50%;border:2px solid #1a1a1a;box-shadow:0 2px 10px var(--accent-glow);cursor:pointer;transition:transform .15s;margin-top:-6px}
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18)}
 input[type=range].subSlider{height:3px}
-input[type=range].subSlider::-webkit-slider-thumb{width:14px;height:14px;background:#d0d0d0;border-color:#1a1a1a;box-shadow:none}
+input[type=range].subSlider::-webkit-slider-thumb{width:13px;height:13px;background:#c8c8c8;border-color:#1a1a1a;box-shadow:none}
 input[type=range].subSlider::-webkit-slider-thumb:hover{background:var(--accent)}
-input[type=range]::-moz-range-thumb{width:16px;height:16px;background:var(--accent);border-radius:50%;border:2px solid #1a1a1a;cursor:pointer}
-input[type=range]::-moz-range-track{height:4px;background:rgba(255,255,255,0.08);border-radius:2px}
-
-#actions{display:flex;flex-direction:column;gap:10px;margin-top:4px}
-.actionBtn{width:100%;padding:12px 16px;border-radius:11px;border:1px solid var(--panel-border);background:rgba(255,255,255,0.06);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .22s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.01em}
-.actionBtn:hover{background:rgba(255,255,255,0.10);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,0.25)}
-.actionBtn:active{transform:translateY(0)}
-.actionBtn.primary{background:var(--accent);color:#0e0e0e;border-color:var(--accent);font-weight:650}
-.actionBtn.primary:hover{background:#ffaf2e;box-shadow:0 8px 24px var(--accent-glow)}
-.actionBtn:disabled{opacity:0.45;pointer-events:none}
+.groupReset{font-size:9.5px;color:var(--text-dim2);background:transparent;border:1px solid rgba(255,255,255,0.08);padding:3px 8px;border-radius:10px;cursor:pointer;transition:all .2s;margin-left:auto}
+.groupReset:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}
+#actions{display:flex;flex-direction:column;gap:9px;margin-top:2px}
+.actionBtn{width:100%;padding:11px 14px;border-radius:11px;border:1px solid var(--panel-border);background:rgba(255,255,255,0.06);color:var(--text);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .22s;display:flex;align-items:center;justify-content:center;gap:8px}
+.actionBtn:hover{background:rgba(255,255,255,0.10);transform:translateY(-1px)}
+.actionBtn.primary{background:var(--accent);color:#0e0e0e;border-color:var(--accent);font-weight:700}
 #processVideoBtn{background:linear-gradient(135deg, var(--accent), var(--accent2));color:#0e0e0e;border-color:var(--accent);font-weight:700}
-#shortcuts{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:6px}
+#shortcuts{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:5px}
 .kbdRow{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim2)}
-.kbdRow kbd{font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.10);border-bottom-width:2px;padding:1px 6px;border-radius:5px;font-size:10px;color:var(--text-dim)}
-#videoProgress{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:min(460px,92%);background:rgba(18,18,18,0.92);backdrop-filter:blur(18px) saturate(1.3);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 18px;z-index:30;box-shadow:0 20px 60px rgba(0,0,0,0.55);display:none;flex-direction:column;gap:12px}
+.kbdRow kbd{font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.10);border-bottom-width:2px;padding:1px 5px;border-radius:5px;font-size:10px;color:var(--text-dim)}
+#videoProgress{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:min(460px,92%);background:rgba(18,18,18,0.92);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 18px;z-index:30;box-shadow:0 20px 60px rgba(0,0,0,0.55);display:none;flex-direction:column;gap:12px}
 #videoProgress.show{display:flex}
 #progressHead{display:flex;justify-content:space-between;align-items:center;font-size:12px}
-#progressHead b{font-weight:600}
 #progressBar{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
 #progressFill{height:100%;width:0%;background:linear-gradient(90deg, var(--accent), #ff7a00);border-radius:3px;transition:width .25s}
 #progressText{font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
-#toast{position:absolute;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);background:rgba(22,22,22,0.96);backdrop-filter:blur(14px);border:1px solid rgba(245,166,35,0.22);color:var(--text);padding:11px 18px;border-radius:11px;font-size:12.5px;font-weight:500;box-shadow:0 14px 40px rgba(0,0,0,0.5);opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.16,1,.3,1);z-index:50;max-width:90%;text-align:center}
+#toast{position:absolute;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);background:rgba(22,22,22,0.96);backdrop-filter:blur(14px);border:1px solid rgba(245,166,35,0.22);color:var(--text);padding:11px 18px;border-radius:11px;font-size:12.5px;font-weight:500;box-shadow:0 14px 40px rgba(0,0,0,0.5);opacity:0;pointer-events:none;transition:all .35s;z-index:50;max-width:90%;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (max-width: 900px){
   html,body{overflow:auto;height:auto}
   #app{height:auto;min-height:100vh}
   #content{flex-direction:column;overflow:visible}
-  #mainArea{height:62vh;min-height:420px;padding:14px;order:1}
+  #mainArea{height:60vh;min-height:400px;padding:12px;order:1}
   #sidebar{width:100%;min-width:0;border-left:none;border-top:1px solid var(--panel-border);order:2;overflow:visible;padding-bottom:32px}
-  header{padding:0 14px}
+  header{padding:0 12px}
   #logo span{display:none}
-  #glCanvas{max-height:54vh}
-  #videoProgress{bottom:12px}
+  #glCanvas{max-height:52vh}
 }
 </style>
 </head>
@@ -182,7 +118,7 @@ input[type=range]::-moz-range-track{height:4px;background:rgba(255,255,255,0.08)
         <div id="dropIcon">◐</div>
         <h2>Drop photo or video</h2>
         <p>Drag & drop <b>image or video</b> here, or click to browse<br>Supports JPG, PNG, WebM, MP4</p>
-        <div class="hint">WebGL 2 • Bloom • Hallation • Grain • Sharpen • 60s video cap</div>
+        <div class="hint">WebGL 2 • Bloom • Hallation • Grain • Sharpen • Color • 60s video cap</div>
       </div>
       <div id="canvasWrap" style="display:none">
         <canvas id="glCanvas"></canvas>
@@ -198,99 +134,93 @@ input[type=range]::-moz-range-track{height:4px;background:rgba(255,255,255,0.08)
     </main>
     <aside id="sidebar">
       <div>
-        <div class="sectionLabel">Presets</div>
+        <div class="sectionLabel">Presets — full pipeline</div>
         <div id="presetChips"></div>
         <button id="savePresetBtn">+ Save current as preset</button>
       </div>
 
       <div id="effectsWrap">
-        <div class="sectionLabel">Effects — Intensity + Fine Tuning</div>
+        <div class="sectionLabel">Effects — Intensity + Advanced</div>
+
+        <!-- OVERALL COLOR -->
+        <div class="effectGroup open" data-group="color">
+          <div class="effectHeader">
+            <div class="effectTitle"><i style="background:#fff"></i> Color & Light <span class="expand">⌄</span></div>
+            <button class="groupReset" data-reset="color">Reset</button>
+          </div>
+          <div class="subControls" style="max-height:1200px;opacity:1;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07)">
+            <div class="subRow"><div class="subHead"><div class="subLabel">Exposure <span>brightness</span></div><div class="subVal" id="valExposure">50</div></div><input class="subSlider" type="range" id="sliderExposure" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Contrast</div><div class="subVal" id="valContrast">50</div></div><input class="subSlider" type="range" id="sliderContrast" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Saturation</div><div class="subVal" id="valSaturation">50</div></div><input class="subSlider" type="range" id="sliderSaturation" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Temperature <span>cool → warm</span></div><div class="subVal" id="valTemperature">50</div></div><input class="subSlider" type="range" id="sliderTemperature" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength</div><div class="subVal" id="valVignStrength">15</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="0" max="100" value="15"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">50</div></div><input class="subSlider" type="range" id="sliderVignSize" min="0" max="100" value="50"></div>
+          </div>
+        </div>
 
         <!-- BLOOM -->
         <div class="effectGroup open" data-group="bloom">
           <div class="effectHeader">
-            <div class="effectTitle"><i style="background:#f5a623;color:#f5a623"></i> Bloom <span class="expand">⌄</span></div>
-            <div class="effectHeadRight"><div class="sliderVal" id="valBloom">0</div></div>
+            <div class="effectTitle"><i style="background:#f5a623"></i> Bloom <span class="expand">⌄</span></div>
+            <div class="effectHeadRight"><div class="sliderVal" id="valBloom">0</div><button class="groupReset" data-reset="bloom">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderBloom" min="0" max="100" value="0"></div>
           <div class="subControls">
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Threshold — bright cutoff</div><div class="subVal" id="valBloomThresh">75</div></div>
-              <input class="subSlider" type="range" id="sliderBloomThresh" min="0" max="100" value="70">
-            </div>
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Spread — blur radius</div><div class="subVal" id="valBloomSpread">30</div></div>
-              <input class="subSlider" type="range" id="sliderBloomSpread" min="0" max="100" value="30">
-            </div>
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Softness — falloff</div><div class="subVal" id="valBloomSoft">35</div></div>
-              <input class="subSlider" type="range" id="sliderBloomSoft" min="0" max="100" value="35">
-            </div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Threshold <span>bright cutoff</span></div><div class="subVal" id="valBloomThresh">70</div></div><input class="subSlider" type="range" id="sliderBloomThresh" min="0" max="100" value="70"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Spread <span>blur radius</span></div><div class="subVal" id="valBloomSpread">30</div></div><input class="subSlider" type="range" id="sliderBloomSpread" min="0" max="100" value="30"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>falloff</span></div><div class="subVal" id="valBloomSoft">35</div></div><input class="subSlider" type="range" id="sliderBloomSoft" min="0" max="100" value="35"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Tint <span>neutral → amber</span></div><div class="subVal" id="valBloomTint">20</div></div><input class="subSlider" type="range" id="sliderBloomTint" min="0" max="100" value="20"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Blend <span>add → screen</span></div><div class="subVal" id="valBloomBlend">0</div></div><input class="subSlider" type="range" id="sliderBloomBlend" min="0" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Anamorphic <span>horizontal stretch</span></div><div class="subVal" id="valBloomAnam">0</div></div><input class="subSlider" type="range" id="sliderBloomAnam" min="0" max="100" value="0"></div>
           </div>
         </div>
 
         <!-- HALLATION -->
         <div class="effectGroup" data-group="hallation">
           <div class="effectHeader">
-            <div class="effectTitle"><i style="background:#ff6a2a;color:#ff6a2a"></i> Hallation <span class="expand">⌄</span></div>
-            <div class="effectHeadRight"><div class="sliderVal" id="valHall">0</div></div>
+            <div class="effectTitle"><i style="background:#ff6a2a"></i> Hallation <span class="expand">⌄</span></div>
+            <div class="effectHeadRight"><div class="sliderVal" id="valHall">0</div><button class="groupReset" data-reset="hallation">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderHall" min="0" max="100" value="0"></div>
           <div class="subControls">
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Threshold</div><div class="subVal" id="valHallThresh">75</div></div>
-              <input class="subSlider" type="range" id="sliderHallThresh" min="0" max="100" value="75">
-            </div>
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Bleed — anamorphic stretch</div><div class="subVal" id="valHallSpread">20</div></div>
-              <input class="subSlider" type="range" id="sliderHallSpread" min="0" max="100" value="20">
-            </div>
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Warmth — red → orange tint</div><div class="subVal" id="valHallTint">50</div></div>
-              <input class="subSlider" type="range" id="sliderHallTint" min="0" max="100" value="50">
-            </div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Threshold</div><div class="subVal" id="valHallThresh">75</div></div><input class="subSlider" type="range" id="sliderHallThresh" min="0" max="100" value="75"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Bleed <span>anamorphic stretch</span></div><div class="subVal" id="valHallSpread">20</div></div><input class="subSlider" type="range" id="sliderHallSpread" min="0" max="100" value="20"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Warmth <span>red → orange</span></div><div class="subVal" id="valHallTint">50</div></div><input class="subSlider" type="range" id="sliderHallTint" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Direction <span>angle</span></div><div class="subVal" id="valHallDir">0</div></div><input class="subSlider" type="range" id="sliderHallDir" min="0" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Falloff <span>edge fade</span></div><div class="subVal" id="valHallFalloff">50</div></div><input class="subSlider" type="range" id="sliderHallFalloff" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Saturation <span>bleed color</span></div><div class="subVal" id="valHallSat">70</div></div><input class="subSlider" type="range" id="sliderHallSat" min="0" max="100" value="70"></div>
           </div>
         </div>
 
         <!-- GRAIN -->
         <div class="effectGroup" data-group="grain">
           <div class="effectHeader">
-            <div class="effectTitle"><i style="background:#aaa;color:#aaa"></i> Film Grain <span class="expand">⌄</span></div>
-            <div class="effectHeadRight"><div class="sliderVal" id="valGrain">0</div></div>
+            <div class="effectTitle"><i style="background:#aaa"></i> Film Grain <span class="expand">⌄</span></div>
+            <div class="effectHeadRight"><div class="sliderVal" id="valGrain">0</div><button class="groupReset" data-reset="grain">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderGrain" min="0" max="100" value="0"></div>
           <div class="subControls">
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Size — grain clump</div><div class="subVal" id="valGrainSize">30</div></div>
-              <input class="subSlider" type="range" id="sliderGrainSize" min="0" max="100" value="30">
-            </div>
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Animation Speed</div><div class="subVal" id="valGrainSpeed">33</div></div>
-              <input class="subSlider" type="range" id="sliderGrainSpeed" min="0" max="100" value="33">
-            </div>
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Color — mono → chromatic</div><div class="subVal" id="valGrainColor">35</div></div>
-              <input class="subSlider" type="range" id="sliderGrainColor" min="0" max="100" value="35">
-            </div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Size <span>clump</span></div><div class="subVal" id="valGrainSize">30</div></div><input class="subSlider" type="range" id="sliderGrainSize" min="0" max="100" value="30"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Roughness <span>detail</span></div><div class="subVal" id="valGrainRough">50</div></div><input class="subSlider" type="range" id="sliderGrainRough" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Speed <span>animation</span></div><div class="subVal" id="valGrainSpeed">33</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="0" max="100" value="33"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Color <span>mono → chroma</span></div><div class="subVal" id="valGrainColor">35</div></div><input class="subSlider" type="range" id="sliderGrainColor" min="0" max="100" value="35"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Luma Influence <span>midtones</span></div><div class="subVal" id="valGrainLuma">50</div></div><input class="subSlider" type="range" id="sliderGrainLuma" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>blur grain</span></div><div class="subVal" id="valGrainSoft">20</div></div><input class="subSlider" type="range" id="sliderGrainSoft" min="0" max="100" value="20"></div>
           </div>
         </div>
 
         <!-- SHARPEN -->
         <div class="effectGroup" data-group="sharpen">
           <div class="effectHeader">
-            <div class="effectTitle"><i style="background:#7ec8ff;color:#7ec8ff"></i> Sharpening <span class="expand">⌄</span></div>
-            <div class="effectHeadRight"><div class="sliderVal" id="valSharp">0</div></div>
+            <div class="effectTitle"><i style="background:#7ec8ff"></i> Sharpening <span class="expand">⌄</span></div>
+            <div class="effectHeadRight"><div class="sliderVal" id="valSharp">0</div><button class="groupReset" data-reset="sharpen">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderSharp" min="0" max="100" value="0"></div>
           <div class="subControls">
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Radius — detail scale</div><div class="subVal" id="valSharpRadius">25</div></div>
-              <input class="subSlider" type="range" id="sliderSharpRadius" min="0" max="100" value="25">
-            </div>
-            <div class="subRow">
-              <div class="subHead"><div class="subLabel">Luma Mix — protect shadows</div><div class="subVal" id="valSharpLuma">50</div></div>
-              <input class="subSlider" type="range" id="sliderSharpLuma" min="0" max="100" value="50">
-            </div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Radius <span>detail scale</span></div><div class="subVal" id="valSharpRadius">25</div></div><input class="subSlider" type="range" id="sliderSharpRadius" min="0" max="100" value="25"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Edge Threshold <span>protect flat</span></div><div class="subVal" id="valSharpEdge">15</div></div><input class="subSlider" type="range" id="sliderSharpEdge" min="0" max="100" value="15"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Detail Boost</div><div class="subVal" id="valSharpDetail">50</div></div><input class="subSlider" type="range" id="sliderSharpDetail" min="0" max="100" value="50"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Luma Protect <span>shadow guard</span></div><div class="subVal" id="valSharpLuma">50</div></div><input class="subSlider" type="range" id="sliderSharpLuma" min="0" max="100" value="50"></div>
           </div>
         </div>
 
@@ -303,7 +233,7 @@ input[type=range]::-moz-range-track{height:4px;background:rgba(255,255,255,0.08)
       </div>
       <div id="shortcuts">
         <div class="kbdRow"><span>Before / After</span><kbd>Space</kbd></div>
-        <div class="kbdRow"><span>Reset sliders</span><kbd>R</kbd></div>
+        <div class="kbdRow"><span>Reset all</span><kbd>R</kbd></div>
         <div class="kbdRow"><span>Download</span><kbd>D</kbd></div>
         <div class="kbdRow"><span>Expand all</span><kbd>E</kbd></div>
       </div>
@@ -316,220 +246,188 @@ input[type=range]::-moz-range-track{height:4px;background:rgba(255,255,255,0.08)
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl2', {preserveDrawingBuffer:true, antialias:false, premultipliedAlpha:false});
 if(!gl){ alert('WebGL 2 not supported'); return; }
-
-const dropZone = document.getElementById('dropZone');
-const canvasWrap = document.getElementById('canvasWrap');
-const fileInput = document.getElementById('fileInput');
-const videoEl = document.getElementById('videoEl');
-const beforeLabel = document.getElementById('beforeLabel');
-const toastEl = document.getElementById('toast');
-const progressWrap = document.getElementById('videoProgress');
-const progressFill = document.getElementById('progressFill');
-const progressText = document.getElementById('progressText');
-const progressPct = document.getElementById('progressPct');
-
-// main sliders
 const $ = id => document.getElementById(id);
-const sliderBloom = $('sliderBloom'), sliderHall = $('sliderHall'), sliderGrain = $('sliderGrain'), sliderSharp = $('sliderSharp');
-const sliderBloomThresh = $('sliderBloomThresh'), sliderBloomSpread = $('sliderBloomSpread'), sliderBloomSoft = $('sliderBloomSoft');
-const sliderHallThresh = $('sliderHallThresh'), sliderHallSpread = $('sliderHallSpread'), sliderHallTint = $('sliderHallTint');
-const sliderGrainSize = $('sliderGrainSize'), sliderGrainSpeed = $('sliderGrainSpeed'), sliderGrainColor = $('sliderGrainColor');
-const sliderSharpRadius = $('sliderSharpRadius'), sliderSharpLuma = $('sliderSharpLuma');
+const dropZone=$('dropZone'), canvasWrap=$('canvasWrap'), fileInput=$('fileInput'), videoEl=$('videoEl'), beforeLabel=$('beforeLabel'), toastEl=$('toast');
+const progressWrap=$('videoProgress'), progressFill=$('progressFill'), progressText=$('progressText'), progressPct=$('progressPct');
 
-const valBloom = $('valBloom'), valHall = $('valHall'), valGrain = $('valGrain'), valSharp = $('valSharp');
-const valBloomThresh = $('valBloomThresh'), valBloomSpread = $('valBloomSpread'), valBloomSoft = $('valBloomSoft');
-const valHallThresh = $('valHallThresh'), valHallSpread = $('valHallSpread'), valHallTint = $('valHallTint');
-const valGrainSize = $('valGrainSize'), valGrainSpeed = $('valGrainSpeed'), valGrainColor = $('valGrainColor');
-const valSharpRadius = $('valSharpRadius'), valSharpLuma = $('valSharpLuma');
+// all sliders
+const ids = [
+  'Exposure','Contrast','Saturation','Temperature','VignStrength','VignSize',
+  'Bloom','BloomThresh','BloomSpread','BloomSoft','BloomTint','BloomBlend','BloomAnam',
+  'Hall','HallThresh','HallSpread','HallTint','HallDir','HallFalloff','HallSat',
+  'Grain','GrainSize','GrainRough','GrainSpeed','GrainColor','GrainLuma','GrainSoft',
+  'Sharp','SharpRadius','SharpEdge','SharpDetail','SharpLuma'
+];
+const sliders={}, vals={};
+ids.forEach(n=>{ sliders[n]=$('slider'+n); vals[n]=$('val'+n); });
 
-let sourceTexture = null;
-let fboSharpened=null, fboBloomExtract=null, fboBloomBlurH=null, fboBloomBlurV=null, fboBloomBlurH2=null, fboBloomBlurV2=null, fboHallExtract=null, fboHallBlurH=null, fboHallBlurV=null;
+let sourceTexture=null, fboSharpened=null, fboBloomExtract=null, fboBloomBlurH=null, fboBloomBlurV=null, fboBloomBlurH2=null, fboBloomBlurV2=null, fboHallExtract=null, fboHallBlurH=null, fboHallBlurV=null;
 let isVideo=false, showOriginal=false, hasContent=false, animId=null;
 
-// params in normalized / real values
-let params = {
-  bloom:0,
-  bloomThreshold:0.75,
-  bloomSpread:1.0,
-  bloomSoft:0.22,
-  hallation:0,
-  hallThreshold:0.82,
-  hallSpread:1.0,
-  hallTint:0.5,
-  grain:0,
-  grainSize:1.5,
-  grainSpeed:1.0,
-  grainColor:0.35,
-  sharpen:0,
-  sharpenRadius:1.0,
-  sharpenLuma:0.5
+let params={
+  exposure:0, contrast:1, saturation:1, temperature:0, vignStrength:0.07, vignSize:1.0,
+  bloom:0, bloomThreshold:0.75, bloomSpread:1.0, bloomSoft:0.22, bloomTint:0.2, bloomBlend:0, bloomAnam:0,
+  hallation:0, hallThreshold:0.82, hallSpread:1.0, hallTint:0.5, hallDir:0, hallFalloff:0.5, hallSat:0.7,
+  grain:0, grainSize:1.5, grainRough:0.5, grainSpeed:1.0, grainColor:0.35, grainLuma:0.5, grainSoft:0.2,
+  sharpen:0, sharpenRadius:1.0, sharpenEdge:0.08, sharpenDetail:0.5, sharpenLuma:0.5
 };
+function map(v,a,b){ return a + (v/100)*(b-a); }
+function unmap(r,a,b){ return ((r-a)/(b-a))*100; }
 
-// helpers for mapping slider 0-100 to real values
-function map(v, a,b){ return a + (v/100)*(b-a); }
-function unmap(real,a,b){ return ((real-a)/(b-a))*100; }
 function updateFromSliders(){
-  // main intensities
-  params.bloom = sliderBloom.value/100;
-  params.hallation = sliderHall.value/100;
-  params.grain = sliderGrain.value/100;
-  params.sharpen = sliderSharp.value/100;
-  // bloom
-  params.bloomThreshold = map(sliderBloomThresh.value, 0.30, 0.95);
-  params.bloomSpread = map(sliderBloomSpread.value, 0.2, 4.0);
-  params.bloomSoft = map(sliderBloomSoft.value, 0.05, 0.5);
-  // hall
-  params.hallThreshold = map(sliderHallThresh.value, 0.30, 0.95);
-  params.hallSpread = map(sliderHallSpread.value, 0.2, 5.0);
-  params.hallTint = map(sliderHallTint.value, 0, 1);
-  // grain
-  params.grainSize = map(sliderGrainSize.value, 0.5, 4.0);
-  params.grainSpeed = map(sliderGrainSpeed.value, 0, 3.0);
-  params.grainColor = map(sliderGrainColor.value, 0, 1);
-  // sharpen
-  params.sharpenRadius = map(sliderSharpRadius.value, 0.5, 2.5);
-  params.sharpenLuma = map(sliderSharpLuma.value, 0, 1);
+  params.exposure = map(sliders.Exposure.value, -1, 1);
+  params.contrast = map(sliders.Contrast.value, 0.5, 1.5);
+  params.saturation = map(sliders.Saturation.value, 0, 2);
+  params.temperature = map(sliders.Temperature.value, -1, 1);
+  params.vignStrength = map(sliders.VignStrength.value, 0, 0.35);
+  params.vignSize = map(sliders.VignSize.value, 0.4, 2.2);
+
+  params.bloom = sliders.Bloom.value/100;
+  params.bloomThreshold = map(sliders.BloomThresh.value, 0.30, 0.95);
+  params.bloomSpread = map(sliders.BloomSpread.value, 0.2, 4.5);
+  params.bloomSoft = map(sliders.BloomSoft.value, 0.05, 0.55);
+  params.bloomTint = sliders.BloomTint.value/100;
+  params.bloomBlend = sliders.BloomBlend.value/100;
+  params.bloomAnam = sliders.BloomAnam.value/100;
+
+  params.hallation = sliders.Hall.value/100;
+  params.hallThreshold = map(sliders.HallThresh.value, 0.30, 0.95);
+  params.hallSpread = map(sliders.HallSpread.value, 0.2, 5.5);
+  params.hallTint = sliders.HallTint.value/100;
+  params.hallDir = map(sliders.HallDir.value, 0, 360);
+  params.hallFalloff = sliders.HallFalloff.value/100;
+  params.hallSat = sliders.HallSat.value/100;
+
+  params.grain = sliders.Grain.value/100;
+  params.grainSize = map(sliders.GrainSize.value, 0.5, 4.5);
+  params.grainRough = sliders.GrainRough.value/100;
+  params.grainSpeed = map(sliders.GrainSpeed.value, 0, 3.5);
+  params.grainColor = sliders.GrainColor.value/100;
+  params.grainLuma = sliders.GrainLuma.value/100;
+  params.grainSoft = sliders.GrainSoft.value/100;
+
+  params.sharpen = sliders.Sharp.value/100;
+  params.sharpenRadius = map(sliders.SharpRadius.value, 0.5, 2.8);
+  params.sharpenEdge = map(sliders.SharpEdge.value, 0, 0.5);
+  params.sharpenDetail = sliders.SharpDetail.value/100;
+  params.sharpenLuma = sliders.SharpLuma.value/100;
 }
-
 function updateSliderUI(){
-  // values display
-  valBloom.textContent = Math.round(params.bloom*100);
-  valHall.textContent = Math.round(params.hallation*100);
-  valGrain.textContent = Math.round(params.grain*100);
-  valSharp.textContent = Math.round(params.sharpen*100);
-  valBloomThresh.textContent = sliderBloomThresh.value;
-  valBloomSpread.textContent = sliderBloomSpread.value;
-  valBloomSoft.textContent = sliderBloomSoft.value;
-  valHallThresh.textContent = sliderHallThresh.value;
-  valHallSpread.textContent = sliderHallSpread.value;
-  valHallTint.textContent = sliderHallTint.value;
-  valGrainSize.textContent = sliderGrainSize.value;
-  valGrainSpeed.textContent = sliderGrainSpeed.value;
-  valGrainColor.textContent = sliderGrainColor.value;
-  valSharpRadius.textContent = sliderSharpRadius.value;
-  valSharpLuma.textContent = sliderSharpLuma.value;
+  ids.forEach(n=>{
+    if(vals[n]) vals[n].textContent = sliders[n].value;
+  });
+  // main intensities show as 0-100 in amber badge (already)
+  vals.Bloom.textContent = sliders.Bloom.value;
+  vals.Hall.textContent = sliders.Hall.value;
+  vals.Grain.textContent = sliders.Grain.value;
+  vals.Sharp.textContent = sliders.Sharp.value;
 
-  // sync slider positions from params (for tween)
-  sliderBloom.value = params.bloom*100;
-  sliderHall.value = params.hallation*100;
-  sliderGrain.value = params.grain*100;
-  sliderSharp.value = params.sharpen*100;
-  sliderBloomThresh.value = unmap(params.bloomThreshold,0.30,0.95);
-  sliderBloomSpread.value = unmap(params.bloomSpread,0.2,4.0);
-  sliderBloomSoft.value = unmap(params.bloomSoft,0.05,0.5);
-  sliderHallThresh.value = unmap(params.hallThreshold,0.30,0.95);
-  sliderHallSpread.value = unmap(params.hallSpread,0.2,5.0);
-  sliderHallTint.value = unmap(params.hallTint,0,1);
-  sliderGrainSize.value = unmap(params.grainSize,0.5,4.0);
-  sliderGrainSpeed.value = unmap(params.grainSpeed,0,3.0);
-  sliderGrainColor.value = unmap(params.grainColor,0,1);
-  sliderSharpRadius.value = unmap(params.sharpenRadius,0.5,2.5);
-  sliderSharpLuma.value = unmap(params.sharpenLuma,0,1);
+  // sync from params for tween
+  sliders.Exposure.value = unmap(params.exposure,-1,1);
+  sliders.Contrast.value = unmap(params.contrast,0.5,1.5);
+  sliders.Saturation.value = unmap(params.saturation,0,2);
+  sliders.Temperature.value = unmap(params.temperature,-1,1);
+  sliders.VignStrength.value = unmap(params.vignStrength,0,0.35);
+  sliders.VignSize.value = unmap(params.vignSize,0.4,2.2);
+  sliders.Bloom.value = params.bloom*100;
+  sliders.BloomThresh.value = unmap(params.bloomThreshold,0.30,0.95);
+  sliders.BloomSpread.value = unmap(params.bloomSpread,0.2,4.5);
+  sliders.BloomSoft.value = unmap(params.bloomSoft,0.05,0.55);
+  sliders.BloomTint.value = params.bloomTint*100;
+  sliders.BloomBlend.value = params.bloomBlend*100;
+  sliders.BloomAnam.value = params.bloomAnam*100;
+  sliders.Hall.value = params.hallation*100;
+  sliders.HallThresh.value = unmap(params.hallThreshold,0.30,0.95);
+  sliders.HallSpread.value = unmap(params.hallSpread,0.2,5.5);
+  sliders.HallTint.value = params.hallTint*100;
+  sliders.HallDir.value = unmap(params.hallDir,0,360);
+  sliders.HallFalloff.value = params.hallFalloff*100;
+  sliders.HallSat.value = params.hallSat*100;
+  sliders.Grain.value = params.grain*100;
+  sliders.GrainSize.value = unmap(params.grainSize,0.5,4.5);
+  sliders.GrainRough.value = params.grainRough*100;
+  sliders.GrainSpeed.value = unmap(params.grainSpeed,0,3.5);
+  sliders.GrainColor.value = params.grainColor*100;
+  sliders.GrainLuma.value = params.grainLuma*100;
+  sliders.GrainSoft.value = params.grainSoft*100;
+  sliders.Sharp.value = params.sharpen*100;
+  sliders.SharpRadius.value = unmap(params.sharpenRadius,0.5,2.8);
+  sliders.SharpEdge.value = unmap(params.sharpenEdge,0,0.5);
+  sliders.SharpDetail.value = params.sharpenDetail*100;
+  sliders.SharpLuma.value = params.sharpenLuma*100;
 
-  // track fill styling
-  const all = [sliderBloom,sliderHall,sliderGrain,sliderSharp,sliderBloomThresh,sliderBloomSpread,sliderBloomSoft,sliderHallThresh,sliderHallSpread,sliderHallTint,sliderGrainSize,sliderGrainSpeed,sliderGrainColor,sliderSharpRadius,sliderSharpLuma];
-  all.forEach(s=>{
+  // gradient fill
+  Object.values(sliders).forEach(s=>{
+    if(!s) return;
     const pct=s.value;
-    const isSub = s.classList.contains('subSlider');
-    const col = isSub ? 'rgba(255,255,255,0.9)' : 'var(--accent)';
+    const isSub=s.classList.contains('subSlider');
+    const col=isSub?'rgba(255,255,255,0.85)':'var(--accent)';
     s.style.background=`linear-gradient(90deg, ${col} 0%, ${col} ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
   });
 }
 
-// shader sources
-const vsSrc = `#version 300 es
+// shaders
+const vsSrc=`#version 300 es
 precision highp float;
-in vec2 a_position;
-in vec2 a_texCoord;
-out vec2 v_texCoord;
+in vec2 a_position; in vec2 a_texCoord; out vec2 v_texCoord;
 void main(){ gl_Position=vec4(a_position,0.,1.); v_texCoord=a_texCoord; }`;
-
-const fsPassthrough = `#version 300 es
-precision highp float;
-in vec2 v_texCoord;
-uniform sampler2D u_image;
-out vec4 outColor;
+const fsPassthrough=`#version 300 es
+precision highp float; in vec2 v_texCoord; uniform sampler2D u_image; out vec4 outColor;
 void main(){ outColor=texture(u_image, v_texCoord); }`;
-
-const fsSharpen = `#version 300 es
+const fsSharpen=`#version 300 es
 precision highp float;
 in vec2 v_texCoord;
-uniform sampler2D u_image;
-uniform vec2 u_texelSize;
-uniform float u_strength;
-uniform float u_radius;
-uniform float u_luma;
+uniform sampler2D u_image; uniform vec2 u_texelSize;
+uniform float u_strength; uniform float u_radius; uniform float u_luma; uniform float u_edge; uniform float u_detail;
 out vec4 outColor;
 void main(){
   vec4 center=texture(u_image, v_texCoord);
   if(u_strength<0.001){ outColor=center; return; }
-  float r = max(u_radius,0.5);
-  vec2 ts = u_texelSize * r;
+  float r=max(u_radius,0.5);
+  vec2 ts=u_texelSize*r;
   vec4 c0=texture(u_image, v_texCoord+vec2(-1.,-1.)*ts);
   vec4 c1=texture(u_image, v_texCoord+vec2(0.,-1.)*ts);
   vec4 c2=texture(u_image, v_texCoord+vec2(1.,-1.)*ts);
   vec4 c3=texture(u_image, v_texCoord+vec2(-1.,0.)*ts);
-  vec4 c4=center;
   vec4 c5=texture(u_image, v_texCoord+vec2(1.,0.)*ts);
   vec4 c6=texture(u_image, v_texCoord+vec2(-1.,1.)*ts);
   vec4 c7=texture(u_image, v_texCoord+vec2(0.,1.)*ts);
   vec4 c8=texture(u_image, v_texCoord+vec2(1.,1.)*ts);
-  vec4 blur=(c0+c1+c2+c3+c4+c5+c6+c7+c8)/9.0;
+  vec4 blur=(c0+c1+c2+c3+center+c5+c6+c7+c8)/9.0;
   vec4 detail=center-blur;
-  // luma protect: reduce sharpening in shadows based on u_luma
   float lum=dot(center.rgb, vec3(0.2126,0.7152,0.0722));
-  float protect = mix(1.0, smoothstep(0.0,0.5,lum), u_luma*0.7);
-  float s=u_strength*1.9*protect;
+  float edgeMask = smoothstep(u_edge, u_edge+0.15, length(detail.rgb));
+  float protect = mix(1.0, smoothstep(0.0,0.6,lum), u_luma*0.75);
+  float s = u_strength * (1.6 + u_detail*1.2) * protect * edgeMask;
   outColor=vec4(clamp(center.rgb+detail.rgb*s,0.,1.), center.a);
 }`;
-
-const fsBright = `#version 300 es
-precision highp float;
-in vec2 v_texCoord;
-uniform sampler2D u_image;
-uniform float u_threshold;
-uniform float u_softness;
-out vec4 outColor;
+const fsBright=`#version 300 es
+precision highp float; in vec2 v_texCoord; uniform sampler2D u_image; uniform float u_threshold; uniform float u_softness; out vec4 outColor;
 void main(){
   vec4 c=texture(u_image, v_texCoord);
   float lum=dot(c.rgb, vec3(0.2126,0.7152,0.0722));
   float mask=smoothstep(u_threshold, u_threshold+u_softness, lum);
-  vec3 bright=c.rgb*mask;
-  bright*=(1.0+lum*0.7);
+  vec3 bright=c.rgb*mask*(1.0+lum*0.7);
   outColor=vec4(bright,1.);
 }`;
-
-const fsHallExtract = `#version 300 es
-precision highp float;
-in vec2 v_texCoord;
-uniform sampler2D u_image;
-uniform float u_threshold;
-uniform float u_softness;
-uniform float u_tint;
-out vec4 outColor;
+const fsHallExtract=`#version 300 es
+precision highp float; in vec2 v_texCoord; uniform sampler2D u_image; uniform float u_threshold; uniform float u_softness; uniform float u_tint; uniform float u_sat; out vec4 outColor;
 void main(){
   vec4 c=texture(u_image, v_texCoord);
   float lum=dot(c.rgb, vec3(0.2126,0.7152,0.0722));
   float mask=smoothstep(u_threshold, u_threshold+u_softness, lum);
-  // tint blend: 0 = deep red, 1 = warm orange
-  vec3 tintRed = vec3(1.7,0.18,0.08);
-  vec3 tintOrange = vec3(1.45,0.60,0.18);
-  vec3 tint = mix(tintRed, tintOrange, u_tint);
+  vec3 tintRed=vec3(1.7,0.18,0.08);
+  vec3 tintOrange=vec3(1.45,0.60,0.18);
+  vec3 tint=mix(tintRed, tintOrange, u_tint);
   vec3 bright=c.rgb*mask*tint;
+  float lumaSat=dot(bright, vec3(0.2126,0.7152,0.0722));
+  bright=mix(vec3(lumaSat), bright, 0.5+u_sat*0.8);
   float redBoost=max(c.r-0.55,0.)*2.2;
   bright.r+=redBoost*mask;
-  bright=clamp(bright,0.,4.);
-  outColor=vec4(bright,1.);
+  outColor=vec4(clamp(bright,0.,4.),1.);
 }`;
-
-const fsBlur = `#version 300 es
-precision highp float;
-in vec2 v_texCoord;
-uniform sampler2D u_image;
-uniform vec2 u_texelSize;
-uniform vec2 u_direction;
-uniform float u_radius;
-out vec4 outColor;
+const fsBlur=`#version 300 es
+precision highp float; in vec2 v_texCoord; uniform sampler2D u_image; uniform vec2 u_texelSize; uniform vec2 u_direction; uniform float u_radius; out vec4 outColor;
 void main(){
   vec4 sum=vec4(0.);
   sum+=texture(u_image, v_texCoord + u_direction*u_texelSize*-4.*u_radius)*0.05;
@@ -543,35 +441,19 @@ void main(){
   sum+=texture(u_image, v_texCoord + u_direction*u_texelSize*4.*u_radius)*0.05;
   outColor=sum;
 }`;
-
-const fsComposite = `#version 300 es
+const fsComposite=`#version 300 es
 precision highp float;
 in vec2 v_texCoord;
-uniform sampler2D u_base;
-uniform sampler2D u_bloom;
-uniform sampler2D u_hallation;
-uniform float u_bloomStrength;
-uniform float u_hallationStrength;
-uniform float u_grainStrength;
-uniform float u_grainSize;
-uniform float u_grainSpeed;
-uniform float u_grainColor;
-uniform float u_time;
-uniform vec2 u_resolution;
+uniform sampler2D u_base; uniform sampler2D u_bloom; uniform sampler2D u_hallation;
+uniform float u_bloomStrength; uniform float u_hallationStrength; uniform float u_bloomTint; uniform float u_bloomBlend; uniform float u_bloomAnam; uniform float u_hallFalloff;
+uniform float u_grainStrength; uniform float u_grainSize; uniform float u_grainSpeed; uniform float u_grainColor; uniform float u_grainRough; uniform float u_grainLuma; uniform float u_grainSoft;
+uniform float u_time; uniform vec2 u_resolution;
+uniform float u_exposure; uniform float u_contrast; uniform float u_saturation; uniform float u_temperature; uniform float u_vignStrength; uniform float u_vignSize;
 out vec4 outColor;
-float hash(vec2 p){
-  p=fract(p*vec2(123.34,345.45));
-  p+=dot(p,p+34.345);
-  return fract(p.x*p.y);
-}
+float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y); }
 float noise(vec2 p){
-  vec2 i=floor(p);
-  vec2 f=fract(p);
-  f=f*f*(3.-2.*f);
-  float a=hash(i);
-  float b=hash(i+vec2(1.,0.));
-  float c=hash(i+vec2(0.,1.));
-  float d=hash(i+vec2(1.,1.));
+  vec2 i=floor(p); vec2 f=fract(p); f=f*f*(3.-2.*f);
+  float a=hash(i); float b=hash(i+vec2(1.,0.)); float c=hash(i+vec2(0.,1.)); float d=hash(i+vec2(1.,1.));
   return mix(mix(a,b,f.x), mix(c,d,f.x), f.y);
 }
 void main(){
@@ -579,56 +461,81 @@ void main(){
   vec4 bloom=texture(u_bloom, v_texCoord);
   vec4 hall=texture(u_hallation, v_texCoord);
   vec3 col=base.rgb;
-  col+=bloom.rgb*u_bloomStrength*1.35;
-  col+=hall.rgb*u_hallationStrength*1.75;
+
+  // bloom tint: neutral to amber
+  vec3 bloomCol=bloom.rgb;
+  vec3 amber=vec3(1.15,0.85,0.55);
+  bloomCol=mix(bloomCol, bloomCol*amber, u_bloomTint*0.6);
+  // anamorphic extra stretch already in blur, but boost
+  float anamBoost=1.0+u_bloomAnam*0.5;
+
+  // blend modes
+  vec3 bloomAdd = bloomCol * u_bloomStrength * 1.35 * anamBoost;
+  vec3 bloomScreen = 1.0 - (1.0-col)*(1.0-bloomCol*u_bloomStrength*0.9);
+  vec3 bloomFinal = mix(bloomAdd, bloomScreen-col, u_bloomBlend);
+  col += bloomFinal;
+
+  // hallation with falloff
+  vec2 uv=v_texCoord*2.-1.;
+  float dist=length(uv);
+  float fall = 1.0 - u_hallFalloff*dist*0.4;
+  fall=clamp(fall,0.3,1.0);
+  col += hall.rgb * u_hallationStrength * 1.75 * fall;
+
+  // exposure
+  col *= exp2(u_exposure);
+  // contrast
+  col = (col-0.5)*u_contrast+0.5;
+  // saturation
+  float lum=dot(col, vec3(0.2126,0.7152,0.0722));
+  col = mix(vec3(lum), col, u_saturation);
+  // temperature: -1 cool (blue), +1 warm (amber)
+  if(u_temperature>0.0){
+    col.r += u_temperature*0.12;
+    col.g += u_temperature*0.04;
+    col.b -= u_temperature*0.10;
+  } else {
+    col.r += u_temperature*0.08;
+    col.b -= u_temperature*0.12;
+  }
+
+  // grain
   if(u_grainStrength>0.001){
     float size=max(u_grainSize,0.5);
     vec2 guv=v_texCoord*u_resolution/size;
-    float t = u_time * u_grainSpeed;
+    float t=u_time*u_grainSpeed;
     guv+=vec2(t*7.3, t*5.9);
     float n=noise(guv);
     float n2=noise(guv*1.73+13.7);
-    float grain=n*0.6+n2*0.4;
+    float n3=noise(guv*3.1+7.3);
+    float grain = n*0.55 + n2*0.35 + n3*0.10*u_grainRough;
+    // softness: blur via mix with smooth noise
+    float nSmooth = mix(n, (n+n2)*0.5, u_grainSoft*0.6);
+    grain = mix(grain, nSmooth, u_grainSoft*0.4);
     grain=(grain-0.5)*2.0;
-    float lum=dot(col, vec3(0.2126,0.7152,0.0722));
-    float mask=1.-abs(lum-0.5)*0.9;
-    mask=clamp(mask,0.25,1.);
-    float intensity=u_grainStrength*0.22*mask;
-    // color control: 0 = mono, 1 = chromatic
-    vec3 grainCol = vec3(grain);
-    vec3 grainChroma = vec3(grain*1.1, grain*0.9, grain*1.2);
-    grainChroma.r+=grain*0.14;
-    grainChroma.b-=grain*0.09;
-    vec3 finalGrain = mix(grainCol, grainChroma, u_grainColor);
+    float lumaMask = 1.0 - abs(lum-0.5)* (1.2 - u_grainLuma*0.5);
+    lumaMask = mix(1.0, lumaMask, u_grainLuma);
+    lumaMask=clamp(lumaMask,0.2,1.0);
+    float intensity=u_grainStrength*0.22*lumaMask;
+    vec3 grainCol=vec3(grain);
+    vec3 grainChroma=vec3(grain*1.1, grain*0.9, grain*1.2);
+    grainChroma.r+=grain*0.14; grainChroma.b-=grain*0.09;
+    vec3 finalGrain=mix(grainCol, grainChroma, u_grainColor);
     col+=finalGrain*intensity;
   }
-  vec2 uv=v_texCoord*2.-1.;
-  float vign=1.-dot(uv,uv)*0.07;
+
+  // vignette with size control
+  float vignSize = max(u_vignSize,0.3);
+  vec2 uv2 = uv / vignSize;
+  float vign = 1.0 - dot(uv2,uv2)*u_vignStrength;
+  vign=clamp(vign,0.0,1.0);
   col*=vign;
+
   outColor=vec4(clamp(col,0.,1.), base.a);
 }`;
 
-function compile(type, src){
-  const s=gl.createShader(type);
-  gl.shaderSource(s, src);
-  gl.compileShader(s);
-  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
-    console.error(gl.getShaderInfoLog(s));
-    throw new Error('shader compile');
-  }
-  return s;
-}
-function createProgram(vs,fs){
-  const p=gl.createProgram();
-  gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
-  gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
-  gl.linkProgram(p);
-  if(!gl.getProgramParameter(p, gl.LINK_STATUS)){
-    console.error(gl.getProgramInfoLog(p));
-    throw new Error('link');
-  }
-  return p;
-}
+function compile(t,s){ const sh=gl.createShader(t); gl.shaderSource(sh,s); gl.compileShader(sh); if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(sh)); throw new Error('compile'); } return sh; }
+function createProgram(vs,fs){ const p=gl.createProgram(); gl.attachShader(p, compile(gl.VERTEX_SHADER,vs)); gl.attachShader(p, compile(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(p); if(!gl.getProgramParameter(p,gl.LINK_STATUS)){ console.error(gl.getProgramInfoLog(p)); throw new Error('link'); } return p; }
 const progPassthrough=createProgram(vsSrc, fsPassthrough);
 const progSharpen=createProgram(vsSrc, fsSharpen);
 const progBright=createProgram(vsSrc, fsBright);
@@ -637,576 +544,406 @@ const progBlur=createProgram(vsSrc, fsBlur);
 const progComposite=createProgram(vsSrc, fsComposite);
 
 const quadData=new Float32Array([-1,-1,0,0, 1,-1,1,0, -1,1,0,1, 1,1,1,1]);
-const quadBuf=gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
-gl.bufferData(gl.ARRAY_BUFFER, quadData, gl.STATIC_DRAW);
+const quadBuf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,quadBuf); gl.bufferData(gl.ARRAY_BUFFER,quadData,gl.STATIC_DRAW);
 function bindQuad(prog){
-  const posLoc=gl.getAttribLocation(prog,'a_position');
-  const uvLoc=gl.getAttribLocation(prog,'a_texCoord');
-  gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
-  if(posLoc>=0){ gl.enableVertexAttribArray(posLoc); gl.vertexAttribPointer(posLoc,2,gl.FLOAT,false,16,0); }
-  if(uvLoc>=0){ gl.enableVertexAttribArray(uvLoc); gl.vertexAttribPointer(uvLoc,2,gl.FLOAT,false,16,8); }
+  const a=gl.getAttribLocation(prog,'a_position'), b=gl.getAttribLocation(prog,'a_texCoord');
+  gl.bindBuffer(gl.ARRAY_BUFFER,quadBuf);
+  if(a>=0){ gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a,2,gl.FLOAT,false,16,0); }
+  if(b>=0){ gl.enableVertexAttribArray(b); gl.vertexAttribPointer(b,2,gl.FLOAT,false,16,8); }
 }
-function createTexture(w,h){
-  const tex=gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  return tex;
-}
-function createFBO(w,h){
-  const tex=createTexture(w,h);
-  const fbo=gl.createFramebuffer();
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex,0);
-  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-  return {fbo,tex,width:w,height:h};
-}
+function createTexture(w,h){ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); return t; }
+function createFBO(w,h){ const tex=createTexture(w,h); const fbo=gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER,fbo); gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0); gl.bindFramebuffer(gl.FRAMEBUFFER,null); return {fbo,tex,width:w,height:h}; }
 function deleteFBO(f){ if(!f) return; gl.deleteFramebuffer(f.fbo); gl.deleteTexture(f.tex); }
 function recreateFBOs(w,h){
   [fboSharpened,fboBloomExtract,fboBloomBlurH,fboBloomBlurV,fboBloomBlurH2,fboBloomBlurV2,fboHallExtract,fboHallBlurH,fboHallBlurV].forEach(deleteFBO);
   fboSharpened=createFBO(w,h);
-  const hw=Math.max(1, Math.floor(w/2)), hh=Math.max(1, Math.floor(h/2));
-  fboBloomExtract=createFBO(hw,hh);
-  fboBloomBlurH=createFBO(hw,hh);
-  fboBloomBlurV=createFBO(hw,hh);
-  fboBloomBlurH2=createFBO(hw,hh);
-  fboBloomBlurV2=createFBO(hw,hh);
-  fboHallExtract=createFBO(hw,hh);
-  fboHallBlurH=createFBO(hw,hh);
-  fboHallBlurV=createFBO(hw,hh);
+  const hw=Math.max(1,Math.floor(w/2)), hh=Math.max(1,Math.floor(h/2));
+  fboBloomExtract=createFBO(hw,hh); fboBloomBlurH=createFBO(hw,hh); fboBloomBlurV=createFBO(hw,hh); fboBloomBlurH2=createFBO(hw,hh); fboBloomBlurV2=createFBO(hw,hh);
+  fboHallExtract=createFBO(hw,hh); fboHallBlurH=createFBO(hw,hh); fboHallBlurV=createFBO(hw,hh);
 }
-sourceTexture=gl.createTexture();
-gl.bindTexture(gl.TEXTURE_2D, sourceTexture);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+sourceTexture=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
 
 function render(timeMs){
   if(!sourceTexture || !fboSharpened) return;
   if(showOriginal){
-    gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-    gl.viewport(0,0,canvas.width,canvas.height);
-    gl.useProgram(progPassthrough);
-    bindQuad(progPassthrough);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, sourceTexture);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,null); gl.viewport(0,0,canvas.width,canvas.height);
+    gl.useProgram(progPassthrough); bindQuad(progPassthrough);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture);
     gl.uniform1i(gl.getUniformLocation(progPassthrough,'u_image'),0);
-    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-    return;
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return;
   }
   // sharpen
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboSharpened.fbo);
-  gl.viewport(0,0,fboSharpened.width,fboSharpened.height);
-  gl.useProgram(progSharpen);
-  bindQuad(progSharpen);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, sourceTexture);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboSharpened.fbo); gl.viewport(0,0,fboSharpened.width,fboSharpened.height);
+  gl.useProgram(progSharpen); bindQuad(progSharpen);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture);
   gl.uniform1i(gl.getUniformLocation(progSharpen,'u_image'),0);
-  gl.uniform2f(gl.getUniformLocation(progSharpen,'u_texelSize'), 1/fboSharpened.width, 1/fboSharpened.height);
-  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_strength'), params.sharpen);
-  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_radius'), params.sharpenRadius);
-  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_luma'), params.sharpenLuma);
+  gl.uniform2f(gl.getUniformLocation(progSharpen,'u_texelSize'),1/fboSharpened.width,1/fboSharpened.height);
+  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_strength'),params.sharpen);
+  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_radius'),params.sharpenRadius);
+  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_luma'),params.sharpenLuma);
+  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_edge'),params.sharpenEdge);
+  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_detail'),params.sharpenDetail);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
   // bloom extract
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomExtract.fbo);
-  gl.viewport(0,0,fboBloomExtract.width,fboBloomExtract.height);
-  gl.useProgram(progBright);
-  bindQuad(progBright);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, fboSharpened.tex);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomExtract.fbo); gl.viewport(0,0,fboBloomExtract.width,fboBloomExtract.height);
+  gl.useProgram(progBright); bindQuad(progBright);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,fboSharpened.tex);
   gl.uniform1i(gl.getUniformLocation(progBright,'u_image'),0);
-  gl.uniform1f(gl.getUniformLocation(progBright,'u_threshold'), params.bloomThreshold);
-  gl.uniform1f(gl.getUniformLocation(progBright,'u_softness'), params.bloomSoft);
+  gl.uniform1f(gl.getUniformLocation(progBright,'u_threshold'),params.bloomThreshold);
+  gl.uniform1f(gl.getUniformLocation(progBright,'u_softness'),params.bloomSoft);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
-  // bloom blur H/V x2
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurH.fbo);
-  gl.viewport(0,0,fboBloomBlurH.width,fboBloomBlurH.height);
-  gl.useProgram(progBlur);
-  bindQuad(progBlur);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, fboBloomExtract.tex);
+  // bloom blur with anamorphic
+  const bloomBase = 1.0*params.bloomSpread + params.bloom*0.8;
+  const bloomLarge = 2.5*params.bloomSpread + params.bloom*1.2;
+  const anam = params.bloomAnam;
+  // first pass horizontal with anamorphic stretch
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurH.fbo); gl.viewport(0,0,fboBloomBlurH.width,fboBloomBlurH.height);
+  gl.useProgram(progBlur); bindQuad(progBlur);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,fboBloomExtract.tex);
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
-  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'), 1/fboBloomExtract.width, 1/fboBloomExtract.height);
+  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboBloomExtract.width,1/fboBloomExtract.height);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),1,0);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'), 1.0*params.bloomSpread + params.bloom*0.8);
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomBase*(1+anam*1.2));
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurV.fbo);
-  gl.viewport(0,0,fboBloomBlurV.width,fboBloomBlurV.height);
-  gl.useProgram(progBlur);
-  bindQuad(progBlur);
-  gl.bindTexture(gl.TEXTURE_2D, fboBloomBlurH.tex);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurV.fbo); gl.viewport(0,0,fboBloomBlurV.width,fboBloomBlurV.height);
+  gl.useProgram(progBlur); bindQuad(progBlur);
+  gl.bindTexture(gl.TEXTURE_2D,fboBloomBlurH.tex);
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
-  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'), 1/fboBloomBlurH.width, 1/fboBloomBlurH.height);
+  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboBloomBlurH.width,1/fboBloomBlurH.height);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),0,1);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'), 1.0*params.bloomSpread + params.bloom*0.8);
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomBase);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurH2.fbo);
-  gl.viewport(0,0,fboBloomBlurH2.width,fboBloomBlurH2.height);
-  gl.useProgram(progBlur);
-  bindQuad(progBlur);
-  gl.bindTexture(gl.TEXTURE_2D, fboBloomBlurV.tex);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurH2.fbo); gl.viewport(0,0,fboBloomBlurH2.width,fboBloomBlurH2.height);
+  gl.useProgram(progBlur); bindQuad(progBlur);
+  gl.bindTexture(gl.TEXTURE_2D,fboBloomBlurV.tex);
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
-  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'), 1/fboBloomBlurV.width, 1/fboBloomBlurV.height);
+  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboBloomBlurV.width,1/fboBloomBlurV.height);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),1,0);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'), 2.5*params.bloomSpread + params.bloom*1.2);
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomLarge*(1+anam*1.5));
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurV2.fbo);
-  gl.viewport(0,0,fboBloomBlurV2.width,fboBloomBlurV2.height);
-  gl.useProgram(progBlur);
-  bindQuad(progBlur);
-  gl.bindTexture(gl.TEXTURE_2D, fboBloomBlurH2.tex);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboBloomBlurV2.fbo); gl.viewport(0,0,fboBloomBlurV2.width,fboBloomBlurV2.height);
+  gl.useProgram(progBlur); bindQuad(progBlur);
+  gl.bindTexture(gl.TEXTURE_2D,fboBloomBlurH2.tex);
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
-  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'), 1/fboBloomBlurH2.width, 1/fboBloomBlurH2.height);
+  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboBloomBlurH2.width,1/fboBloomBlurH2.height);
   gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),0,1);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'), 2.5*params.bloomSpread + params.bloom*1.2);
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),bloomLarge);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
   // hallation extract
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboHallExtract.fbo);
-  gl.viewport(0,0,fboHallExtract.width,fboHallExtract.height);
-  gl.useProgram(progHallExtract);
-  bindQuad(progHallExtract);
-  gl.bindTexture(gl.TEXTURE_2D, fboSharpened.tex);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboHallExtract.fbo); gl.viewport(0,0,fboHallExtract.width,fboHallExtract.height);
+  gl.useProgram(progHallExtract); bindQuad(progHallExtract);
+  gl.bindTexture(gl.TEXTURE_2D,fboSharpened.tex);
   gl.uniform1i(gl.getUniformLocation(progHallExtract,'u_image'),0);
-  gl.uniform1f(gl.getUniformLocation(progHallExtract,'u_threshold'), params.hallThreshold);
-  gl.uniform1f(gl.getUniformLocation(progHallExtract,'u_softness'), 0.25);
-  gl.uniform1f(gl.getUniformLocation(progHallExtract,'u_tint'), params.hallTint);
+  gl.uniform1f(gl.getUniformLocation(progHallExtract,'u_threshold'),params.hallThreshold);
+  gl.uniform1f(gl.getUniformLocation(progHallExtract,'u_softness'),0.25);
+  gl.uniform1f(gl.getUniformLocation(progHallExtract,'u_tint'),params.hallTint);
+  gl.uniform1f(gl.getUniformLocation(progHallExtract,'u_sat'),params.hallSat);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboHallBlurH.fbo);
-  gl.viewport(0,0,fboHallBlurH.width,fboHallBlurH.height);
-  gl.useProgram(progBlur);
-  bindQuad(progBlur);
-  gl.bindTexture(gl.TEXTURE_2D, fboHallExtract.tex);
+  // hallation blur with direction
+  const ang = params.hallDir * Math.PI/180;
+  const dirX = Math.cos(ang), dirY = Math.sin(ang);
+  const dirPerpX = -dirY, dirPerpY = dirX;
+  const hallR = 1.2*params.hallSpread + params.hallation*3.5;
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboHallBlurH.fbo); gl.viewport(0,0,fboHallBlurH.width,fboHallBlurH.height);
+  gl.useProgram(progBlur); bindQuad(progBlur);
+  gl.bindTexture(gl.TEXTURE_2D,fboHallExtract.tex);
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
-  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'), 1/fboHallExtract.width, 1/fboHallExtract.height);
-  gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),1,0);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'), 1.2*params.hallSpread + params.hallation*3.5);
+  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboHallExtract.width,1/fboHallExtract.height);
+  gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),dirX,dirY);
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),hallR);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboHallBlurV.fbo);
-  gl.viewport(0,0,fboHallBlurV.width,fboHallBlurV.height);
-  gl.useProgram(progBlur);
-  bindQuad(progBlur);
-  gl.bindTexture(gl.TEXTURE_2D, fboHallBlurH.tex);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboHallBlurV.fbo); gl.viewport(0,0,fboHallBlurV.width,fboHallBlurV.height);
+  gl.useProgram(progBlur); bindQuad(progBlur);
+  gl.bindTexture(gl.TEXTURE_2D,fboHallBlurH.tex);
   gl.uniform1i(gl.getUniformLocation(progBlur,'u_image'),0);
-  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'), 1/fboHallBlurH.width, 1/fboHallBlurH.height);
-  gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),0,1);
-  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'), 0.6 + params.hallation*0.6);
+  gl.uniform2f(gl.getUniformLocation(progBlur,'u_texelSize'),1/fboHallBlurH.width,1/fboHallBlurH.height);
+  gl.uniform2f(gl.getUniformLocation(progBlur,'u_direction'),dirPerpX,dirPerpY);
+  gl.uniform1f(gl.getUniformLocation(progBlur,'u_radius'),0.6+params.hallation*0.6);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
   // composite
-  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-  gl.viewport(0,0,canvas.width,canvas.height);
-  gl.useProgram(progComposite);
-  bindQuad(progComposite);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, fboSharpened.tex);
-  gl.uniform1i(gl.getUniformLocation(progComposite,'u_base'),0);
-  gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, fboBloomBlurV2.tex);
-  gl.uniform1i(gl.getUniformLocation(progComposite,'u_bloom'),1);
-  gl.activeTexture(gl.TEXTURE2);
-  gl.bindTexture(gl.TEXTURE_2D, fboHallBlurV.tex);
-  gl.uniform1i(gl.getUniformLocation(progComposite,'u_hallation'),2);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomStrength'), params.bloom);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_hallationStrength'), params.hallation);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainStrength'), params.grain);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSize'), params.grainSize);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSpeed'), params.grainSpeed);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainColor'), params.grainColor);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_time'), (timeMs||performance.now())*0.001);
-  gl.uniform2f(gl.getUniformLocation(progComposite,'u_resolution'), canvas.width, canvas.height);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null); gl.viewport(0,0,canvas.width,canvas.height);
+  gl.useProgram(progComposite); bindQuad(progComposite);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,fboSharpened.tex); gl.uniform1i(gl.getUniformLocation(progComposite,'u_base'),0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,fboBloomBlurV2.tex); gl.uniform1i(gl.getUniformLocation(progComposite,'u_bloom'),1);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,fboHallBlurV.tex); gl.uniform1i(gl.getUniformLocation(progComposite,'u_hallation'),2);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomStrength'),params.bloom);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_hallationStrength'),params.hallation);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomTint'),params.bloomTint);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomBlend'),params.bloomBlend);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomAnam'),params.bloomAnam);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_hallFalloff'),params.hallFalloff);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainStrength'),params.grain);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSize'),params.grainSize);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSpeed'),params.grainSpeed);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainColor'),params.grainColor);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainRough'),params.grainRough);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainLuma'),params.grainLuma);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSoft'),params.grainSoft);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_time'),(timeMs||performance.now())*0.001);
+  gl.uniform2f(gl.getUniformLocation(progComposite,'u_resolution'),canvas.width,canvas.height);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_exposure'),params.exposure);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_contrast'),params.contrast);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_saturation'),params.saturation);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_temperature'),params.temperature);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_vignStrength'),params.vignStrength);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_vignSize'),params.vignSize);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 }
 
 function startLoop(){
   if(animId) cancelAnimationFrame(animId);
-  const loop = (t)=>{
+  const loop=t=>{
     animId=requestAnimationFrame(loop);
     if(isVideo && videoEl && !videoEl.paused && videoEl.readyState>=2){
-      gl.bindTexture(gl.TEXTURE_2D, sourceTexture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE, videoEl); }catch(e){}
+      gl.bindTexture(gl.TEXTURE_2D,sourceTexture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+      try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl); }catch(e){}
     }
     render(t);
-  };
-  loop(0);
+  }; loop(0);
 }
+function showToast(m,ms=3200){ toastEl.textContent=m; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'),ms); }
 
-function showToast(msg, ms=3200){
-  toastEl.textContent=msg;
-  toastEl.classList.add('show');
-  setTimeout(()=>toastEl.classList.remove('show'), ms);
-}
-
-// file handling
 function handleFile(file){
   if(!file) return;
-  const isVid = file.type.startsWith('video/');
+  const isVid=file.type.startsWith('video/');
   if(isVid){
     const url=URL.createObjectURL(file);
-    videoEl.src=url;
-    videoEl.load();
+    videoEl.src=url; videoEl.load();
     videoEl.onloadedmetadata=()=>{
       const dur=videoEl.duration;
-      if(dur>60) showToast(`Video is ${dur.toFixed(1)}s — capped at 60s for processing. First 60s will be used.`, 4500);
+      if(dur>60) showToast(`Video ${dur.toFixed(1)}s capped at 60s`,4500);
       const w=videoEl.videoWidth, h=videoEl.videoHeight;
-      canvas.width=w; canvas.height=h;
-      recreateFBOs(w,h);
-      gl.bindTexture(gl.TEXTURE_2D, sourceTexture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE, videoEl);
+      canvas.width=w; canvas.height=h; recreateFBOs(w,h);
+      gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
       isVideo=true; hasContent=true;
-      dropZone.style.display='none';
-      canvasWrap.style.display='flex';
+      dropZone.style.display='none'; canvasWrap.style.display='flex';
       $('processVideoBtn').style.display='flex';
-      $('downloadBtn').innerHTML='⤓ Download Frame PNG <kbd style="margin-left:auto;background:#0e0e0e;color:#f5a623;border-color:#0e0e0e">D</kbd>';
-      videoEl.play().catch(()=>{});
-      startLoop();
-      showToast('Video loaded — live preview with WebGL effects');
+      $('downloadBtn').innerHTML='⤓ Download Frame PNG';
+      videoEl.play().catch(()=>{}); startLoop(); showToast('Video loaded — live preview');
     };
   } else {
     const img=new Image();
     img.onload=()=>{
       const w=img.naturalWidth, h=img.naturalHeight;
-      canvas.width=w; canvas.height=h;
-      recreateFBOs(w,h);
-      gl.bindTexture(gl.TEXTURE_2D, sourceTexture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE, img);
+      canvas.width=w; canvas.height=h; recreateFBOs(w,h);
+      gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
       isVideo=false; hasContent=true;
-      dropZone.style.display='none';
-      canvasWrap.style.display='flex';
+      dropZone.style.display='none'; canvasWrap.style.display='flex';
       $('processVideoBtn').style.display='none';
-      $('downloadBtn').innerHTML='⤓ Download PNG <kbd style="margin-left:auto;background:#0e0e0e;color:#f5a623;border-color:#0e0e0e">D</kbd>';
-      startLoop();
-      showToast('Image loaded — adjust effects');
+      $('downloadBtn').innerHTML='⤓ Download PNG';
+      startLoop(); showToast('Image loaded');
     };
     img.src=URL.createObjectURL(file);
   }
 }
-dropZone.addEventListener('click', ()=> fileInput.click());
-dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', e=>{ e.preventDefault(); dropZone.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
-fileInput.addEventListener('change', e=>{ const f=e.target.files[0]; if(f) handleFile(f); e.target.value=''; });
+dropZone.addEventListener('click',()=>fileInput.click());
+dropZone.addEventListener('dragover',e=>{ e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop',e=>{ e.preventDefault(); dropZone.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
+fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) handleFile(f); e.target.value=''; });
 
-// expand/collapse
 document.querySelectorAll('.effectHeader').forEach(h=>{
-  h.addEventListener('click', ()=>{
-    const group=h.closest('.effectGroup');
-    group.classList.toggle('open');
+  h.addEventListener('click',e=>{
+    if(e.target.classList.contains('groupReset')) return;
+    h.closest('.effectGroup').classList.toggle('open');
+  });
+});
+document.querySelectorAll('.groupReset').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const group=btn.dataset.reset;
+    const defaults={
+      color:{Exposure:50,Contrast:50,Saturation:50,Temperature:50,VignStrength:15,VignSize:50},
+      bloom:{Bloom:0,BloomThresh:70,BloomSpread:30,BloomSoft:35,BloomTint:20,BloomBlend:0,BloomAnam:0},
+      hallation:{Hall:0,HallThresh:75,HallSpread:20,HallTint:50,HallDir:0,HallFalloff:50,HallSat:70},
+      grain:{Grain:0,GrainSize:30,GrainRough:50,GrainSpeed:33,GrainColor:35,GrainLuma:50,GrainSoft:20},
+      sharpen:{Sharp:0,SharpRadius:25,SharpEdge:15,SharpDetail:50,SharpLuma:50}
+    };
+    const d=defaults[group];
+    if(d){ Object.keys(d).forEach(k=>{ if(sliders[k]) sliders[k].value=d[k]; }); updateFromSliders(); updateSliderUI(); render(performance.now()); showToast(`${group} reset`); }
   });
 });
 
-// before/after
 function toggleBeforeAfter(){
   if(!hasContent) return;
   showOriginal=!showOriginal;
-  beforeLabel.textContent = showOriginal ? 'BEFORE — original' : 'AFTER';
-  if(showOriginal) beforeLabel.classList.add('show'); else beforeLabel.classList.remove('show');
+  beforeLabel.textContent=showOriginal?'BEFORE — original':'AFTER';
+  beforeLabel.classList.toggle('show',showOriginal);
   render(performance.now());
 }
-$('beforeAfterBtn').addEventListener('click', toggleBeforeAfter);
-$('hdrBeforeBtn').addEventListener('click', toggleBeforeAfter);
-$('hdrUploadBtn').addEventListener('click', ()=> fileInput.click());
-canvasWrap.addEventListener('dblclick', ()=> fileInput.click());
+$('beforeAfterBtn').addEventListener('click',toggleBeforeAfter);
+$('hdrBeforeBtn').addEventListener('click',toggleBeforeAfter);
+$('hdrUploadBtn').addEventListener('click',()=>fileInput.click());
+canvasWrap.addEventListener('dblclick',()=>fileInput.click());
 
-// download
 function downloadImage(){
-  if(!hasContent){ showToast('Upload an image first'); return; }
+  if(!hasContent){ showToast('Upload first'); return; }
   render(performance.now());
-  const link=document.createElement('a');
-  link.download = isVideo ? `film-lab-frame-${Date.now()}.png` : `film-lab-${Date.now()}.png`;
-  link.href=canvas.toDataURL('image/png');
-  link.click();
-  showToast('PNG exported');
+  const a=document.createElement('a');
+  a.download=`film-lab-${Date.now()}.png`;
+  a.href=canvas.toDataURL('image/png'); a.click(); showToast('PNG exported');
 }
-$('downloadBtn').addEventListener('click', downloadImage);
-$('hdrDownloadBtn').addEventListener('click', downloadImage);
+$('downloadBtn').addEventListener('click',downloadImage);
+$('hdrDownloadBtn').addEventListener('click',downloadImage);
 
-// sliders wiring
-const allSliders = [sliderBloom,sliderBloomThresh,sliderBloomSpread,sliderBloomSoft,sliderHall,sliderHallThresh,sliderHallSpread,sliderHallTint,sliderGrain,sliderGrainSize,sliderGrainSpeed,sliderGrainColor,sliderSharp,sliderSharpRadius,sliderSharpLuma];
-allSliders.forEach(s=>{
-  s.addEventListener('input', ()=>{
-    updateFromSliders();
-    updateSliderUI();
-    if(hasContent) render(performance.now());
-  });
+Object.values(sliders).forEach(s=>{
+  if(!s) return;
+  s.addEventListener('input',()=>{ updateFromSliders(); updateSliderUI(); if(hasContent) render(performance.now()); });
 });
 
-// presets — now with full slider values 0-100
-const builtInPresets = {
-  "Kodak Vision": {bloom:45, bloomThresh:55, bloomSpread:35, bloomSoft:40, hallation:25, hallThresh:60, hallSpread:25, hallTint:70, grain:60, grainSize:45, grainSpeed:25, grainColor:40, sharpen:15, sharpenRadius:30, sharpenLuma:60},
-  "Anamorphic": {bloom:35, bloomThresh:65, bloomSpread:50, bloomSoft:30, hallation:85, hallThresh:45, hallSpread:85, hallTint:50, grain:15, grainSize:20, grainSpeed:35, grainColor:30, sharpen:20, sharpenRadius:35, sharpenLuma:50},
-  "Matte Film": {bloom:20, bloomThresh:75, bloomSpread:25, bloomSoft:35, hallation:20, hallThresh:80, hallSpread:20, hallTint:60, grain:85, grainSize:80, grainSpeed:20, grainColor:20, sharpen:5, sharpenRadius:20, sharpenLuma:40},
-  "Clean Digital": {bloom:0, bloomThresh:70, bloomSpread:30, bloomSoft:30, hallation:0, hallThresh:75, hallSpread:20, hallTint:50, grain:0, grainSize:30, grainSpeed:33, grainColor:35, sharpen:75, sharpenRadius:30, sharpenLuma:70}
+// presets with full 32 values
+const builtInPresets={
+  "Kodak Vision": {Exposure:52,Contrast:48,Saturation:58,Temperature:62,VignStrength:22,VignSize:55,Bloom:45,BloomThresh:55,BloomSpread:35,BloomSoft:40,BloomTint:45,BloomBlend:10,BloomAnam:15,Hall:25,HallThresh:60,HallSpread:25,HallTint:70,HallDir:5,HallFalloff:45,HallSat:75,Grain:60,GrainSize:45,GrainRough:60,GrainSpeed:25,GrainColor:40,GrainLuma:55,GrainSoft:30,Sharp:15,SharpRadius:30,SharpEdge:20,SharpDetail:45,SharpLuma:60},
+  "Anamorphic": {Exposure:50,Contrast:52,Saturation:50,Temperature:55,VignStrength:25,VignSize:50,Bloom:35,BloomThresh:65,BloomSpread:50,BloomSoft:30,BloomTint:25,BloomBlend:20,BloomAnam:65,Hall:85,HallThresh:45,HallSpread:85,HallTint:50,HallDir:0,HallFalloff:35,HallSat:80,Grain:15,GrainSize:20,GrainRough:30,GrainSpeed:35,GrainColor:30,GrainLuma:50,GrainSoft:20,Sharp:20,SharpRadius:35,SharpEdge:15,SharpDetail:50,SharpLuma:50},
+  "Matte Film": {Exposure:48,Contrast:42,Saturation:42,Temperature:58,VignStrength:35,VignSize:60,Bloom:20,BloomThresh:75,BloomSpread:25,BloomSoft:35,BloomTint:30,BloomBlend:5,BloomAnam:10,Hall:20,HallThresh:80,HallSpread:20,HallTint:60,HallDir:10,HallFalloff:60,HallSat:60,Grain:85,GrainSize:80,GrainRough:75,GrainSpeed:20,GrainColor:20,GrainLuma:70,GrainSoft:45,Sharp:5,SharpRadius:20,SharpEdge:30,SharpDetail:30,SharpLuma:40},
+  "Clean Digital": {Exposure:50,Contrast:55,Saturation:55,Temperature:50,VignStrength:10,VignSize:50,Bloom:0,BloomThresh:70,BloomSpread:30,BloomSoft:30,BloomTint:20,BloomBlend:0,BloomAnam:0,Hall:0,HallThresh:75,HallSpread:20,HallTint:50,HallDir:0,HallFalloff:50,HallSat:70,Grain:0,GrainSize:30,GrainRough:50,GrainSpeed:33,GrainColor:35,GrainLuma:50,GrainSoft:20,Sharp:75,SharpRadius:30,SharpEdge:10,SharpDetail:70,SharpLuma:70},
+  "Dream Glow": {Exposure:54,Contrast:45,Saturation:62,Temperature:65,VignStrength:18,VignSize:58,Bloom:78,BloomThresh:40,BloomSpread:72,BloomSoft:68,BloomTint:65,BloomBlend:35,BloomAnam:30,Hall:35,HallThresh:55,HallSpread:40,HallTint:75,HallDir:2,HallFalloff:40,HallSat:85,Grain:25,GrainSize:35,GrainRough:40,GrainSpeed:30,GrainColor:50,GrainLuma:45,GrainSoft:60,Sharp:10,SharpRadius:25,SharpEdge:25,SharpDetail:40,SharpLuma:55}
 };
 let customPresets=[];
-try{ customPresets=JSON.parse(localStorage.getItem('film_lab_presets_v2')||'[]'); }catch(e){ customPresets=[]; }
-function saveCustom(){ localStorage.setItem('film_lab_presets_v2', JSON.stringify(customPresets)); }
-
-function getCurrentSliderValues(){
-  return {
-    bloom: parseInt(sliderBloom.value),
-    bloomThresh: parseInt(sliderBloomThresh.value),
-    bloomSpread: parseInt(sliderBloomSpread.value),
-    bloomSoft: parseInt(sliderBloomSoft.value),
-    hallation: parseInt(sliderHall.value),
-    hallThresh: parseInt(sliderHallThresh.value),
-    hallSpread: parseInt(sliderHallSpread.value),
-    hallTint: parseInt(sliderHallTint.value),
-    grain: parseInt(sliderGrain.value),
-    grainSize: parseInt(sliderGrainSize.value),
-    grainSpeed: parseInt(sliderGrainSpeed.value),
-    grainColor: parseInt(sliderGrainColor.value),
-    sharpen: parseInt(sliderSharp.value),
-    sharpenRadius: parseInt(sliderSharpRadius.value),
-    sharpenLuma: parseInt(sliderSharpLuma.value)
-  };
+try{ customPresets=JSON.parse(localStorage.getItem('film_lab_presets_v3')||'[]'); }catch(e){ customPresets=[]; }
+function saveCustom(){ localStorage.setItem('film_lab_presets_v3', JSON.stringify(customPresets)); }
+function getCurrentValues(){
+  const o={}; ids.forEach(k=>{ o[k]=parseInt(sliders[k]?.value||0); }); return o;
 }
-function setSliderValues(o){
-  sliderBloom.value=o.bloom; sliderBloomThresh.value=o.bloomThresh; sliderBloomSpread.value=o.bloomSpread; sliderBloomSoft.value=o.bloomSoft;
-  sliderHall.value=o.hallation; sliderHallThresh.value=o.hallThresh; sliderHallSpread.value=o.hallSpread; sliderHallTint.value=o.hallTint;
-  sliderGrain.value=o.grain; sliderGrainSize.value=o.grainSize; sliderGrainSpeed.value=o.grainSpeed; sliderGrainColor.value=o.grainColor;
-  sliderSharp.value=o.sharpen; sliderSharpRadius.value=o.sharpenRadius; sliderSharpLuma.value=o.sharpenLuma;
+function setValues(o){
+  ids.forEach(k=>{ if(sliders[k] && o[k]!=null) sliders[k].value=o[k]; });
   updateFromSliders(); updateSliderUI();
 }
-
-function renderPresetChips(){
-  const container=$('presetChips');
-  container.innerHTML='';
-  const all={...builtInPresets};
-  customPresets.forEach(cp=>{ all[cp.name]=cp.values; });
+function renderChips(){
+  const c=$('presetChips'); c.innerHTML='';
+  const all={...builtInPresets}; customPresets.forEach(cp=> all[cp.name]=cp.values);
   Object.keys(all).forEach(name=>{
-    const chip=document.createElement('div');
-    chip.className='chip'+(customPresets.find(c=>c.name===name)?' custom':'');
-    chip.textContent=name;
-    chip.addEventListener('click', ()=> applyPreset(name, all[name]));
-    if(customPresets.find(c=>c.name===name)){
-      chip.addEventListener('contextmenu', e=>{
-        e.preventDefault();
-        if(confirm(`Delete preset "${name}"?`)){
-          customPresets=customPresets.filter(c=>c.name!==name);
-          saveCustom(); renderPresetChips();
-        }
-      });
+    const chip=document.createElement('div'); chip.className='chip'+(customPresets.find(x=>x.name===name)?' custom':''); chip.textContent=name;
+    chip.addEventListener('click',()=>applyPreset(name, all[name]));
+    if(customPresets.find(x=>x.name===name)){
+      chip.addEventListener('contextmenu',e=>{ e.preventDefault(); if(confirm(`Delete "${name}"?`)){ customPresets=customPresets.filter(x=>x.name!==name); saveCustom(); renderChips(); } });
       chip.title='Right-click to delete';
     }
-    container.appendChild(chip);
+    c.appendChild(chip);
   });
 }
-
 function applyPreset(name, values){
-  document.querySelectorAll('.chip').forEach(c=> c.classList.toggle('active', c.textContent===name));
-  const start=getCurrentSliderValues();
-  const target=values;
-  const dur=300;
-  const t0=performance.now();
-  const easeOutCubic=t=>1-Math.pow(1-t,3);
+  document.querySelectorAll('.chip').forEach(ch=> ch.classList.toggle('active', ch.textContent===name));
+  const start=getCurrentValues();
+  const dur=320, t0=performance.now();
+  const ease=t=>1-Math.pow(1-t,3);
   function step(now){
-    const elapsed=now-t0;
-    const p=Math.min(elapsed/dur,1);
-    const e=easeOutCubic(p);
+    const p=Math.min((now-t0)/dur,1), e=ease(p);
     const cur={};
-    for(const k in target){
-      cur[k]=start[k] + (target[k]-start[k])*e;
-    }
-    setSliderValues(cur);
-    render(now);
+    for(const k in values){ cur[k]=start[k]+(values[k]-start[k])*e; }
+    setValues(cur); render(now);
     if(p<1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
   showToast(`Preset: ${name}`);
 }
-renderPresetChips();
-$('savePresetBtn').addEventListener('click', ()=>{
-  const name=prompt('Preset name:');
-  if(!name) return;
-  const values=getCurrentSliderValues();
+renderChips();
+$('savePresetBtn').addEventListener('click',()=>{
+  const name=prompt('Preset name:'); if(!name) return;
+  const values=getCurrentValues();
   customPresets=customPresets.filter(c=>c.name!==name);
-  customPresets.push({name, values});
-  saveCustom(); renderPresetChips();
-  showToast(`Saved preset "${name}"`);
+  customPresets.push({name,values}); saveCustom(); renderChips(); showToast(`Saved "${name}"`);
 });
 
-// keyboard
-window.addEventListener('keydown', e=>{
+window.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT') return;
   if(e.code==='Space'){ e.preventDefault(); toggleBeforeAfter(); }
   else if(e.key.toLowerCase()==='r'){
-    // reset main intensities to 0, keep fine-tuning at defaults
-    sliderBloom.value=0; sliderHall.value=0; sliderGrain.value=0; sliderSharp.value=0;
-    // also reset fine tuning to 0 per spec? Let's reset all to 0 for full reset, but keep some defaults for usability if shift+R
-    if(e.shiftKey){
-      // full zero
-      allSliders.forEach(s=> s.value=0);
+    if(e.shiftKey){ ids.forEach(k=>{ if(sliders[k]) sliders[k].value=0; }); }
+    else {
+      // reset main intensities
+      ['Bloom','Hall','Grain','Sharp'].forEach(k=>{ sliders[k].value=0; });
+      sliders.Exposure.value=50; sliders.Contrast.value=50; sliders.Saturation.value=50; sliders.Temperature.value=50; sliders.VignStrength.value=15; sliders.VignSize.value=50;
     }
     updateFromSliders(); updateSliderUI(); render(performance.now());
     document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-    showToast('Reset — R (Shift+R = full zero)');
-  } else if(e.key.toLowerCase()==='d'){
-    downloadImage();
-  } else if(e.key.toLowerCase()==='e'){
+    showToast('Reset');
+  } else if(e.key.toLowerCase()==='d'){ downloadImage(); }
+  else if(e.key.toLowerCase()==='e'){
     const anyClosed=document.querySelector('.effectGroup:not(.open)');
-    const shouldOpen=!!anyClosed;
-    document.querySelectorAll('.effectGroup').forEach(g=> g.classList.toggle('open', shouldOpen));
+    document.querySelectorAll('.effectGroup').forEach(g=> g.classList.toggle('open', !!anyClosed));
   }
 });
 
-// video processing (same as before)
+// video processing (same as before, using new params)
 let ffmpegInstance=null, ffmpegLoading=false;
 async function loadFFmpeg(){
   if(ffmpegInstance) return ffmpegInstance;
   if(ffmpegLoading){ showToast('ffmpeg.wasm loading…'); return null; }
-  ffmpegLoading=true;
-  progressWrap.classList.add('show');
-  progressText.textContent='Loading ffmpeg.wasm (CDN)…';
-  progressFill.style.width='5%';
+  ffmpegLoading=true; progressWrap.classList.add('show'); progressText.textContent='Loading ffmpeg.wasm…'; progressFill.style.width='5%';
   try{
     if(!window.FFmpegWASM){
-      await new Promise((res,rej)=>{
-        const s=document.createElement('script');
-        s.src='https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js';
-        s.onload=res; s.onerror=rej;
-        document.head.appendChild(s);
-      });
+      await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
     }
-    if(window.FFmpegWASM && window.FFmpegWASM.FFmpeg){
-      const {FFmpeg}=window.FFmpegWASM;
-      const ff=new FFmpeg();
-      ff.on('log', ({message})=> console.log('[ffmpeg]',message));
-      await ff.load({
-        coreURL:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
-        wasmURL:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'
-      });
+    if(window.FFmpegWASM?.FFmpeg){
+      const {FFmpeg}=window.FFmpegWASM; const ff=new FFmpeg();
+      await ff.load({coreURL:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js', wasmURL:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'});
       ffmpegInstance=ff; ffmpegLoading=false; return ff;
     }
-  }catch(err){ console.warn('ffmpeg 0.12 failed', err); }
+  }catch(err){ console.warn('0.12 fail',err); }
   try{
-    if(!window.FFmpeg || !window.FFmpeg.createFFmpeg){
-      await new Promise((res,rej)=>{
-        const s=document.createElement('script');
-        s.src='https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js';
-        s.onload=res; s.onerror=rej;
-        document.head.appendChild(s);
-      });
+    if(!window.FFmpeg?.createFFmpeg){
+      await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
     }
-    const {createFFmpeg}=window.FFmpeg;
-    const ff=createFFmpeg({log:true, corePath:'https://unpkg.com/@ffmpeg/core@0.11.6/dist/ffmpeg-core.js'});
-    await ff.load();
+    const {createFFmpeg}=window.FFmpeg; const ff=createFFmpeg({log:true, corePath:'https://unpkg.com/@ffmpeg/core@0.11.6/dist/ffmpeg-core.js'}); await ff.load();
     ffmpegInstance=ff; ffmpegLoading=false; return ff;
-  }catch(err){
-    console.error('ffmpeg load failed', err);
-    progressText.textContent='Failed to load ffmpeg.wasm';
-    showToast('Failed to load ffmpeg.wasm — check network');
-    ffmpegLoading=false; return null;
-  }
+  }catch(err){ console.error(err); progressText.textContent='Failed to load ffmpeg'; showToast('ffmpeg load failed'); ffmpegLoading=false; return null; }
 }
-function seekVideo(time){
-  return new Promise(res=>{
-    const onSeek=()=>{ videoEl.removeEventListener('seeked', onSeek); setTimeout(res,30); };
-    videoEl.addEventListener('seeked', onSeek);
-    videoEl.currentTime=time;
-    setTimeout(()=>{ videoEl.removeEventListener('seeked', onSeek); res(); }, 1200);
-  });
-}
+function seekVideo(t){ return new Promise(res=>{ const on=()=>{ videoEl.removeEventListener('seeked',on); setTimeout(res,30); }; videoEl.addEventListener('seeked',on); videoEl.currentTime=t; setTimeout(()=>{ videoEl.removeEventListener('seeked',on); res(); },1200); }); }
 async function processVideo(){
-  if(!isVideo || !hasContent){ showToast('Upload a video first'); return; }
-  const dur=Math.min(videoEl.duration,60);
-  if(!dur || isNaN(dur)){ showToast('Video metadata not ready'); return; }
-  const fps=24;
-  const total=Math.floor(dur*fps);
-  if(total<=0){ showToast('Invalid video duration'); return; }
-  const ff=await loadFFmpeg();
-  if(!ff) return;
-  const hasWebCodecs = ('VideoDecoder' in window && 'EncodedVideoChunk' in window) || ('MediaStreamTrackProcessor' in window);
-  console.log('WebCodecs available:', hasWebCodecs);
-  progressWrap.classList.add('show');
-  progressFill.style.width='0%';
-  progressPct.textContent='0%';
-  progressText.textContent=`Extracting ${total} frames @ ${fps}fps — ${hasWebCodecs ? 'WebCodecs' : 'canvas fallback'}`;
+  if(!isVideo||!hasContent){ showToast('Upload video first'); return; }
+  const dur=Math.min(videoEl.duration,60); if(!dur||isNaN(dur)){ showToast('Metadata not ready'); return; }
+  const fps=24, total=Math.floor(dur*fps);
+  const ff=await loadFFmpeg(); if(!ff) return;
+  const hasWebCodecs=('VideoDecoder' in window && 'EncodedVideoChunk' in window) || ('MediaStreamTrackProcessor' in window);
+  progressWrap.classList.add('show'); progressFill.style.width='0%'; progressPct.textContent='0%'; progressText.textContent=`Extracting ${total} frames @ ${fps}fps — ${hasWebCodecs?'WebCodecs':'canvas fallback'}`;
   videoEl.pause();
-  const writeFile=async(name,data)=>{ if(ff.writeFile) await ff.writeFile(name,data); else ff.FS('writeFile',name,data); };
-  const readFile=async(name)=>{ if(ff.readFile) return await ff.readFile(name); else return ff.FS('readFile',name); };
-  const exec=async(args)=>{ if(ff.exec) await ff.exec(args); else await ff.run(...args); };
+  const writeFile=async(n,d)=>{ if(ff.writeFile) await ff.writeFile(n,d); else ff.FS('writeFile',n,d); };
+  const readFile=async(n)=>{ if(ff.readFile) return await ff.readFile(n); else return ff.FS('readFile',n); };
+  const exec=async(a)=>{ if(ff.exec) await ff.exec(a); else await ff.run(...a); };
   try{
     for(let i=0;i<total;i++){
-      const t=i/fps;
-      await seekVideo(t);
-      gl.bindTexture(gl.TEXTURE_2D, sourceTexture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE, videoEl); }catch(e){}
+      const t=i/fps; await seekVideo(t);
+      gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+      try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl); }catch(e){}
       render(t*1000);
-      const blob=await new Promise(r=> canvas.toBlob(r,'image/png',1.0));
-      if(!blob) throw new Error('toBlob failed');
-      const buf=await blob.arrayBuffer();
-      const u8=new Uint8Array(buf);
-      const fname=`frame_${String(i).padStart(4,'0')}.png`;
-      await writeFile(fname,u8);
-      const pct=Math.round((i+1)/total*70);
-      progressFill.style.width=pct+'%';
-      progressPct.textContent=pct+'%';
-      progressText.textContent=`Frame ${i+1} of ${total} — ${fname}`;
+      const blob=await new Promise(r=> canvas.toBlob(r,'image/png',1.0)); const buf=await blob.arrayBuffer(); const u8=new Uint8Array(buf);
+      const fname=`frame_${String(i).padStart(4,'0')}.png`; await writeFile(fname,u8);
+      const pct=Math.round((i+1)/total*70); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Frame ${i+1} of ${total}`;
       await new Promise(r=> setTimeout(r,0));
     }
-    progressText.textContent='Encoding WebM with ffmpeg.wasm…';
-    progressFill.style.width='75%';
-    try{
-      await exec(['-framerate', String(fps), '-i', 'frame_%04d.png', '-c:v', 'libvpx-vp9', '-b:v', '2M', '-auto-alt-ref', '0', '-pix_fmt', 'yuv420p', 'output.webm']);
-    }catch(e){
-      console.warn('vp9 failed, trying libvpx', e);
-      await exec(['-framerate', String(fps), '-i', 'frame_%04d.png', '-c:v', 'libvpx', '-b:v', '2M', '-pix_fmt', 'yuv420p', 'output.webm']);
-    }
-    progressFill.style.width='95%';
-    progressText.textContent='Finalizing…';
-    const data=await readFile('output.webm');
-    const outBlob=new Blob([data.buffer ? data : data], {type:'video/webm'});
-    const outUrl=URL.createObjectURL(outBlob);
-    const a=document.createElement('a');
-    a.href=outUrl; a.download=`film-lab-${Date.now()}.webm`; a.click();
-    for(let i=0;i<total;i++){
-      const fname=`frame_${String(i).padStart(4,'0')}.png`;
-      try{ if(ff.deleteFile) await ff.deleteFile(fname); else ff.FS('unlink',fname); }catch(e){}
-    }
+    progressText.textContent='Encoding WebM…'; progressFill.style.width='75%';
+    try{ await exec(['-framerate',String(fps),'-i','frame_%04d.png','-c:v','libvpx-vp9','-b:v','2M','-auto-alt-ref','0','-pix_fmt','yuv420p','output.webm']); }
+    catch(e){ await exec(['-framerate',String(fps),'-i','frame_%04d.png','-c:v','libvpx','-b:v','2M','-pix_fmt','yuv420p','output.webm']); }
+    progressFill.style.width='95%'; progressText.textContent='Finalizing…';
+    const data=await readFile('output.webm'); const outBlob=new Blob([data.buffer?data:data],{type:'video/webm'}); const outUrl=URL.createObjectURL(outBlob);
+    const a=document.createElement('a'); a.href=outUrl; a.download=`film-lab-${Date.now()}.webm`; a.click();
+    for(let i=0;i<total;i++){ const fn=`frame_${String(i).padStart(4,'0')}.png`; try{ if(ff.deleteFile) await ff.deleteFile(fn); else ff.FS('unlink',fn); }catch(e){} }
     try{ if(ff.deleteFile) await ff.deleteFile('output.webm'); else ff.FS('unlink','output.webm'); }catch(e){}
-    progressFill.style.width='100%'; progressPct.textContent='100%';
-    progressText.textContent=`Done! ${total} frames → WebM downloaded`;
-    showToast(`Video processed: ${total} frames → WebM`, 4000);
-    setTimeout(()=> progressWrap.classList.remove('show'), 3000);
-  }catch(err){
-    console.error(err);
-    progressText.textContent='Error: '+err.message;
-    showToast('Video processing failed: '+err.message, 5000);
-  }
+    progressFill.style.width='100%'; progressPct.textContent='100%'; progressText.textContent=`Done! ${total} frames → WebM`; showToast(`Video: ${total} frames → WebM`,4000);
+    setTimeout(()=> progressWrap.classList.remove('show'),3000);
+  }catch(err){ console.error(err); progressText.textContent='Error: '+err.message; showToast('Failed: '+err.message,5000); }
 }
-$('processVideoBtn').addEventListener('click', processVideo);
+$('processVideoBtn').addEventListener('click',processVideo);
 
 // init
-updateFromSliders();
-updateSliderUI();
-render(performance.now());
-window.addEventListener('dragover', e=> e.preventDefault());
-window.addEventListener('drop', e=>{
-  if(e.dataTransfer.files.length){
-    const f=e.dataTransfer.files[0];
-    if(f && (f.type.startsWith('image/')||f.type.startsWith('video/'))){
-      e.preventDefault(); handleFile(f);
-    }
-  }
-});
-console.log('Film Lab v2 — expanded controls — WebGL2', gl.getParameter(gl.VERSION));
+updateFromSliders(); updateSliderUI(); render(performance.now());
+window.addEventListener('dragover',e=> e.preventDefault());
+window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ const f=e.dataTransfer.files[0]; if(f && (f.type.startsWith('image/')||f.type.startsWith('video/'))){ e.preventDefault(); handleFile(f); } } });
+console.log('Film Lab v3 — 32 controls — WebGL2', gl.getParameter(gl.VERSION));
 })();
 </script>
 </body>
