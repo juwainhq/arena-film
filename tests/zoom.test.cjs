@@ -18,7 +18,7 @@ test('loaded previews expose zoom controls and keep zoom separate from export pi
   assert.match(script, /canvas\.addEventListener\('wheel',[\s\S]*?\{passive:false\}\)/);
   assert.match(script, /canvas\.addEventListener\('pointermove'/);
   assert.match(script, /zoomControls\.addEventListener\('dblclick',e=>e\.stopPropagation\(\)\)/);
-  assert.match(script, /canvasWrap\.addEventListener\('dblclick',\(\)=>fileInput\.click\(\)\)/);
+  assert.match(script, /canvasWrap\.addEventListener\('dblclick',\(\)=>\{ if\(!maskPaintMode\) fileInput\.click\(\); \}\)/);
   assert.equal((script.match(/canvasWrap\.style\.display='flex'; resetPreviewZoom\(\)/g) || []).length, 2); // image and video uploads
   assert.match(script, /a\.href=canvas\.toDataURL\('image\/png'\)/); // export source is unchanged
 });

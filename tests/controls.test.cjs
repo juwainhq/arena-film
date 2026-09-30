@@ -21,7 +21,7 @@ const context = vm.createContext({sliders, params});
 vm.runInContext(`${config}\n${mapper}\n${update}\n${converter}\n${upgrade}\n${legacyPresets}\n${withoutSharpening}\n${presetFromNeutral}\n${builtIns}\nthis.controls=advancedControls;this.mapValue=advancedValue;this.update=updateFromSliders;this.convert=convertLegacyValues;this.upgrade=upgradeV4Preset;this.oldPresets=legacyBuiltInPresets;this.presets=builtInPresets;`, context);
 const {controls, mapValue, update: updateFromSliders, convert, upgrade: upgradeV4Preset, oldPresets, presets} = context;
 const advancedInputs = [...html.matchAll(/<input class="subSlider" type="range" id="slider(\w+)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
-const intensityInputs = [...html.matchAll(/<input type="range" id="slider(Bloom|Hall|Grain|Sharp)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
+const intensityInputs = [...html.matchAll(/<input type="range" id="slider(Bloom|Hall|Grain|Dither|Sharp)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
 
 for (const [, name] of [...advancedInputs, ...intensityInputs]) sliders[name] = {value: '0'};
 
@@ -45,7 +45,7 @@ test('the header uses Juwain Haque branding without changing the editor identity
 });
 
 test('every effect has a separate accessible ON/OFF switch and a visible accordion arrow', () => {
-  const groups = ['color', 'bloom', 'hallation', 'grain', 'sharpen'];
+  const groups = ['color', 'bloom', 'hallation', 'grain', 'dither', 'sharpen'];
   const switches = [...html.matchAll(/class="effectToggle" data-toggle="(\w+)" role="switch" aria-checked="true" aria-label="([^"]+)"/g)];
   assert.deepEqual(switches.map(m => m[1]), groups);
   for (const group of groups) assert.match(html, new RegExp(`aria-controls="${group}Controls"`));
@@ -56,10 +56,10 @@ test('every effect has a separate accessible ON/OFF switch and a visible accordi
 });
 
 test('effect switches bypass rendering at neutral without changing slider values', () => {
-  const code = script.match(/const effectEnabled=\{[^\n]+;\nfunction effectValue\(group,value,neutral=0\)\{[^\n]+\}/)[0];
+  const code = script.match(/const effectEnabled=\{[^\n]+;\nlet ditherScope='full';\nfunction effectValue\(group,value,neutral=0\)\{[^\n]+\}/)[0];
   const state = vm.createContext({});
   vm.runInContext(`${code}\nthis.enabled=effectEnabled;this.value=effectValue;`, state);
-  for (const group of ['color', 'bloom', 'hallation', 'grain', 'sharpen']) {
+  for (const group of ['color', 'bloom', 'hallation', 'grain', 'dither', 'sharpen']) {
     assert.equal(state.value(group, 0.75), 0.75);
     state.enabled[group] = false;
     assert.equal(state.value(group, 0.75), 0);
@@ -76,14 +76,15 @@ test('effect switches bypass rendering at neutral without changing slider values
     ['u_fade', 'color', 'fade'], ['u_shadowTone', 'color', 'shadowTone'],
     ['u_highlightTone', 'color', 'highlightTone'],
   ]) assert.ok(script.includes(`'${uniform}'),effectValue('${group}',params.${param})`), uniform);
+  assert.match(script, /'u_ditherStrength'\),backgroundOnly && !subjectProtected \? 0 : effectValue\('dither',params\.dither\)/);
   for (const param of ['contrast', 'saturation']) {
     assert.ok(script.includes(`'u_${param}'),effectValue('color',params.${param},1)`), param);
   }
 });
 
-test('all 36 controls start at 0 with centered -100 to +100 scales', () => {
-  assert.equal(advancedInputs.length, 32);
-  assert.equal(intensityInputs.length, 4);
+test('all 40 controls start at 0 with centered -100 to +100 scales', () => {
+  assert.equal(advancedInputs.length, 35);
+  assert.equal(intensityInputs.length, 5);
   assert.deepEqual(advancedInputs.map(m => m[1]).sort(), Object.keys(controls).sort());
   for (const [, name, min, max, value] of [...advancedInputs, ...intensityInputs]) {
     assert.deepEqual([min, max, value], ['-100', '100', '0'], name);
@@ -102,6 +103,9 @@ test('zero is neutral, details have two-sided ranges and intensities are signed'
     assert.ok(range[0] < range[1] && range[1] < range[2], `${name} needs both directions`);
     sliders[name].value = '0';
   }
+  assert.deepEqual(Array.from(controls.DitherSteps.range), [4, 12, 32]);
+  assert.deepEqual(Array.from(controls.DitherSize.range), [1, 2, 6]);
+  assert.deepEqual(Array.from(controls.DitherBrush.range), [0.02, 0.06, 0.18]);
   assert.deepEqual(Array.from(controls.Exposure.range), [-2, 0, 2]);
   assert.deepEqual(Array.from(controls.Fade.range), [-0.6, 0, 0.25]);
   for (const name of ['Vibrance','ShadowTone','HighlightTone']) assert.deepEqual(Array.from(controls[name].range), [-1, 0, 1], name);
@@ -116,12 +120,15 @@ test('zero is neutral, details have two-sided ranges and intensities are signed'
   for (const name of ['vibrance','fade','shadowTone','highlightTone']) assert.equal(params[name], 0, `${name} starts neutral`);
   assert.equal(params.hallation, 0);
   assert.equal(params.grain, 0);
+  assert.equal(params.dither, 0);
+  assert.equal(params.ditherSteps, 12);
+  assert.equal(params.ditherSize, 2);
   assert.equal(params.sharpen, 0);
-  for (const name of ['Bloom', 'Hall', 'Grain', 'Sharp']) {
+  for (const name of ['Bloom', 'Hall', 'Grain', 'Dither', 'Sharp']) {
     for (const sign of [-100, 100]) {
       sliders[name].value = String(sign);
       updateFromSliders();
-      assert.equal(params[{Bloom:'bloom',Hall:'hallation',Grain:'grain',Sharp:'sharpen'}[name]], sign / 100);
+      assert.equal(params[{Bloom:'bloom',Hall:'hallation',Grain:'grain',Dither:'dither',Sharp:'sharpen'}[name]], sign / 100);
     }
     sliders[name].value = '0';
   }
@@ -156,9 +163,10 @@ test('eighteen complete presets, legacy translations and v4 upgrades retain old 
   const social = ['Golden Hour','Soft Portrait','Retro 2000','Cloudy Pastel','Moody Coffee','Neon Nights'];
   const stories = ['Teal & Ember','Rosé Haze','Chrome Flash','Instant Film','Coastal Fade','After Hours'];
   assert.deepEqual(Object.keys(presets).sort(), [...classic,...social,...stories].sort());
-  assert.equal(Object.keys(presets['Noir Crunch']).length, 36);
-  for (const name of [...classic,...social]) {
-    for (const key of ['Vibrance','Fade','ShadowTone','HighlightTone']) assert.equal(presets[name][key], 0, `${name}: legacy color unchanged`);
+  assert.equal(Object.keys(presets['Noir Crunch']).length, 40);
+  for (const name of [...classic,...social,...stories]) {
+    for (const key of ['Dither','DitherSteps','DitherSize','DitherBrush']) assert.equal(presets[name][key], 0, `${name}: dithering stays opt-in`);
+    if([...classic,...social].includes(name)) for (const key of ['Vibrance','Fade','ShadowTone','HighlightTone']) assert.equal(presets[name][key], 0, `${name}: legacy color unchanged`);
   }
   assert.ok(presets['Teal & Ember'].ShadowTone < 0 && presets['Teal & Ember'].HighlightTone > 0);
   assert.ok(presets['Rosé Haze'].ShadowTone > 0 && presets['Rosé Haze'].Fade > 0);
@@ -217,19 +225,21 @@ test('eighteen complete presets, legacy translations and v4 upgrades retain old 
 });
 
 test('older saved presets fade new sliders to zero while preserving custom sharpening', () => {
-  const frames = [], inputs = {Fade:{value:70},ShadowTone:{value:-35},Sharp:{value:0},Exposure:{value:0}};
+  const frames = [], scopeChanges=[], inputs = {Fade:{value:70},ShadowTone:{value:-35},Sharp:{value:0},Exposure:{value:0}};
   const chip = {textContent:'Old custom',classList:{toggle(){}},setAttribute(){}};
   const state = vm.createContext({
     ids:Object.keys(inputs), sliders:inputs, presetFrame:null,
     performance:{now:()=>0}, requestAnimationFrame(fn){frames.push(fn);return frames.length;},
     cancelPresetAnimation(){}, document:{querySelectorAll:()=>[chip]},
+    setDitherScope(scope){ scopeChanges.push(scope); },
     updateFromSliders(){}, updateSliderUI(){}, render(){}, showToast(){},
   });
   const getter = script.match(/function getCurrentValues\(\)\{[\s\S]*?\n\}/)[0];
   const setter = script.match(/function setValues\(o\)\{[\s\S]*?\n\}/)[0];
   const apply = script.match(/function applyPreset\(name, values\)\{[\s\S]*?\n\}/)[0];
   vm.runInContext(`${getter}\n${setter}\n${apply}\nthis.apply=applyPreset;`,state);
-  state.apply('Old custom',{Sharp:35,Exposure:20}); // saved before Fade and Shadow Tone existed
+  state.apply('Old custom',{Sharp:35,Exposure:20}); // saved before Fade and Dither existed
+  assert.equal(scopeChanges.at(-1),'full');
   assert.equal(frames.length,1);
   frames.shift()(170);
   assert.ok(inputs.Fade.value>0 && inputs.Fade.value<70);
@@ -245,7 +255,7 @@ test('older saved presets fade new sliders to zero while preserving custom sharp
 test('all built-in looks leave sharpening neutral while preserving their other effects', () => {
   const sharpenControls = ['Sharp', 'SharpRadius', 'SharpEdge', 'SharpDetail', 'SharpLuma'];
   for (const [name, values] of Object.entries(presets)) {
-    assert.deepEqual(Object.keys(values).sort(), [...Object.keys(controls),'Bloom','Hall','Grain','Sharp'].sort(), `${name} is complete`);
+    assert.deepEqual(Object.keys(values).sort(), [...Object.keys(controls),'Bloom','Hall','Grain','Dither','Sharp'].sort(), `${name} is complete`);
     for (const [key, value] of Object.entries(values)) assert.ok(Number.isInteger(value) && value >= -100 && value <= 100, `${name}: ${key}`);
     for (const key of sharpenControls) assert.equal(values[key], 0, `${name}: ${key}`);
     if (oldPresets[name]) {

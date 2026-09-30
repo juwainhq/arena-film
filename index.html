@@ -194,6 +194,24 @@ input[type=range]::-moz-range-thumb { width: 10px; height: 10px; background: var
 input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 .groupReset { padding: 4px 0 4px 7px; background: none; border: 0; border-radius: 0; color: var(--text-dim2); font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
 .groupReset:hover { color: var(--text); }
+/* Dithering stays in the same editorial control language as the other effects. */
+.ditherHint,.maskHint,#maskStatus { color: var(--text-dim2); font-size: 10px; line-height: 1.6; }
+.ditherMode { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.ditherMode label { display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 8px; border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.ditherMode label:has(input:checked) { border-color: var(--border-strong); color: var(--text); background: var(--soft-bg); }
+.ditherMode input { flex: none; width: 13px; height: 13px; margin: 0; accent-color: var(--accent); }
+.ditherMode label:has(input:disabled) { opacity: .4; cursor: not-allowed; }
+.ditherMaskTools { display: flex; flex-direction: column; gap: 14px; padding-top: 16px; border-top: 1px solid var(--panel-border); }
+.ditherMaskTools[hidden] { display: none; }
+.maskButtons { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.maskButtons button { min-height: 36px; padding: 6px 8px; border: 1px solid var(--panel-border); background: transparent; color: var(--text-dim); font-size: 10px; letter-spacing: .04em; text-align: left; cursor: pointer; }
+.maskButtons button:hover,.maskButtons button:focus-visible { border-color: var(--text); color: var(--text); }
+.maskButtons button[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: var(--accent-bg); }
+.maskButtons button:disabled { opacity: .45; cursor: not-allowed; }
+#canvasWrap.maskPainting #glCanvas { cursor: crosshair; touch-action: none; }
+#maskDoneBtn { display: none; position: absolute; top: 0; right: 0; z-index: 7; padding: 9px 12px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+#canvasWrap.maskPainting #maskDoneBtn { display: block; }
+#maskDoneBtn:hover,#maskDoneBtn:focus-visible { border-color: var(--accent); color: var(--accent); }
 #actions { display: flex; flex-direction: column; gap: 0; margin-top: 0; }
 .actionBtn { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 18px 0; background: none; border: 0; border-top: 1px solid var(--panel-border); border-radius: 0; color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .17em; text-transform: uppercase; text-align: left; cursor: pointer; transition: color .25s, border-color .25s; }
 .actionBtn:hover { border-top-color: var(--text); }
@@ -321,6 +339,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
       </div>
       <div id="canvasWrap" style="display:none">
         <canvas id="glCanvas" title="Scroll to zoom in or out. Drag to pan when zoomed."></canvas>
+        <button type="button" id="maskDoneBtn" aria-label="Finish painting subject mask">Done painting ↗</button>
         <div id="beforeLabel">BEFORE</div>
         <div id="zoomControls" role="group" aria-label="Preview zoom controls">
           <span class="zoomInstructions" aria-hidden="true">Scroll to zoom · drag when zoomed</span>
@@ -412,10 +431,39 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
           <div class="subControls" id="grainControls">
             <div class="subRow"><div class="subHead"><div class="subLabel">Size <span>clump</span></div><div class="subVal" id="valGrainSize">0</div></div><input class="subSlider" type="range" id="sliderGrainSize" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Roughness <span>detail</span></div><div class="subVal" id="valGrainRough">0</div></div><input class="subSlider" type="range" id="sliderGrainRough" min="-100" max="100" value="0"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Speed <span>animation</span></div><div class="subVal" id="valGrainSpeed">0</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Speed <span>video only · photos stay still</span></div><div class="subVal" id="valGrainSpeed">0</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Color <span>mono → chroma</span></div><div class="subVal" id="valGrainColor">0</div></div><input class="subSlider" type="range" id="sliderGrainColor" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Luma Influence <span>midtones</span></div><div class="subVal" id="valGrainLuma">0</div></div><input class="subSlider" type="range" id="sliderGrainLuma" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>blur grain</span></div><div class="subVal" id="valGrainSoft">0</div></div><input class="subSlider" type="range" id="sliderGrainSoft" min="-100" max="100" value="0"></div>
+          </div>
+        </div>
+
+        <!-- DITHER -->
+        <div class="effectGroup" data-group="dither">
+          <div class="effectHeader">
+            <button type="button" class="effectTitle" aria-expanded="false" aria-controls="ditherControls"><i style="background:var(--text-dim)"></i> Dither <span class="expand" aria-hidden="true"></span></button>
+            <div class="effectHeadRight"><div class="sliderVal" id="valDither">0</div><button type="button" class="effectToggle" data-toggle="dither" role="switch" aria-checked="true" aria-label="Dither effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="dither">Reset</button></div>
+          </div>
+          <div class="mainSlider"><input type="range" id="sliderDither" min="-100" max="100" value="0"></div>
+          <div class="subControls" id="ditherControls">
+            <p class="ditherHint">Negative: monochrome print · Positive: color print · 0: original</p>
+            <div class="ditherMode" role="radiogroup" aria-label="Dither area">
+              <label><input type="radio" name="ditherScope" value="full" checked><span>Full photo</span></label>
+              <label><input type="radio" name="ditherScope" value="background"><span>Background only</span></label>
+            </div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Color steps <span>fewer → more</span></div><div class="subVal" id="valDitherSteps">0</div></div><input class="subSlider" type="range" id="sliderDitherSteps" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Dot size <span>fine → bold</span></div><div class="subVal" id="valDitherSize">0</div></div><input class="subSlider" type="range" id="sliderDitherSize" min="-100" max="100" value="0"></div>
+            <div class="ditherMaskTools" id="ditherMaskTools" hidden>
+              <p id="maskStatus" role="status" aria-live="polite">Upload a photo to select the subject.</p>
+              <div class="maskButtons">
+                <button type="button" id="detectSubjectBtn">Detect person</button>
+                <button type="button" id="clearSubjectBtn">Clear mask</button>
+                <button type="button" id="protectSubjectBtn" aria-pressed="false">Protect brush</button>
+                <button type="button" id="eraseSubjectBtn" aria-pressed="false">Erase brush</button>
+              </div>
+              <div class="subRow"><div class="subHead"><div class="subLabel">Brush size <span>small → large</span></div><div class="subVal" id="valDitherBrush">0</div></div><input class="subSlider" type="range" id="sliderDitherBrush" min="-100" max="100" value="0"></div>
+              <p class="maskHint">Background dithering begins when a subject is protected. People are selected automatically; brush over anything else you want to keep clear. Tap Done painting on the preview to pan again.</p>
+            </div>
           </div>
         </div>
 
@@ -535,6 +583,7 @@ const ids = [
   'Bloom','BloomThresh','BloomSpread','BloomSoft','BloomTint','BloomBlend','BloomAnam',
   'Hall','HallThresh','HallSpread','HallTint','HallDir','HallFalloff','HallSat',
   'Grain','GrainSize','GrainRough','GrainSpeed','GrainColor','GrainLuma','GrainSoft',
+  'Dither','DitherSteps','DitherSize','DitherBrush',
   'Sharp','SharpRadius','SharpEdge','SharpDetail','SharpLuma'
 ];
 const sliders={}, vals={};
@@ -544,7 +593,8 @@ let sourceTexture=null, fboSharpened=null, fboBloomExtract=null, fboBloomBlurH=n
 let isVideo=false, showOriginal=false, hasContent=false, animId=null;
 const MIN_PREVIEW_ZOOM=0.5, MAX_PREVIEW_ZOOM=5;
 let previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null;
-const effectEnabled={color:true,bloom:true,hallation:true,grain:true,sharpen:true};
+const effectEnabled={color:true,bloom:true,hallation:true,grain:true,dither:true,sharpen:true};
+let ditherScope='full';
 function effectValue(group,value,neutral=0){ return effectEnabled[group]?value:neutral; }
 
 // Every slider runs from -100 to +100. Intensity sliders are signed [-1,1],
@@ -580,6 +630,9 @@ const advancedControls={
   GrainColor:{range:[0,0.35,1],legacyZero:35},
   GrainLuma:{range:[0,0.5,1],legacyZero:50},
   GrainSoft:{range:[0,0.2,1],legacyZero:20},
+  DitherSteps:{range:[4,12,32],legacyZero:50},
+  DitherSize:{range:[1,2,6],legacyZero:50},
+  DitherBrush:{range:[0.02,0.06,0.18],legacyZero:50},
   SharpRadius:{range:[0.5,1.075,2.8],legacyZero:25},
   SharpEdge:{range:[0,0.075,0.5],legacyZero:15},
   SharpDetail:{range:[0,0.5,1],legacyZero:50},
@@ -627,6 +680,11 @@ function updateFromSliders(){
   params.grainLuma=advancedValue('GrainLuma');
   params.grainSoft=advancedValue('GrainSoft');
 
+  params.dither=Number(sliders.Dither.value)/100;
+  params.ditherSteps=advancedValue('DitherSteps');
+  params.ditherSize=advancedValue('DitherSize');
+  params.ditherBrush=advancedValue('DitherBrush');
+
   params.sharpen=Number(sliders.Sharp.value)/100;
   params.sharpenRadius=advancedValue('SharpRadius');
   params.sharpenEdge=advancedValue('SharpEdge');
@@ -641,7 +699,7 @@ function updateSliderUI(){
       vals[n].classList.toggle('negative',value<0);
       vals[n].classList.toggle('positive',value>0);
     }
-    // Fill outward from the center for all 36 sliders. Negative is white
+    // Fill outward from the center for all 40 sliders. Negative is white
     // in dark mode and charcoal in light mode; positive stays red.
     const pct=50+value/2, from=Math.min(pct,50), to=Math.max(pct,50);
     const fill=value<0?'var(--negative)':'var(--accent)';
@@ -670,9 +728,10 @@ const intensityHints={
   Bloom:'Negative removes glow; positive adds glow',
   Hall:'Negative removes halation; positive adds halation',
   Grain:'Negative inverts grain; positive adds grain',
+  Dither:'Negative makes a monochrome print; positive makes a color print',
   Sharp:'Negative softens; positive sharpens'
 };
-['Bloom','Hall','Grain','Sharp'].forEach(name=>{
+['Bloom','Hall','Grain','Dither','Sharp'].forEach(name=>{
   const slider=sliders[name];
   const group=slider.closest('.effectGroup').querySelector('.effectTitle').textContent.replace('⌄','').trim();
   slider.setAttribute('aria-label',`${group} intensity`);
@@ -764,7 +823,8 @@ void main(){
 const fsComposite=`#version 300 es
 precision highp float;
 in vec2 v_texCoord;
-uniform sampler2D u_base; uniform sampler2D u_bloom; uniform sampler2D u_hallation;
+uniform sampler2D u_base; uniform sampler2D u_bloom; uniform sampler2D u_hallation; uniform sampler2D u_subjectMask;
+uniform float u_ditherStrength; uniform float u_ditherSteps; uniform float u_ditherSize; uniform int u_ditherBackgroundOnly;
 uniform float u_bloomStrength; uniform float u_hallationStrength; uniform float u_bloomTint; uniform float u_bloomBlend; uniform float u_bloomAnam; uniform float u_hallFalloff;
 uniform float u_grainStrength; uniform float u_grainSize; uniform float u_grainSpeed; uniform float u_grainColor; uniform float u_grainRough; uniform float u_grainLuma; uniform float u_grainSoft;
 uniform float u_time; uniform vec2 u_resolution;
@@ -776,6 +836,11 @@ float noise(vec2 p){
   vec2 i=floor(p); vec2 f=fract(p); f=f*f*(3.-2.*f);
   float a=hash(i); float b=hash(i+vec2(1.,0.)); float c=hash(i+vec2(0.,1.)); float d=hash(i+vec2(1.,1.));
   return mix(mix(a,b,f.x), mix(c,d,f.x), f.y);
+}
+float orderedDither(vec2 pixel){
+  const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
+  ivec2 cell=ivec2(mod(floor(pixel/max(u_ditherSize,1.0)),4.0));
+  return (bayer[cell.x+cell.y*4]-7.5)/16.0;
 }
 void main(){
   vec4 base=texture(u_base, v_texCoord);
@@ -876,6 +941,21 @@ void main(){
   vign=clamp(vign,0.0,1.5);
   col*=vign;
 
+  // Ordered 4×4 print pattern in image pixels (not the zoomed preview).
+  // At negative values it becomes monochrome; at 0 the original pipeline is untouched.
+  if(abs(u_ditherStrength)>0.001){
+    float amount=clamp(abs(u_ditherStrength),0.0,1.0);
+    float steps=max(2.0,u_ditherSteps-max(u_ditherStrength,0.0)*4.0);
+    vec3 ink=clamp(col,0.0,1.0);
+    if(u_ditherStrength<0.0){
+      float gray=dot(ink,vec3(0.2126,0.7152,0.0722));
+      ink=mix(ink,vec3(gray),amount);
+    }
+    vec3 printed=clamp(floor(ink*steps+orderedDither(gl_FragCoord.xy)+0.5)/steps,0.0,1.0);
+    float area=u_ditherBackgroundOnly==1 ? 1.0-smoothstep(0.05,0.95,texture(u_subjectMask,v_texCoord).r) : 1.0;
+    col=mix(col,printed,amount*area);
+  }
+
   outColor=vec4(clamp(col,0.,1.), base.a);
 }`;
 
@@ -907,6 +987,13 @@ function recreateFBOs(w,h){
   fboHallExtract=createFBO(hw,hh); fboHallBlurH=createFBO(hw,hh); fboHallBlurV=createFBO(hw,hh);
 }
 sourceTexture=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+// A black mask means every pixel is background until a subject is selected.
+const subjectMaskTexture=gl.createTexture();
+gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,subjectMaskTexture);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+gl.activeTexture(gl.TEXTURE0);
 
 function render(timeMs){
   if(!sourceTexture || !fboSharpened) return;
@@ -1030,13 +1117,23 @@ function render(timeMs){
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_hallFalloff'),params.hallFalloff);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainStrength'),effectValue('grain',params.grain));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSize'),params.grainSize);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSpeed'),params.grainSpeed);
+  // A photograph must have a fixed grain pattern, even with a nonzero Speed slider.
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSpeed'),isVideo ? params.grainSpeed : 0);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainColor'),params.grainColor);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainRough'),params.grainRough);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainLuma'),params.grainLuma);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSoft'),params.grainSoft);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_time'),(timeMs||performance.now())*0.001);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_time'),isVideo ? (timeMs??performance.now())*0.001 : 0);
   gl.uniform2f(gl.getUniformLocation(progComposite,'u_resolution'),canvas.width,canvas.height);
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,subjectMaskTexture);
+  gl.uniform1i(gl.getUniformLocation(progComposite,'u_subjectMask'),3);
+  // Never silently dither an entire portrait while the background mask is loading.
+  const backgroundOnly=ditherScope==='background' && !isVideo;
+  const subjectProtected=!!autoSubjectMask || maskStrokes.some(s=>s.mode==='protect');
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_ditherStrength'),backgroundOnly && !subjectProtected ? 0 : effectValue('dither',params.dither));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_ditherSteps'),params.ditherSteps);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_ditherSize'),params.ditherSize);
+  gl.uniform1i(gl.getUniformLocation(progComposite,'u_ditherBackgroundOnly'),ditherScope==='background' && !isVideo ? 1 : 0);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_exposure'),effectValue('color',params.exposure));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_contrast'),effectValue('color',params.contrast,1));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_saturation'),effectValue('color',params.saturation,1));
@@ -1063,6 +1160,188 @@ function startLoop(){
   }; loop(0);
 }
 function showToast(m,ms=3200){ toastEl.textContent=m; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'),ms); }
+
+// Background-only dithering uses an image-space subject mask. Portrait detection
+// runs locally on demand; the brushes also work on objects the model cannot find.
+const maskStatus=$('maskStatus'), maskTools=$('ditherMaskTools');
+const detectSubjectBtn=$('detectSubjectBtn'), clearSubjectBtn=$('clearSubjectBtn');
+const protectSubjectBtn=$('protectSubjectBtn'), eraseSubjectBtn=$('eraseSubjectBtn'), maskDoneBtn=$('maskDoneBtn');
+const backgroundScope=document.querySelector('input[name="ditherScope"][value="background"]');
+let maskCanvas=null, maskCtx=null, autoSubjectMask=null, photoForMask=null;
+let maskStrokes=[], maskStroke=null, maskPaintMode=null, maskRequestId=0;
+let maskDetectionPending=false, maskManuallyCleared=false, maskAutoFailed=false;
+let segmenterPromise=null, maskQueue=Promise.resolve(), activeMaskRequest=0, maskUploadFrame=0;
+function setMaskStatus(message){ maskStatus.textContent=message; }
+function updateMaskTools(){
+  const available=!!maskCanvas && !isVideo;
+  maskTools.hidden=ditherScope!=='background';
+  canvasWrap.classList.toggle('maskPainting',available && ditherScope==='background' && !!maskPaintMode);
+  detectSubjectBtn.disabled=!available || maskDetectionPending;
+  clearSubjectBtn.disabled=!available;
+  protectSubjectBtn.disabled=eraseSubjectBtn.disabled=!available;
+  protectSubjectBtn.setAttribute('aria-pressed',String(maskPaintMode==='protect'));
+  eraseSubjectBtn.setAttribute('aria-pressed',String(maskPaintMode==='erase'));
+}
+function setMaskPaintMode(mode){
+  maskPaintMode=maskPaintMode===mode ? null : mode;
+  updateMaskTools();
+  if(maskPaintMode){
+    setMaskStatus(maskPaintMode==='protect'?'Paint over the subject to keep it clear.':'Paint over protected areas to dither them again.');
+    // The controls sit below the photo on phones; bring the canvas back into view.
+    if(window.matchMedia('(max-width: 900px)').matches){
+      const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      canvas.scrollIntoView({block:'center',behavior:reduced?'auto':'smooth'});
+    }
+  }
+}
+function uploadSubjectMask(){
+  if(maskUploadFrame){ cancelAnimationFrame(maskUploadFrame); maskUploadFrame=0; }
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,subjectMaskTexture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  if(maskCanvas) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,maskCanvas);
+  else gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+  if(hasContent) render(performance.now());
+}
+function scheduleSubjectMaskUpload(){
+  if(!maskUploadFrame) maskUploadFrame=requestAnimationFrame(()=>{ maskUploadFrame=0; uploadSubjectMask(); });
+}
+function stampSubject(x,y,radius,mode){
+  const xPx=x*maskCanvas.width, yPx=y*maskCanvas.height;
+  const edge=maskCtx.createRadialGradient(xPx,yPx,radius*.65,xPx,yPx,radius);
+  const color=mode==='protect'?'255,255,255':'0,0,0';
+  edge.addColorStop(0,`rgba(${color},1)`); edge.addColorStop(1,`rgba(${color},0)`);
+  maskCtx.fillStyle=edge; maskCtx.beginPath(); maskCtx.arc(xPx,yPx,radius,0,Math.PI*2); maskCtx.fill();
+}
+function drawSubjectStroke(stroke,from,to){
+  const radius=stroke.radius*Math.min(maskCanvas.width,maskCanvas.height);
+  const distance=Math.hypot((to.x-from.x)*maskCanvas.width,(to.y-from.y)*maskCanvas.height);
+  const count=Math.max(1,Math.ceil(distance/Math.max(radius*.4,1)));
+  for(let i=1;i<=count;i++){
+    const t=i/count;
+    stampSubject(from.x+(to.x-from.x)*t,from.y+(to.y-from.y)*t,radius,stroke.mode);
+  }
+}
+function rebuildSubjectMask(){
+  if(!maskCanvas) return;
+  maskCtx.fillStyle='#000'; maskCtx.fillRect(0,0,maskCanvas.width,maskCanvas.height);
+  if(autoSubjectMask) maskCtx.drawImage(autoSubjectMask,0,0,maskCanvas.width,maskCanvas.height);
+  for(const stroke of maskStrokes){
+    if(!stroke.points.length) continue;
+    stampSubject(stroke.points[0].x,stroke.points[0].y,stroke.radius*Math.min(maskCanvas.width,maskCanvas.height),stroke.mode);
+    for(let i=1;i<stroke.points.length;i++) drawSubjectStroke(stroke,stroke.points[i-1],stroke.points[i]);
+  }
+  uploadSubjectMask();
+}
+function subjectPoint(e){
+  const box=canvas.getBoundingClientRect(); // also accounts for preview zoom and pan
+  return {x:Math.max(0,Math.min(1,(e.clientX-box.left)/box.width)),y:Math.max(0,Math.min(1,(e.clientY-box.top)/box.height))};
+}
+function paintSubject(e){
+  if(!maskStroke || maskStroke.id!==e.pointerId || !maskCanvas) return;
+  const point=subjectPoint(e), previous=maskStroke.stroke.points.at(-1);
+  maskStroke.stroke.points.push(point);
+  drawSubjectStroke(maskStroke.stroke,previous,point);
+  scheduleSubjectMaskUpload();
+}
+function prepareSubjectMask(img,w,h){
+  ++maskRequestId; maskDetectionPending=false; maskManuallyCleared=false; maskAutoFailed=false;
+  maskStrokes=[]; maskStroke=null; maskPaintMode=null; autoSubjectMask=null;
+  const scale=Math.min(1,1024/Math.max(w,h));
+  maskCanvas=document.createElement('canvas'); maskCanvas.width=Math.max(1,Math.round(w*scale)); maskCanvas.height=Math.max(1,Math.round(h*scale));
+  maskCtx=maskCanvas.getContext('2d');
+  photoForMask=document.createElement('canvas'); photoForMask.width=maskCanvas.width; photoForMask.height=maskCanvas.height;
+  photoForMask.getContext('2d').drawImage(img,0,0,maskCanvas.width,maskCanvas.height);
+  backgroundScope.disabled=false;
+  setMaskStatus(ditherScope==='background'?'Finding the subject…':'A subject can be protected in Background Only mode.');
+  rebuildSubjectMask(); updateMaskTools();
+  if(ditherScope==='background') detectPerson();
+}
+function clearSubjectMask(forVideo=false){
+  ++maskRequestId; maskDetectionPending=false; maskManuallyCleared=true;
+  maskStrokes=[]; maskStroke=null; maskPaintMode=null; autoSubjectMask=null;
+  if(forVideo){ maskCanvas=null; maskCtx=null; photoForMask=null; backgroundScope.disabled=true; }
+  else if(maskCanvas){ maskCtx.fillStyle='#000'; maskCtx.fillRect(0,0,maskCanvas.width,maskCanvas.height); }
+  uploadSubjectMask(); updateMaskTools();
+  setMaskStatus(forVideo?'Background-only masking is available for photos.':'Mask cleared. Brush over what should stay clear, or detect a person.');
+}
+function setDitherScope(value){
+  ditherScope=value==='background' && !isVideo ? 'background' : 'full';
+  document.querySelector(`input[name="ditherScope"][value="${ditherScope}"]`).checked=true;
+  if(ditherScope==='full'){ maskPaintMode=null; maskStroke=null; }
+  updateMaskTools();
+  if(ditherScope==='background' && photoForMask && !autoSubjectMask && !maskManuallyCleared && !maskAutoFailed && !maskDetectionPending) detectPerson();
+  if(hasContent) render(performance.now());
+}
+document.querySelectorAll('input[name="ditherScope"]').forEach(input=>input.addEventListener('change',()=>{ if(input.checked) setDitherScope(input.value); }));
+protectSubjectBtn.addEventListener('click',()=>setMaskPaintMode('protect'));
+eraseSubjectBtn.addEventListener('click',()=>setMaskPaintMode('erase'));
+maskDoneBtn.addEventListener('click',()=>setMaskPaintMode(null));
+maskDoneBtn.addEventListener('dblclick',e=>e.stopPropagation());
+clearSubjectBtn.addEventListener('click',()=>clearSubjectMask());
+detectSubjectBtn.addEventListener('click',detectPerson);
+function loadPortraitSegmenter(){
+  if(!segmenterPromise){
+    segmenterPromise=(async()=>{
+      if(typeof window.SelfieSegmentation!=='function'){
+        await new Promise((resolve,reject)=>{
+          const script=document.createElement('script');
+          script.src='vendor/mediapipe-selfie/selfie_segmentation.js';
+          script.onload=resolve; script.onerror=()=>reject(new Error('Portrait model unavailable'));
+          document.head.appendChild(script);
+        });
+      }
+      const base=new URL('vendor/mediapipe-selfie/',document.baseURI).href;
+      const segmenter=new window.SelfieSegmentation({locateFile:file=>base+file});
+      segmenter.setOptions({modelSelection:0,selfieMode:false});
+      segmenter.onResults(results=>{
+        if(activeMaskRequest!==maskRequestId || !maskCanvas || !results.segmentationMask) return;
+        const candidate=document.createElement('canvas'); candidate.width=maskCanvas.width; candidate.height=maskCanvas.height;
+        const ctx=candidate.getContext('2d');
+        ctx.drawImage(results.segmentationMask,0,0,candidate.width,candidate.height);
+        ctx.globalCompositeOperation='source-in'; ctx.fillStyle='#fff'; ctx.fillRect(0,0,candidate.width,candidate.height);
+        ctx.globalCompositeOperation='destination-over'; ctx.fillStyle='#000'; ctx.fillRect(0,0,candidate.width,candidate.height);
+        const probe=document.createElement('canvas'); probe.width=32; probe.height=32;
+        const pc=probe.getContext('2d'); pc.drawImage(candidate,0,0,32,32);
+        const pixels=pc.getImageData(0,0,32,32).data;
+        let protectedPixels=0;
+        for(let i=0;i<pixels.length;i+=4) if(pixels[i]>128) protectedPixels++;
+        if(protectedPixels>=4 && protectedPixels<1020){
+          autoSubjectMask=candidate; rebuildSubjectMask();
+          setMaskStatus('Person protected. Use the brushes to refine the mask.');
+        }else{
+          autoSubjectMask=null; rebuildSubjectMask();
+          setMaskStatus('No person found. Brush the subject to start background dithering.');
+        }
+        maskDetectionPending=false; updateMaskTools();
+      });
+      await segmenter.initialize(); return segmenter;
+    })().catch(error=>{segmenterPromise=null;throw error;});
+  }
+  return segmenterPromise;
+}
+function detectPerson(){
+  if(!photoForMask || isVideo) return;
+  const token=++maskRequestId, photo=photoForMask;
+  maskDetectionPending=true; maskManuallyCleared=false; maskAutoFailed=false;
+  setMaskStatus('Finding the subject on this device…'); updateMaskTools();
+  maskQueue=maskQueue.catch(()=>{}).then(async()=>{
+    try{
+      const segmenter=await loadPortraitSegmenter();
+      if(token!==maskRequestId || photo!==photoForMask) return;
+      activeMaskRequest=token;
+      await segmenter.send({image:photo});
+      if(token===maskRequestId && maskDetectionPending){
+        maskDetectionPending=false; setMaskStatus('No person found. Brush the subject to start background dithering.'); updateMaskTools();
+      }
+    }catch(error){
+      if(token===maskRequestId){
+        console.warn('Portrait mask unavailable',error);
+        maskDetectionPending=false; maskAutoFailed=true;
+        setMaskStatus('Automatic detection unavailable. Brush the subject to start background dithering.'); updateMaskTools();
+      }
+    }finally{ if(activeMaskRequest===token) activeMaskRequest=0; }
+  });
+}
 
 function isHeicFile(file){
   return /\.hei[cf]$/i.test(file.name||'') || /^image\/hei[cf](?:-sequence)?$/i.test(file.type||'');
@@ -1127,6 +1406,7 @@ function loadImage(blob,originalFile,loadId,converted=false){
       gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
       isVideo=false; hasContent=true;
+      prepareSubjectMask(img,w,h);
       dropZone.style.display='none'; canvasWrap.style.display='flex'; resetPreviewZoom();
       $('processVideoBtn').style.display='none';
       $('downloadBtn').innerHTML='⤓ Download PNG';
@@ -1161,6 +1441,7 @@ function handleFile(file){
       gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
       isVideo=true; hasContent=true;
+      clearSubjectMask(true); setDitherScope('full');
       dropZone.style.display='none'; canvasWrap.style.display='flex'; resetPreviewZoom();
       $('processVideoBtn').style.display='flex';
       $('downloadBtn').innerHTML='⤓ Download Frame PNG';
@@ -1224,6 +1505,16 @@ canvas.addEventListener('wheel',e=>{
   zoomPreviewTo(next,e.clientX,e.clientY);
 },{passive:false});
 canvas.addEventListener('pointerdown',e=>{
+  if(maskPaintMode && ditherScope==='background' && maskCanvas && !isVideo && (e.pointerType!=='mouse' || e.button===0)){
+    e.preventDefault();
+    const point=subjectPoint(e);
+    const stroke={mode:maskPaintMode,radius:params.ditherBrush,points:[point]};
+    maskStrokes.push(stroke); maskStroke={id:e.pointerId,stroke};
+    canvas.setPointerCapture(e.pointerId);
+    stampSubject(point.x,point.y,stroke.radius*Math.min(maskCanvas.width,maskCanvas.height),stroke.mode);
+    uploadSubjectMask();
+    return;
+  }
   if(previewZoom<=1 || (e.pointerType==='mouse' && e.button!==0)) return;
   previewDrag={id:e.pointerId,x:e.clientX,y:e.clientY,panX:previewPanX,panY:previewPanY};
   canvas.setPointerCapture(e.pointerId);
@@ -1231,19 +1522,26 @@ canvas.addEventListener('pointerdown',e=>{
   if(e.pointerType!=='mouse') e.preventDefault();
 });
 canvas.addEventListener('pointermove',e=>{
+  if(maskStroke){ paintSubject(e); return; }
   if(!previewDrag || previewDrag.id!==e.pointerId) return;
   previewPanX=previewDrag.panX+e.clientX-previewDrag.x;
   previewPanY=previewDrag.panY+e.clientY-previewDrag.y;
   updatePreviewZoom();
 });
 function finishPreviewDrag(e){
+  if(maskStroke && maskStroke.id===e.pointerId){
+    maskStroke=null;
+    if(maskUploadFrame) uploadSubjectMask(); // export must see the final brush stroke immediately
+    if(canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+    return;
+  }
   if(!previewDrag || previewDrag.id!==e.pointerId) return;
   previewDrag=null; canvasWrap.classList.remove('dragging');
   if(canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
 }
 canvas.addEventListener('pointerup',finishPreviewDrag);
 canvas.addEventListener('pointercancel',finishPreviewDrag);
-canvas.addEventListener('lostpointercapture',()=>{previewDrag=null;canvasWrap.classList.remove('dragging');});
+canvas.addEventListener('lostpointercapture',()=>{previewDrag=null;maskStroke=null;canvasWrap.classList.remove('dragging');});
 window.addEventListener('resize',()=>{if(hasContent) updatePreviewZoom();});
 updatePreviewZoom();
 
@@ -1284,6 +1582,7 @@ document.querySelectorAll('.groupReset').forEach(btn=>{
   btn.addEventListener('click',e=>{
     e.stopPropagation();
     btn.closest('.effectGroup').querySelectorAll('input[type=range]').forEach(s=>s.value=0);
+    if(btn.dataset.reset==='dither') setDitherScope('full');
     userChangedSliders();
     showToast(`${btn.dataset.reset} reset`);
   });
@@ -1299,7 +1598,7 @@ function toggleBeforeAfter(){
 $('beforeAfterBtn').addEventListener('click',toggleBeforeAfter);
 $('hdrBeforeBtn').addEventListener('click',toggleBeforeAfter);
 $('hdrUploadBtn').addEventListener('click',()=>fileInput.click());
-canvasWrap.addEventListener('dblclick',()=>fileInput.click());
+canvasWrap.addEventListener('dblclick',()=>{ if(!maskPaintMode) fileInput.click(); });
 
 function downloadImage(){
   if(!hasContent){ showToast('Upload first'); return; }
@@ -1344,11 +1643,11 @@ function convertLegacyValues(values){
 }
 // Built-in looks leave sharpening completely neutral; manual and saved custom settings are unchanged.
 const withoutSharpening=values=>({...values,Sharp:0,SharpRadius:0,SharpEdge:0,SharpDetail:0,SharpLuma:0});
-// Every built-in look is a complete 36-control snapshot, so selecting one also clears
+// Every built-in look is a complete 40-control snapshot, so selecting one also clears
 // advanced settings left behind by another look. Unspecified controls stay neutral.
 const presetFromNeutral=values=>withoutSharpening({
   ...Object.fromEntries(Object.keys(advancedControls).map(name=>[name,0])),
-  Bloom:0,Hall:0,Grain:0,Sharp:0,
+  Bloom:0,Hall:0,Grain:0,Dither:0,Sharp:0,
   ...values
 });
 const builtInPresets={
@@ -1506,6 +1805,7 @@ function applyPreset(name, values){
     ch.classList.toggle('active',active);
     ch.setAttribute('aria-pressed',String(active));
   });
+  setDitherScope(values.DitherScope==='background'?'background':'full');
   const start=getCurrentValues();
   // Old saved presets have no newer sliders; animate those back to neutral.
   const target=Object.fromEntries(ids.map(k=>[k,Number(values[k]??0)]));
@@ -1524,7 +1824,7 @@ function applyPreset(name, values){
 renderChips();
 $('savePresetBtn').addEventListener('click',()=>{
   const name=prompt('Preset name:'); if(!name) return;
-  const values=getCurrentValues();
+  const values={...getCurrentValues(),DitherScope:ditherScope};
   customPresets=customPresets.filter(c=>c.name!==name);
   customPresets.push({name,values,version:2}); saveCustom(); renderChips(); showToast(`Saved "${name}"`);
 });
@@ -1535,6 +1835,7 @@ window.addEventListener('keydown',e=>{
   if(e.code==='Space'){ e.preventDefault(); toggleBeforeAfter(); }
   else if(e.key.toLowerCase()==='r'){
     ids.forEach(k=>{ sliders[k].value=0; });
+    setDitherScope('full');
     userChangedSliders();
     showToast('All controls reset to 0');
   } else if(e.key.toLowerCase()==='d'){ downloadImage(); }
@@ -1631,7 +1932,7 @@ $('processVideoBtn').addEventListener('click',processVideo);
 updateFromSliders(); updateSliderUI(); render(performance.now());
 window.addEventListener('dragover',e=> e.preventDefault());
 window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ const f=e.dataTransfer.files[0]; if(f && (isHeicFile(f)||f.type.startsWith('image/')||f.type.startsWith('video/'))){ e.preventDefault(); handleFile(f); } } });
-console.log('Film Lab v4 — 36 signed controls — WebGL2', gl.getParameter(gl.VERSION));
+console.log('Film Lab v4 — 40 signed controls — WebGL2', gl.getParameter(gl.VERSION));
 })();
 </script>
 </body>
