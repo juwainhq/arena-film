@@ -88,13 +88,26 @@ header { height: 72px; min-height: 72px; display: flex; align-items: center; jus
 .effectGroup { counter-increment: effect; padding: 20px 0 18px; border: 0; border-top: 1px solid var(--panel-border); border-radius: 0; background: none; box-shadow: none; transition: border-color .25s; }
 .effectGroup:last-child { border-bottom: 1px solid var(--panel-border); }
 .effectGroup:hover,.effectGroup.open { border-top-color: rgba(255,255,255,.5); }
-.effectHeader { display: flex; justify-content: space-between; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
-.effectTitle { display: flex; align-items: baseline; gap: 8px; min-width: 0; color: var(--text); font-family: var(--display); font-size: 18px; font-weight: 500; letter-spacing: -.035em; }
+.effectHeader { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 10px; cursor: pointer; user-select: none; }
+.effectTitle { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 0; border: 0; background: none; color: var(--text); text-align: left; font-family: var(--display); font-size: 18px; font-weight: 500; letter-spacing: -.035em; white-space: nowrap; cursor: pointer; }
 .effectTitle::before { content: counter(effect,decimal-leading-zero); margin-right: 11px; color: var(--text-dim2); font: 500 10px 'JetBrains Mono',monospace; letter-spacing: .02em; }
 .effectTitle i { display: none; }
-.effectTitle .expand { margin-left: 5px; color: var(--text-dim2); font-family: 'Inter',sans-serif; font-size: 14px; font-weight: 400; opacity: .8; transition: transform .25s; }
-.effectGroup.open .effectTitle .expand { transform: rotate(180deg); opacity: 1; }
-.effectHeadRight { display: flex; align-items: center; gap: 6px; }
+.effectTitle .expand { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 26px; height: 26px; margin-left: 3px; border: 1px solid rgba(255,255,255,.62); background: rgba(255,255,255,.05); color: var(--text); transition: border-color .2s, background .2s; }
+.effectTitle .expand::before { content: ''; display: block; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .25s; }
+.effectGroup.open .effectTitle .expand::before { transform: translateY(2px) rotate(225deg); }
+.effectTitle:hover .expand,.effectTitle:focus-visible .expand { border-color: var(--text); background: rgba(255,255,255,.14); }
+.effectHeadRight { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; }
+.effectToggle { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 2px 0; border: 0; background: none; color: var(--text); cursor: pointer; white-space: nowrap; }
+.toggleTrack { position: relative; display: inline-block; flex: none; width: 27px; height: 15px; border: 1px solid var(--text); background: var(--text); transition: background .2s, border-color .2s; }
+.toggleThumb { position: absolute; top: 2px; left: 15px; width: 9px; height: 9px; background: #000; transition: left .2s, background .2s; }
+.toggleText { min-width: 19px; text-align: left; font: 600 9px 'JetBrains Mono',monospace; letter-spacing: .05em; }
+.effectToggle[aria-checked="false"] { color: var(--text-dim); }
+.effectToggle[aria-checked="false"] .toggleTrack { border-color: var(--text-dim2); background: transparent; }
+.effectToggle[aria-checked="false"] .toggleThumb { left: 2px; background: var(--text-dim2); }
+.effectTitle:focus-visible,.effectToggle:focus-visible,.groupReset:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; }
+.effectGroup.effectOff .effectTitle { color: var(--text-dim); }
+.effectGroup.effectOff .effectTitle .expand { color: var(--text); }
+.effectGroup.effectOff .mainSlider,.effectGroup.effectOff.open .subControls { opacity: .45; }
 .sliderVal { min-width: 30px; padding: 0; border: 0; border-radius: 0; background: none; color: var(--text); text-align: right; font: 500 11px 'JetBrains Mono',monospace; }
 .sliderVal.negative,.subVal.negative { color: var(--negative); background: none; border: 0; }
 .sliderVal.positive,.subVal.positive { color: var(--accent); background: none; border: 0; }
@@ -241,10 +254,10 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <!-- OVERALL COLOR -->
         <div class="effectGroup open" data-group="color">
           <div class="effectHeader">
-            <div class="effectTitle"><i style="background:#fff"></i> Color & Light <span class="expand">⌄</span></div>
-            <button class="groupReset" data-reset="color">Reset</button>
+            <button type="button" class="effectTitle" aria-expanded="true" aria-controls="colorControls"><i style="background:#fff"></i> Color & Light <span class="expand" aria-hidden="true"></span></button>
+            <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="color" role="switch" aria-checked="true" aria-label="Color & Light effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="color">Reset</button></div>
           </div>
-          <div class="subControls">
+          <div class="subControls" id="colorControls">
             <div class="subRow"><div class="subHead"><div class="subLabel">Exposure <span>brightness</span></div><div class="subVal" id="valExposure">0</div></div><input class="subSlider" type="range" id="sliderExposure" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Contrast</div><div class="subVal" id="valContrast">0</div></div><input class="subSlider" type="range" id="sliderContrast" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Saturation</div><div class="subVal" id="valSaturation">0</div></div><input class="subSlider" type="range" id="sliderSaturation" min="-100" max="100" value="0"></div>
@@ -257,11 +270,11 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <!-- BLOOM -->
         <div class="effectGroup open" data-group="bloom">
           <div class="effectHeader">
-            <div class="effectTitle"><i style="background:var(--accent)"></i> Bloom <span class="expand">⌄</span></div>
-            <div class="effectHeadRight"><div class="sliderVal" id="valBloom">0</div><button class="groupReset" data-reset="bloom">Reset</button></div>
+            <button type="button" class="effectTitle" aria-expanded="true" aria-controls="bloomControls"><i style="background:var(--accent)"></i> Bloom <span class="expand" aria-hidden="true"></span></button>
+            <div class="effectHeadRight"><div class="sliderVal" id="valBloom">0</div><button type="button" class="effectToggle" data-toggle="bloom" role="switch" aria-checked="true" aria-label="Bloom effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="bloom">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderBloom" min="-100" max="100" value="0"></div>
-          <div class="subControls">
+          <div class="subControls" id="bloomControls">
             <div class="subRow"><div class="subHead"><div class="subLabel">Threshold <span>bright cutoff</span></div><div class="subVal" id="valBloomThresh">0</div></div><input class="subSlider" type="range" id="sliderBloomThresh" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Spread <span>blur radius</span></div><div class="subVal" id="valBloomSpread">0</div></div><input class="subSlider" type="range" id="sliderBloomSpread" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>falloff</span></div><div class="subVal" id="valBloomSoft">0</div></div><input class="subSlider" type="range" id="sliderBloomSoft" min="-100" max="100" value="0"></div>
@@ -274,11 +287,11 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <!-- HALLATION -->
         <div class="effectGroup" data-group="hallation">
           <div class="effectHeader">
-            <div class="effectTitle"><i style="background:var(--accent2)"></i> Hallation <span class="expand">⌄</span></div>
-            <div class="effectHeadRight"><div class="sliderVal" id="valHall">0</div><button class="groupReset" data-reset="hallation">Reset</button></div>
+            <button type="button" class="effectTitle" aria-expanded="false" aria-controls="hallationControls"><i style="background:var(--accent2)"></i> Hallation <span class="expand" aria-hidden="true"></span></button>
+            <div class="effectHeadRight"><div class="sliderVal" id="valHall">0</div><button type="button" class="effectToggle" data-toggle="hallation" role="switch" aria-checked="true" aria-label="Hallation effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="hallation">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderHall" min="-100" max="100" value="0"></div>
-          <div class="subControls">
+          <div class="subControls" id="hallationControls">
             <div class="subRow"><div class="subHead"><div class="subLabel">Threshold</div><div class="subVal" id="valHallThresh">0</div></div><input class="subSlider" type="range" id="sliderHallThresh" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Bleed <span>anamorphic stretch</span></div><div class="subVal" id="valHallSpread">0</div></div><input class="subSlider" type="range" id="sliderHallSpread" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Warmth <span>red → orange</span></div><div class="subVal" id="valHallTint">0</div></div><input class="subSlider" type="range" id="sliderHallTint" min="-100" max="100" value="0"></div>
@@ -291,11 +304,11 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <!-- GRAIN -->
         <div class="effectGroup" data-group="grain">
           <div class="effectHeader">
-            <div class="effectTitle"><i style="background:#aaa"></i> Film Grain <span class="expand">⌄</span></div>
-            <div class="effectHeadRight"><div class="sliderVal" id="valGrain">0</div><button class="groupReset" data-reset="grain">Reset</button></div>
+            <button type="button" class="effectTitle" aria-expanded="false" aria-controls="grainControls"><i style="background:#aaa"></i> Film Grain <span class="expand" aria-hidden="true"></span></button>
+            <div class="effectHeadRight"><div class="sliderVal" id="valGrain">0</div><button type="button" class="effectToggle" data-toggle="grain" role="switch" aria-checked="true" aria-label="Film Grain effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="grain">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderGrain" min="-100" max="100" value="0"></div>
-          <div class="subControls">
+          <div class="subControls" id="grainControls">
             <div class="subRow"><div class="subHead"><div class="subLabel">Size <span>clump</span></div><div class="subVal" id="valGrainSize">0</div></div><input class="subSlider" type="range" id="sliderGrainSize" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Roughness <span>detail</span></div><div class="subVal" id="valGrainRough">0</div></div><input class="subSlider" type="range" id="sliderGrainRough" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Speed <span>animation</span></div><div class="subVal" id="valGrainSpeed">0</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="-100" max="100" value="0"></div>
@@ -308,11 +321,11 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <!-- SHARPEN -->
         <div class="effectGroup" data-group="sharpen">
           <div class="effectHeader">
-            <div class="effectTitle"><i style="background:#fff"></i> Sharpening <span class="expand">⌄</span></div>
-            <div class="effectHeadRight"><div class="sliderVal" id="valSharp">0</div><button class="groupReset" data-reset="sharpen">Reset</button></div>
+            <button type="button" class="effectTitle" aria-expanded="false" aria-controls="sharpenControls"><i style="background:#fff"></i> Sharpening <span class="expand" aria-hidden="true"></span></button>
+            <div class="effectHeadRight"><div class="sliderVal" id="valSharp">0</div><button type="button" class="effectToggle" data-toggle="sharpen" role="switch" aria-checked="true" aria-label="Sharpening effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="sharpen">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderSharp" min="-100" max="100" value="0"></div>
-          <div class="subControls">
+          <div class="subControls" id="sharpenControls">
             <div class="subRow"><div class="subHead"><div class="subLabel">Radius <span>detail scale</span></div><div class="subVal" id="valSharpRadius">0</div></div><input class="subSlider" type="range" id="sliderSharpRadius" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Edge Threshold <span>protect flat</span></div><div class="subVal" id="valSharpEdge">0</div></div><input class="subSlider" type="range" id="sliderSharpEdge" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Detail Boost</div><div class="subVal" id="valSharpDetail">0</div></div><input class="subSlider" type="range" id="sliderSharpDetail" min="-100" max="100" value="0"></div>
@@ -359,6 +372,8 @@ ids.forEach(n=>{ sliders[n]=$('slider'+n); vals[n]=$('val'+n); });
 
 let sourceTexture=null, fboSharpened=null, fboBloomExtract=null, fboBloomBlurH=null, fboBloomBlurV=null, fboBloomBlurH2=null, fboBloomBlurV2=null, fboHallExtract=null, fboHallBlurH=null, fboHallBlurV=null;
 let isVideo=false, showOriginal=false, hasContent=false, animId=null;
+const effectEnabled={color:true,bloom:true,hallation:true,grain:true,sharpen:true};
+function effectValue(group,value,neutral=0){ return effectEnabled[group]?value:neutral; }
 
 // Every slider runs from -100 to +100. Intensity sliders are signed [-1,1],
 // while the detail sliders map zero to a useful neutral shader setting.
@@ -705,7 +720,7 @@ function render(timeMs){
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture);
   gl.uniform1i(gl.getUniformLocation(progSharpen,'u_image'),0);
   gl.uniform2f(gl.getUniformLocation(progSharpen,'u_texelSize'),1/fboSharpened.width,1/fboSharpened.height);
-  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_strength'),params.sharpen);
+  gl.uniform1f(gl.getUniformLocation(progSharpen,'u_strength'),effectValue('sharpen',params.sharpen));
   gl.uniform1f(gl.getUniformLocation(progSharpen,'u_radius'),params.sharpenRadius);
   gl.uniform1f(gl.getUniformLocation(progSharpen,'u_luma'),params.sharpenLuma);
   gl.uniform1f(gl.getUniformLocation(progSharpen,'u_edge'),params.sharpenEdge);
@@ -804,13 +819,13 @@ function render(timeMs){
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,fboSharpened.tex); gl.uniform1i(gl.getUniformLocation(progComposite,'u_base'),0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,fboBloomBlurV2.tex); gl.uniform1i(gl.getUniformLocation(progComposite,'u_bloom'),1);
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,fboHallBlurV.tex); gl.uniform1i(gl.getUniformLocation(progComposite,'u_hallation'),2);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomStrength'),params.bloom);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_hallationStrength'),params.hallation);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomStrength'),effectValue('bloom',params.bloom));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_hallationStrength'),effectValue('hallation',params.hallation));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomTint'),params.bloomTint);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomBlend'),params.bloomBlend);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomAnam'),params.bloomAnam);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_hallFalloff'),params.hallFalloff);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainStrength'),params.grain);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainStrength'),effectValue('grain',params.grain));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSize'),params.grainSize);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSpeed'),params.grainSpeed);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainColor'),params.grainColor);
@@ -819,11 +834,11 @@ function render(timeMs){
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSoft'),params.grainSoft);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_time'),(timeMs||performance.now())*0.001);
   gl.uniform2f(gl.getUniformLocation(progComposite,'u_resolution'),canvas.width,canvas.height);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_exposure'),params.exposure);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_contrast'),params.contrast);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_saturation'),params.saturation);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_temperature'),params.temperature);
-  gl.uniform1f(gl.getUniformLocation(progComposite,'u_vignStrength'),params.vignStrength);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_exposure'),effectValue('color',params.exposure));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_contrast'),effectValue('color',params.contrast,1));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_saturation'),effectValue('color',params.saturation,1));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_temperature'),effectValue('color',params.temperature));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_vignStrength'),effectValue('color',params.vignStrength));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_vignSize'),params.vignSize);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 }
@@ -952,10 +967,27 @@ dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'))
 dropZone.addEventListener('drop',e=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
 fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) handleFile(f); e.target.value=''; });
 
+function setGroupOpen(group,open){
+  group.classList.toggle('open',open);
+  group.querySelector('.effectTitle').setAttribute('aria-expanded',String(open));
+}
 document.querySelectorAll('.effectHeader').forEach(h=>{
   h.addEventListener('click',e=>{
-    if(e.target.classList.contains('groupReset')) return;
-    h.closest('.effectGroup').classList.toggle('open');
+    if(e.target.closest('.effectToggle,.groupReset')) return;
+    const group=h.closest('.effectGroup');
+    setGroupOpen(group,!group.classList.contains('open'));
+  });
+});
+document.querySelectorAll('.effectToggle').forEach(toggle=>{
+  toggle.addEventListener('click',e=>{
+    e.stopPropagation(); // switching an effect must not collapse its controls
+    const group=toggle.closest('.effectGroup'), name=group.dataset.group;
+    effectEnabled[name]=!effectEnabled[name];
+    const on=effectEnabled[name];
+    group.classList.toggle('effectOff',!on);
+    toggle.setAttribute('aria-checked',String(on));
+    toggle.querySelector('.toggleText').textContent=on?'ON':'OFF';
+    if(hasContent) render(performance.now());
   });
 });
 let presetFrame=null;
@@ -1120,7 +1152,7 @@ window.addEventListener('keydown',e=>{
   } else if(e.key.toLowerCase()==='d'){ downloadImage(); }
   else if(e.key.toLowerCase()==='e'){
     const anyClosed=document.querySelector('.effectGroup:not(.open)');
-    document.querySelectorAll('.effectGroup').forEach(g=> g.classList.toggle('open', !!anyClosed));
+    document.querySelectorAll('.effectGroup').forEach(g=>setGroupOpen(g,!!anyClosed));
   }
 });
 

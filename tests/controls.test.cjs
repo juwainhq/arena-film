@@ -36,6 +36,41 @@ test('the editor has an editorial monochrome layout with a restrained red accent
   assert.match(html, /white subtracts · red adds/);
 });
 
+test('every effect has a separate accessible ON/OFF switch and a visible accordion arrow', () => {
+  const groups = ['color', 'bloom', 'hallation', 'grain', 'sharpen'];
+  const switches = [...html.matchAll(/class="effectToggle" data-toggle="(\w+)" role="switch" aria-checked="true" aria-label="([^"]+)"/g)];
+  assert.deepEqual(switches.map(m => m[1]), groups);
+  for (const group of groups) assert.match(html, new RegExp(`aria-controls="${group}Controls"`));
+  assert.match(styles, /\.effectTitle \.expand \{[^}]*width: 26px;[^}]*border: 1px solid rgba\(255,255,255,\.62\)/);
+  assert.match(styles, /\.effectTitle \.expand::before \{[^}]*border-right: 2px solid currentColor;[^}]*border-bottom: 2px solid currentColor/);
+  assert.match(script, /e\.stopPropagation\(\); \/\/ switching an effect must not collapse its controls/);
+  assert.match(script, /setGroupOpen\(g,!!anyClosed\)/);
+});
+
+test('effect switches bypass rendering at neutral without changing slider values', () => {
+  const code = script.match(/const effectEnabled=\{[^\n]+;\nfunction effectValue\(group,value,neutral=0\)\{[^\n]+\}/)[0];
+  const state = vm.createContext({});
+  vm.runInContext(`${code}\nthis.enabled=effectEnabled;this.value=effectValue;`, state);
+  for (const group of ['color', 'bloom', 'hallation', 'grain', 'sharpen']) {
+    assert.equal(state.value(group, 0.75), 0.75);
+    state.enabled[group] = false;
+    assert.equal(state.value(group, 0.75), 0);
+    state.enabled[group] = true;
+    assert.equal(state.value(group, 0.75), 0.75);
+  }
+  state.enabled.color = false;
+  assert.equal(state.value('color', 0.75, 1), 1); // neutral contrast and saturation
+  for (const [uniform, group, param] of [
+    ['u_strength', 'sharpen', 'sharpen'], ['u_bloomStrength', 'bloom', 'bloom'],
+    ['u_hallationStrength', 'hallation', 'hallation'], ['u_grainStrength', 'grain', 'grain'],
+    ['u_exposure', 'color', 'exposure'], ['u_temperature', 'color', 'temperature'],
+    ['u_vignStrength', 'color', 'vignStrength'],
+  ]) assert.ok(script.includes(`'${uniform}'),effectValue('${group}',params.${param})`), uniform);
+  for (const param of ['contrast', 'saturation']) {
+    assert.ok(script.includes(`'u_${param}'),effectValue('color',params.${param},1)`), param);
+  }
+});
+
 test('all 32 controls start at 0 with centered -100 to +100 scales', () => {
   assert.equal(advancedInputs.length, 28);
   assert.equal(intensityInputs.length, 4);
