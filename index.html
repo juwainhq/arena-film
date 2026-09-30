@@ -4,16 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>FILM LAB — Cinematic Effects</title>
+<script id="themeBootstrap">
+// Apply the saved choice before the page paints; the portfolio's dark look is the default.
+try { document.documentElement.dataset.theme = localStorage.getItem('film_lab_theme') === 'light' ? 'light' : 'dark'; }
+catch (_) { document.documentElement.dataset.theme = 'dark'; }
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
+  color-scheme: dark;
   --bg: #000;
   --panel: #000;
   --panel-border: rgba(255,255,255,.16);
   --text: #fafafa;
   --text-dim: #b5b5b5;
   --text-dim2: #777;
+  --inverse: #000;
+  --border-strong: rgba(255,255,255,.65);
+  --border-hover: rgba(255,255,255,.55);
+  --soft-bg: rgba(255,255,255,.05);
+  --soft-hover: rgba(255,255,255,.14);
+  --slider-track: rgba(255,255,255,.08);
+  --slider-center: rgba(255,255,255,.5);
+  --slider-neutral: #c8c8c8;
+  --thumb-border: #000;
+  --shadow: rgba(0,0,0,.65);
   --accent: #d62828;
   --accent2: #aa2026;
   --accent-rgb: 214,40,40;
@@ -24,26 +40,54 @@
   --negative-bg: rgba(255,255,255,.06);
   --display: 'Space Grotesk', 'Arial', sans-serif;
 }
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #fff;
+  --panel: #fff;
+  --panel-border: rgba(0,0,0,.16);
+  --text: #111;
+  --text-dim: #4d4d4d;
+  --text-dim2: #555;
+  --inverse: #fff;
+  --border-strong: rgba(0,0,0,.65);
+  --border-hover: rgba(0,0,0,.55);
+  --soft-bg: rgba(0,0,0,.035);
+  --soft-hover: rgba(0,0,0,.08);
+  --slider-track: rgba(0,0,0,.12);
+  --slider-center: rgba(0,0,0,.5);
+  --slider-neutral: #444;
+  --thumb-border: #fff;
+  --shadow: rgba(0,0,0,.14);
+  --negative: #333;
+  --negative-glow: rgba(0,0,0,.1);
+  --negative-bg: rgba(0,0,0,.06);
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html,body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; overflow: hidden; -webkit-font-smoothing: antialiased; }
 button,input { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 #app { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
 
-/* A quiet, editorial navigation bar instead of a toolbar. */
-header { height: 72px; min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 0 clamp(24px,4.7vw,72px); border-bottom: 1px solid var(--panel-border); background: #000; z-index: 20; }
-#logo { font-size: 13px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; white-space: nowrap; }
-#headerActions { display: flex; align-items: center; gap: clamp(12px,2.6vw,38px); }
-.hdrBtn { padding: 10px 0; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: opacity .25s, border-color .25s, background .25s, color .25s; }
-.hdrBtn:hover { border-bottom-color: var(--text); }
-.hdrBtn.primary { padding: 11px 15px; background: transparent; border: 1px solid rgba(255,255,255,.65); color: var(--text); }
-.hdrBtn.primary:hover { background: var(--text); border-color: var(--text); color: #000; }
+/* Match the portfolio navigation: 24 / 40 / 64px gutters and spaced uppercase links. */
+header { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 16px 24px; border-bottom: 1px solid var(--panel-border); background: var(--bg); z-index: 20; }
+#logo { font-size: 12px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; white-space: nowrap; }
+#headerActions { display: flex; align-items: center; gap: 32px; margin-left: auto; }
+.hdrBtn,#themeToggle { background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; color: var(--text); font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: opacity .25s, border-color .25s, background .25s, color .25s; }
+.hdrBtn { padding: 9px 0; }
+.hdrBtn:hover,#themeToggle:hover { opacity: .55; border-bottom-color: var(--text); }
+.hdrBtn:focus-visible,#themeToggle:focus-visible { outline: 1px solid var(--text); outline-offset: 4px; }
+.hdrBtn.primary { padding: 9px 12px; background: transparent; border: 1px solid var(--border-strong); color: var(--text); }
+.hdrBtn.primary:hover { opacity: 1; background: var(--text); border-color: var(--text); color: var(--inverse); }
+#themeToggle { display: inline-flex; align-items: center; gap: 8px; padding: 9px 0; }
+#themeToggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+#themeToggle .moonIcon,:root[data-theme="light"] #themeToggle .sunIcon { display: none; }
+:root[data-theme="light"] #themeToggle .moonIcon { display: block; }
 
 #content { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-#mainArea { flex: 1; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; padding: clamp(28px,4.7vw,72px); }
+#mainArea { flex: 1; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; background: var(--bg); overflow: hidden; padding: clamp(28px,4.7vw,72px); }
 #dropZone { position: relative; width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; border: 0; border-radius: 0; background: transparent; text-align: left; cursor: pointer; }
 #dropZone:focus-visible { outline: 1px solid var(--text); outline-offset: 8px; }
-#dropZone.dragover::after { content: ''; position: absolute; inset: -18px; border: 1px solid rgba(255,255,255,.5); pointer-events: none; }
+#dropZone.dragover::after { content: ''; position: absolute; inset: -18px; border: 1px solid var(--border-hover); pointer-events: none; }
 .dropTop,.dropBottom { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .dropStatus { display: flex; align-items: center; gap: 12px; font-size: 10px; font-weight: 600; letter-spacing: .28em; text-transform: uppercase; white-space: nowrap; }
 #dropIcon { display: inline-block; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
@@ -52,42 +96,44 @@ header { height: 72px; min-height: 72px; display: flex; align-items: center; jus
 #dropZone h2 { color: var(--text); font-family: var(--display); font-size: clamp(92px,13vw,190px); font-weight: 500; line-height: .79; letter-spacing: -.07em; text-transform: uppercase; }
 #dropZone h2 span { display: block; }
 #dropZone p { display: flex; align-items: center; gap: 18px; margin-top: 34px; color: var(--text); font-size: 11px; font-weight: 500; line-height: 1.6; letter-spacing: .21em; text-transform: uppercase; }
-#dropZone p::before { content: ''; flex: none; width: 42px; height: 1px; background: rgba(255,255,255,.65); }
+#dropZone p::before { content: ''; flex: none; width: 42px; height: 1px; background: var(--border-strong); }
 #dropZone p b { color: var(--text); font-weight: 600; }
 #dropZone .hint { color: var(--text-dim2); font-size: 10px; line-height: 1.8; letter-spacing: .2em; text-transform: uppercase; }
 .dropCue { display: inline-flex; align-items: center; gap: 16px; color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .28em; text-transform: uppercase; white-space: nowrap; }
-.dropCue::after { content: ''; width: 40px; height: 1px; background: rgba(255,255,255,.7); transition: width .4s cubic-bezier(.16,1,.3,1); }
+.dropCue::after { content: ''; width: 40px; height: 1px; background: var(--border-strong); transition: width .4s cubic-bezier(.16,1,.3,1); }
 #dropZone:hover .dropCue::after,#dropZone.dragover .dropCue::after { width: 66px; }
 #dropZone.dragover h2 { color: var(--text-dim); }
 #canvasWrap { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 #canvasWrap::before { content: '01 / LIVE CANVAS'; position: absolute; top: 0; left: 0; z-index: 2; font-size: 10px; font-weight: 600; letter-spacing: .27em; color: var(--text-dim2); pointer-events: none; }
 #canvasWrap::after { content: 'FILM LAB / WEBGL 2'; position: absolute; bottom: 0; left: 0; z-index: 2; font-size: 10px; letter-spacing: .24em; color: var(--text-dim2); pointer-events: none; }
-#glCanvas { display: block; max-width: 100%; max-height: calc(100% - 52px); background: #000; border-radius: 0; box-shadow: 0 0 0 1px var(--panel-border); cursor: zoom-in; }
+#glCanvas { display: block; max-width: 100%; max-height: calc(100% - 52px); background: var(--bg); border-radius: 0; box-shadow: 0 0 0 1px var(--panel-border); cursor: zoom-in; }
 #canvasWrap.zoomed #glCanvas { cursor: grab; touch-action: none; }
 #canvasWrap.dragging #glCanvas { cursor: grabbing; }
-#beforeLabel { position: absolute; top: 0; left: 50%; transform: translateX(-50%); display: none; z-index: 5; padding: 4px 10px; background: #000; border: 1px solid var(--panel-border); color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
+#beforeLabel { position: absolute; top: 0; left: 50%; transform: translateX(-50%); display: none; z-index: 5; padding: 4px 10px; background: var(--bg); border: 1px solid var(--panel-border); color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
 #beforeLabel.show { display: block; }
 #zoomControls { position: absolute; right: 0; bottom: 0; z-index: 6; display: flex; align-items: center; opacity: .78; transition: opacity .2s; }
 #canvasWrap:hover #zoomControls,#zoomControls:focus-within { opacity: 1; }
 .zoomInstructions { margin-right: 14px; color: var(--text-dim); font-size: 9px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; pointer-events: none; }
-#zoomControls button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.38); border-radius: 0; background: #000; color: var(--text); font-size: 18px; cursor: pointer; transition: color .2s, background .2s, opacity .2s; }
+#zoomControls button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 1px solid var(--border-hover); border-radius: 0; background: var(--bg); color: var(--text); font-size: 18px; cursor: pointer; transition: color .2s, background .2s, opacity .2s; }
 #zoomControls button + button { border-left: 0; }
-#zoomControls button:hover { background: var(--text); color: #000; }
+#zoomControls button:hover { background: var(--text); color: var(--inverse); }
 #zoomControls button:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; z-index: 1; }
-#zoomControls button:disabled { opacity: .35; cursor: default; background: #000; color: var(--text); }
+#zoomControls button:disabled { opacity: .35; cursor: default; background: var(--bg); color: var(--text); }
 #zoomControls #zoomResetBtn { width: 56px; font: 500 10px 'JetBrains Mono',monospace; }
 #videoEl { display: none; }
 
 /* Flat lists and fine rules echo the portfolio's work and services sections. */
 #sidebar { width: 424px; min-width: 370px; display: flex; flex-direction: column; gap: 36px; padding: 32px 30px 34px; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--panel-border); }
 #sidebar::-webkit-scrollbar { width: 3px; }
-#sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.3); }
+#sidebar::-webkit-scrollbar-thumb { background: var(--border-hover); }
 .sectionLabel { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .3em; text-transform: uppercase; }
 .sectionLabel::after { content: ''; flex: 1; height: 1px; background: var(--panel-border); }
 .sectionHint { margin: -2px 0 18px; color: var(--text-dim2); font-size: 10px; line-height: 1.5; letter-spacing: .03em; }
+.lightHint,:root[data-theme="light"] .darkHint { display: none; }
+:root[data-theme="light"] .lightHint { display: inline; }
 #presetChips { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); column-gap: 22px; }
 .chip { position: relative; padding: 13px 0; border: 0; border-bottom: 1px solid var(--panel-border); border-radius: 0; background: transparent; color: var(--text-dim); font-size: 10px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; cursor: pointer; user-select: none; transition: color .25s, border-color .25s; }
-.chip:hover { color: var(--text); border-bottom-color: rgba(255,255,255,.6); }
+.chip:hover { color: var(--text); border-bottom-color: var(--border-hover); }
 .chip.active { color: var(--text); border-bottom-color: var(--text); }
 .chip.active::after { content: ''; position: absolute; right: 0; top: 50%; width: 4px; height: 4px; margin-top: -2px; background: var(--accent); border-radius: 50%; }
 .chip.custom { border-bottom-style: dashed; }
@@ -96,19 +142,19 @@ header { height: 72px; min-height: 72px; display: flex; align-items: center; jus
 #effectsWrap { display: flex; flex-direction: column; gap: 0; counter-reset: effect; }
 .effectGroup { counter-increment: effect; padding: 20px 0 18px; border: 0; border-top: 1px solid var(--panel-border); border-radius: 0; background: none; box-shadow: none; transition: border-color .25s; }
 .effectGroup:last-child { border-bottom: 1px solid var(--panel-border); }
-.effectGroup:hover,.effectGroup.open { border-top-color: rgba(255,255,255,.5); }
+.effectGroup:hover,.effectGroup.open { border-top-color: var(--border-hover); }
 .effectHeader { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 10px; cursor: pointer; user-select: none; }
 .effectTitle { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 0; border: 0; background: none; color: var(--text); text-align: left; font-family: var(--display); font-size: 18px; font-weight: 500; letter-spacing: -.035em; white-space: nowrap; cursor: pointer; }
 .effectTitle::before { content: counter(effect,decimal-leading-zero); margin-right: 11px; color: var(--text-dim2); font: 500 10px 'JetBrains Mono',monospace; letter-spacing: .02em; }
 .effectTitle i { display: none; }
-.effectTitle .expand { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 26px; height: 26px; margin-left: 3px; border: 1px solid rgba(255,255,255,.62); background: rgba(255,255,255,.05); color: var(--text); transition: border-color .2s, background .2s; }
+.effectTitle .expand { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 26px; height: 26px; margin-left: 3px; border: 1px solid var(--border-strong); background: var(--soft-bg); color: var(--text); transition: border-color .2s, background .2s; }
 .effectTitle .expand::before { content: ''; display: block; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .25s; }
 .effectGroup.open .effectTitle .expand::before { transform: translateY(2px) rotate(225deg); }
-.effectTitle:hover .expand,.effectTitle:focus-visible .expand { border-color: var(--text); background: rgba(255,255,255,.14); }
+.effectTitle:hover .expand,.effectTitle:focus-visible .expand { border-color: var(--text); background: var(--soft-hover); }
 .effectHeadRight { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; }
 .effectToggle { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 2px 0; border: 0; background: none; color: var(--text); cursor: pointer; white-space: nowrap; }
 .toggleTrack { position: relative; display: inline-block; flex: none; width: 27px; height: 15px; border: 1px solid var(--text); background: var(--text); transition: background .2s, border-color .2s; }
-.toggleThumb { position: absolute; top: 2px; left: 15px; width: 9px; height: 9px; background: #000; transition: left .2s, background .2s; }
+.toggleThumb { position: absolute; top: 2px; left: 15px; width: 9px; height: 9px; background: var(--inverse); transition: left .2s, background .2s; }
 .toggleText { min-width: 19px; text-align: left; font: 600 9px 'JetBrains Mono',monospace; letter-spacing: .05em; }
 .effectToggle[aria-checked="false"] { color: var(--text-dim); }
 .effectToggle[aria-checked="false"] .toggleTrack { border-color: var(--text-dim2); background: transparent; }
@@ -134,35 +180,43 @@ header { height: 72px; min-height: 72px; display: flex; align-items: center; jus
 .subScale span:last-child { color: var(--accent); }
 input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 2px; background: var(--panel-border); border-radius: 0; outline: none; cursor: pointer; }
 input[type=range]:focus-visible { outline: 1px solid var(--text); outline-offset: 6px; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -5px; background: var(--slider-thumb,var(--text)); border: 1px solid #000; border-radius: 0; box-shadow: none; cursor: pointer; transition: transform .2s; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -5px; background: var(--slider-thumb,var(--text)); border: 1px solid var(--thumb-border); border-radius: 0; box-shadow: none; cursor: pointer; transition: transform .2s; }
 input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.18); }
 input[type=range].subSlider { height: 2px; margin: 4px 0 0; }
 input[type=range].subSlider::-webkit-slider-thumb { width: 10px; height: 10px; margin-top: -4px; }
-input[type=range]::-moz-range-thumb { width: 10px; height: 10px; background: var(--slider-thumb,var(--text)); border: 1px solid #000; border-radius: 0; cursor: pointer; }
+input[type=range]::-moz-range-thumb { width: 10px; height: 10px; background: var(--slider-thumb,var(--text)); border: 1px solid var(--thumb-border); border-radius: 0; cursor: pointer; }
 input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 .groupReset { padding: 4px 0 4px 7px; background: none; border: 0; border-radius: 0; color: var(--text-dim2); font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
 .groupReset:hover { color: var(--text); }
 #actions { display: flex; flex-direction: column; gap: 0; margin-top: 0; }
 .actionBtn { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 18px 0; background: none; border: 0; border-top: 1px solid var(--panel-border); border-radius: 0; color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .17em; text-transform: uppercase; text-align: left; cursor: pointer; transition: color .25s, border-color .25s; }
 .actionBtn:hover { border-top-color: var(--text); }
-.actionBtn.primary { background: var(--text); color: #000; border: 1px solid var(--text); padding: 17px 16px; margin-top: 12px; }
+.actionBtn.primary { background: var(--text); color: var(--inverse); border: 1px solid var(--text); padding: 17px 16px; margin-top: 12px; }
 .actionBtn.primary:hover { background: transparent; color: var(--text); }
-.actionBtn.primary kbd { transition: color .25s, background .25s; }
-.actionBtn.primary:hover kbd { background: var(--text) !important; color: #000 !important; }
+.actionBtn.primary kbd { background: var(--inverse); color: var(--text); border-color: var(--inverse); transition: color .25s, background .25s, border-color .25s; }
+.actionBtn.primary:hover kbd { background: var(--text); color: var(--inverse); border-color: var(--text); }
 #processVideoBtn { margin-top: 12px; padding: 17px 16px; background: transparent; color: var(--text); border: 1px solid var(--text); }
-#processVideoBtn:hover { background: var(--text); color: #000; }
+#processVideoBtn:hover { background: var(--text); color: var(--inverse); }
 #shortcuts { display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 23px; border-top: 1px solid var(--panel-border); }
 .kbdRow { display: flex; justify-content: space-between; color: var(--text-dim2); font-size: 10px; letter-spacing: .04em; }
 .kbdRow kbd { padding: 1px 5px; background: none; border: 1px solid var(--panel-border); border-radius: 0; color: var(--text-dim); font: 10px 'JetBrains Mono',monospace; }
-#videoProgress { position: absolute; bottom: 38px; left: 50%; transform: translateX(-50%); z-index: 30; display: none; flex-direction: column; gap: 13px; width: min(460px,92%); padding: 20px 22px; background: #000; border: 1px solid var(--panel-border); box-shadow: 0 20px 80px rgba(0,0,0,.8); }
+#videoProgress { position: absolute; bottom: 38px; left: 50%; transform: translateX(-50%); z-index: 30; display: none; flex-direction: column; gap: 13px; width: min(460px,92%); padding: 20px 22px; background: var(--bg); border: 1px solid var(--panel-border); box-shadow: 0 20px 80px var(--shadow); }
 #videoProgress.show { display: flex; }
 #progressHead { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 #progressBar { height: 2px; background: var(--panel-border); overflow: hidden; }
 #progressFill { height: 100%; width: 0%; background: var(--text); transition: width .25s; }
 #progressText { color: var(--text-dim); font: 10px 'JetBrains Mono',monospace; }
-#toast { position: absolute; top: 32px; left: 50%; transform: translateX(-50%) translateY(-20px); z-index: 50; max-width: 90%; padding: 12px 16px; background: #000; border: 1px solid var(--panel-border); box-shadow: 0 14px 40px rgba(0,0,0,.65); color: var(--text); font-size: 11px; letter-spacing: .07em; text-align: center; opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; }
+#toast { position: absolute; top: 32px; left: 50%; transform: translateX(-50%) translateY(-20px); z-index: 50; max-width: 90%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--panel-border); box-shadow: 0 14px 40px var(--shadow); color: var(--text); font-size: 11px; letter-spacing: .07em; text-align: center; opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+@media (min-width: 768px) {
+  header { padding-inline: 40px; }
+  #logo { font-size: 13px; }
+}
+@media (min-width: 1024px) {
+  header { gap: 40px; padding-inline: 64px; }
+  #headerActions { gap: 40px; }
+}
 @media (max-width: 1100px) {
   #sidebar { width: 392px; min-width: 350px; padding: 28px 22px; }
   #mainArea { padding: 36px; }
@@ -176,12 +230,15 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
   #sidebar { width: 100%; min-width: 0; padding: 36px 40px 48px; border-left: 0; border-top: 1px solid var(--panel-border); order: 2; overflow: visible; }
   #glCanvas { max-height: 52vh; }
 }
-@media (max-width: 600px) {
-  header { height: 64px; min-height: 64px; gap: 10px; padding: 0 24px; }
-  #logo { font-size: 11px; letter-spacing: .13em; }
-  #headerActions { gap: 12px; }
-  .hdrBtn { font-size: 9px; letter-spacing: .08em; }
+@media (max-width: 767px) {
+  /* Portfolio-sized first row; keep the editor's three actions visible below it. */
+  header { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0 16px; padding: 16px 24px 0; }
+  #headerActions { grid-column: 1 / -1; grid-row: 2; justify-content: space-between; gap: 12px; margin: 12px 0 0; padding: 3px 0; border-top: 1px solid var(--panel-border); }
+  #themeToggle { grid-column: 2; grid-row: 1; justify-self: end; }
+  .hdrBtn { font-size: 10px; letter-spacing: .13em; }
   .hdrBtn.primary { padding: 8px 10px; }
+}
+@media (max-width: 600px) {
   #mainArea { height: 60svh; min-height: 435px; padding: 32px 24px; }
   #dropZone { gap: 16px; }
   #dropZone h2 { font-size: clamp(78px,20vw,132px); }
@@ -199,20 +256,16 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
   .zoomInstructions { display: none; }
 }
 @media (max-width: 360px) {
-  header { padding: 0 16px; }
-  #logo { font-size: 10px; letter-spacing: .1em; }
   #headerActions { gap: 7px; }
-  .hdrBtn { font-size: 9px; letter-spacing: 0; }
+  .hdrBtn { font-size: 9px; letter-spacing: .06em; }
   .hdrBtn.primary { padding: 7px; }
   #mainArea { padding: 26px 18px; }
   #dropZone h2 { font-size: 76px; }
   #sidebar { padding-left: 18px; padding-right: 18px; }
 }
 @media (max-width: 300px) {
-  header { gap: 6px; padding: 0 10px; }
-  #logo { font-size: 9px; letter-spacing: .04em; }
   #headerActions { gap: 4px; }
-  .hdrBtn { font-size: 8px; }
+  .hdrBtn { letter-spacing: 0; }
   .hdrBtn.primary { padding: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -225,10 +278,15 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
   <header>
     <div id="logo">Juwain Haque</div>
     <div id="headerActions">
-      <button class="hdrBtn" id="hdrUploadBtn">＋ Upload</button>
-      <button class="hdrBtn" id="hdrBeforeBtn">◑ Before</button>
-      <button class="hdrBtn primary" id="hdrDownloadBtn">⤓ Export</button>
+      <button type="button" class="hdrBtn" id="hdrUploadBtn">＋ Upload</button>
+      <button type="button" class="hdrBtn" id="hdrBeforeBtn">◑ Before</button>
+      <button type="button" class="hdrBtn primary" id="hdrDownloadBtn">⤓ Export</button>
     </div>
+    <button type="button" id="themeToggle" aria-label="Switch to light mode" title="Switch to light mode">
+      <svg class="sunIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="moonIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>
+      <span class="themeLabel" aria-hidden="true">Light</span>
+    </button>
   </header>
   <div id="content">
     <main id="mainArea">
@@ -273,12 +331,12 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 
       <div id="effectsWrap">
         <div class="sectionLabel">Effects — Intensity + Advanced</div>
-        <p class="sectionHint">All controls: 0 is neutral · white subtracts · red adds</p>
+        <p class="sectionHint">All controls: 0 is neutral · <span class="darkHint">white subtracts · red adds</span><span class="lightHint">black subtracts · red adds</span></p>
 
         <!-- OVERALL COLOR -->
         <div class="effectGroup open" data-group="color">
           <div class="effectHeader">
-            <button type="button" class="effectTitle" aria-expanded="true" aria-controls="colorControls"><i style="background:#fff"></i> Color & Light <span class="expand" aria-hidden="true"></span></button>
+            <button type="button" class="effectTitle" aria-expanded="true" aria-controls="colorControls"><i style="background:var(--text)"></i> Color & Light <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="color" role="switch" aria-checked="true" aria-label="Color & Light effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="color">Reset</button></div>
           </div>
           <div class="subControls" id="colorControls">
@@ -328,7 +386,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <!-- GRAIN -->
         <div class="effectGroup" data-group="grain">
           <div class="effectHeader">
-            <button type="button" class="effectTitle" aria-expanded="false" aria-controls="grainControls"><i style="background:#aaa"></i> Film Grain <span class="expand" aria-hidden="true"></span></button>
+            <button type="button" class="effectTitle" aria-expanded="false" aria-controls="grainControls"><i style="background:var(--text-dim)"></i> Film Grain <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><div class="sliderVal" id="valGrain">0</div><button type="button" class="effectToggle" data-toggle="grain" role="switch" aria-checked="true" aria-label="Film Grain effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="grain">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderGrain" min="-100" max="100" value="0"></div>
@@ -345,7 +403,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <!-- SHARPEN -->
         <div class="effectGroup" data-group="sharpen">
           <div class="effectHeader">
-            <button type="button" class="effectTitle" aria-expanded="false" aria-controls="sharpenControls"><i style="background:#fff"></i> Sharpening <span class="expand" aria-hidden="true"></span></button>
+            <button type="button" class="effectTitle" aria-expanded="false" aria-controls="sharpenControls"><i style="background:var(--text)"></i> Sharpening <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><div class="sliderVal" id="valSharp">0</div><button type="button" class="effectToggle" data-toggle="sharpen" role="switch" aria-checked="true" aria-label="Sharpening effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="sharpen">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderSharp" min="-100" max="100" value="0"></div>
@@ -361,7 +419,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 
       <div id="actions">
         <button class="actionBtn" id="beforeAfterBtn">◑ Toggle Before / After <kbd style="margin-left:auto;opacity:.6">Space</kbd></button>
-        <button class="actionBtn primary" id="downloadBtn">⤓ Download PNG <kbd style="margin-left:auto;background:#000;color:#fff;border-color:#000">D</kbd></button>
+        <button class="actionBtn primary" id="downloadBtn">⤓ Download PNG <kbd style="margin-left:auto">D</kbd></button>
         <button class="actionBtn" id="processVideoBtn" style="display:none">🎞 Process Video → WebM</button>
       </div>
       <div id="shortcuts">
@@ -376,6 +434,27 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 <input type="file" id="fileInput" accept="image/*,.heic,.heif,image/heic,image/heif,video/*" hidden>
 <script>
 (() => {
+const themeToggle = document.getElementById('themeToggle');
+function syncThemeButton(){
+  const isLight=document.documentElement.dataset.theme==='light';
+  const label=`Switch to ${isLight?'dark':'light'} mode`;
+  themeToggle.querySelector('.themeLabel').textContent=isLight?'Dark':'Light';
+  themeToggle.setAttribute('aria-label',label);
+  themeToggle.title=label;
+}
+themeToggle.addEventListener('click',()=>{
+  const next=document.documentElement.dataset.theme==='light'?'dark':'light';
+  document.documentElement.dataset.theme=next;
+  try { localStorage.setItem('film_lab_theme',next); } catch (_) { /* still switch in this tab */ }
+  syncThemeButton();
+});
+window.addEventListener('storage',e=>{
+  if(e.key==='film_lab_theme'){
+    document.documentElement.dataset.theme=e.newValue==='light'?'light':'dark';
+    syncThemeButton();
+  }
+});
+syncThemeButton();
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl2', {preserveDrawingBuffer:true, antialias:false, premultipliedAlpha:false});
 if(!gl){ alert('WebGL 2 not supported'); return; }
@@ -488,12 +567,12 @@ function updateSliderUI(){
       vals[n].classList.toggle('negative',value<0);
       vals[n].classList.toggle('positive',value>0);
     }
-    // Fill outward from the center for all 32 sliders. Negative is neutral
-    // white and positive is red. A small tick remains visible at zero.
+    // Fill outward from the center for all 32 sliders. Negative is white
+    // in dark mode and charcoal in light mode; positive stays red.
     const pct=50+value/2, from=Math.min(pct,50), to=Math.max(pct,50);
     const fill=value<0?'var(--negative)':'var(--accent)';
-    s.style.background=`linear-gradient(90deg, transparent 49.75%, rgba(255,255,255,0.5) 49.75%, rgba(255,255,255,0.5) 50.25%, transparent 50.25%), linear-gradient(90deg, transparent ${from}%, ${fill} ${from}%, ${fill} ${to}%, transparent ${to}%), rgba(255,255,255,0.08)`;
-    s.style.setProperty('--slider-thumb',value<0?'var(--negative)':value>0?'var(--accent)':s.classList.contains('subSlider')?'#c8c8c8':'var(--accent)');
+    s.style.background=`linear-gradient(90deg, transparent 49.75%, var(--slider-center) 49.75%, var(--slider-center) 50.25%, transparent 50.25%), linear-gradient(90deg, transparent ${from}%, ${fill} ${from}%, ${fill} ${to}%, transparent ${to}%), var(--slider-track)`;
+    s.style.setProperty('--slider-thumb',value<0?'var(--negative)':value>0?'var(--accent)':s.classList.contains('subSlider')?'var(--slider-neutral)':'var(--accent)');
     s.style.setProperty('--slider-glow',value<0?'var(--negative-glow)':'var(--accent-glow)');
   });
 }
@@ -1243,7 +1322,8 @@ $('savePresetBtn').addEventListener('click',()=>{
 });
 
 window.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT') return;
+  // Space on a focused button must activate that button, not the Before shortcut.
+  if(['INPUT','BUTTON','TEXTAREA','SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
   if(e.code==='Space'){ e.preventDefault(); toggleBeforeAfter(); }
   else if(e.key.toLowerCase()==='r'){
     ids.forEach(k=>{ sliders[k].value=0; });

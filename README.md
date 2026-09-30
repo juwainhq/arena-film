@@ -8,4 +8,6 @@ Photos can be imported as JPG, PNG, HEIC, or HEIF (including uppercase extension
 
 Hover over the preview and scroll to zoom from 50% to 500%, or use the − / + buttons (also available on touch screens). Drag the picture to pan when zoomed in; click the percentage to reset to fit. Double-clicking the picture still opens the file picker. Zoom changes only the preview, never the exported pixels.
 
-Run the dependency-free control and HEIC tests with `node --test tests/*.test.cjs`.
+The header follows the portfolio's 24px / 40px / 64px navigation gutters. On narrow screens the editor actions stay visible in a second row. The Light/Dark button switches the entire editor UI while keeping the rendered media and exports untouched; the choice is saved locally in `film_lab_theme` (dark by default). In light mode, black replaces white for negative slider fills so they remain visible.
+
+Run the dependency-free control, theme, and HEIC tests with `node --test tests/*.test.cjs`.

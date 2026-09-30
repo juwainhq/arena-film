@@ -48,7 +48,7 @@ test('every effect has a separate accessible ON/OFF switch and a visible accordi
   const switches = [...html.matchAll(/class="effectToggle" data-toggle="(\w+)" role="switch" aria-checked="true" aria-label="([^"]+)"/g)];
   assert.deepEqual(switches.map(m => m[1]), groups);
   for (const group of groups) assert.match(html, new RegExp(`aria-controls="${group}Controls"`));
-  assert.match(styles, /\.effectTitle \.expand \{[^}]*width: 26px;[^}]*border: 1px solid rgba\(255,255,255,\.62\)/);
+  assert.match(styles, /\.effectTitle \.expand \{[^}]*width: 26px;[^}]*border: 1px solid var\(--border-strong\)/);
   assert.match(styles, /\.effectTitle \.expand::before \{[^}]*border-right: 2px solid currentColor;[^}]*border-bottom: 2px solid currentColor/);
   assert.match(script, /e\.stopPropagation\(\); \/\/ switching an effect must not collapse its controls/);
   assert.match(script, /setGroupOpen\(g,!!anyClosed\)/);
