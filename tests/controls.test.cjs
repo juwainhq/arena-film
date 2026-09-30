@@ -13,10 +13,11 @@ const update = script.match(/function updateFromSliders\(\)\{[\s\S]*?\n\}/)[0];
 const converter = script.match(/function convertLegacyValues\(values\)\{[\s\S]*?\n\}/)[0];
 const upgrade = script.match(/function upgradeV4Preset\(p\)\{[\s\S]*?\n\}/)[0];
 const legacyPresets = script.match(/const legacyBuiltInPresets=\{[\s\S]*?\n\};/)[0];
+const withoutSharpening = script.match(/const withoutSharpening=values=>[^\n]+;/)[0];
 const builtIns = script.match(/const builtInPresets=\{[\s\S]*?\n\};/)[0];
 const sliders = {}, params = {};
 const context = vm.createContext({sliders, params});
-vm.runInContext(`${config}\n${mapper}\n${update}\n${converter}\n${upgrade}\n${legacyPresets}\n${builtIns}\nthis.controls=advancedControls;this.mapValue=advancedValue;this.update=updateFromSliders;this.convert=convertLegacyValues;this.upgrade=upgradeV4Preset;this.oldPresets=legacyBuiltInPresets;this.presets=builtInPresets;`, context);
+vm.runInContext(`${config}\n${mapper}\n${update}\n${converter}\n${upgrade}\n${legacyPresets}\n${withoutSharpening}\n${builtIns}\nthis.controls=advancedControls;this.mapValue=advancedValue;this.update=updateFromSliders;this.convert=convertLegacyValues;this.upgrade=upgradeV4Preset;this.oldPresets=legacyBuiltInPresets;this.presets=builtInPresets;`, context);
 const {controls, mapValue, update: updateFromSliders, convert, upgrade: upgradeV4Preset, oldPresets, presets} = context;
 const advancedInputs = [...html.matchAll(/<input class="subSlider" type="range" id="slider(\w+)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
 const intensityInputs = [...html.matchAll(/<input type="range" id="slider(Bloom|Hall|Grain|Sharp)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
@@ -130,6 +131,22 @@ test('six complete presets, legacy translations and v4 upgrades retain old looks
   assert.equal(upgradeV4Preset(migrated), migrated);
   assert.match(script, /const dur=340/);
   assert.match(script, /film_lab_presets_v4/);
+});
+
+test('all built-in looks leave sharpening neutral while preserving their other effects', () => {
+  const sharpenControls = ['Sharp', 'SharpRadius', 'SharpEdge', 'SharpDetail', 'SharpLuma'];
+  for (const [name, values] of Object.entries(presets)) {
+    assert.equal(Object.keys(values).length, 32, `${name} is complete`);
+    for (const key of sharpenControls) assert.equal(values[key], 0, `${name}: ${key}`);
+    if (oldPresets[name]) {
+      const previous = convert(oldPresets[name]);
+      for (const key of Object.keys(previous)) {
+        if (!sharpenControls.includes(key)) assert.equal(values[key], previous[key], `${name}: ${key}`);
+      }
+    }
+  }
+  assert.match(script, /if\(abs\(u_strength\)<0\.001\)\{ outColor=center; return; \}/);
+  assert.equal(convert({Sharp:80}).Sharp, 80); // manual and saved custom settings remain available
 });
 
 test('video processing retains a 60s cap, WebCodecs fallback and frame progress', () => {

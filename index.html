@@ -1030,15 +1030,16 @@ function convertLegacyValues(values){
   });
   return converted;
 }
+// Built-in looks leave sharpening completely neutral; manual and saved custom settings are unchanged.
+const withoutSharpening=values=>({...values,Sharp:0,SharpRadius:0,SharpEdge:0,SharpDetail:0,SharpLuma:0});
 const builtInPresets={
-  ...Object.fromEntries(Object.entries(legacyBuiltInPresets).map(([name,values])=>[name,convertLegacyValues(values)])),
-  'Noir Crunch':{
+  ...Object.fromEntries(Object.entries(legacyBuiltInPresets).map(([name,values])=>[name,withoutSharpening(convertLegacyValues(values))])),
+  'Noir Crunch':withoutSharpening({
     Exposure:-18,Contrast:65,Saturation:-100,Temperature:-12,VignStrength:60,VignSize:-20,
     Bloom:-25,BloomThresh:20,BloomSpread:-25,BloomSoft:-35,BloomTint:-40,BloomBlend:-10,BloomAnam:0,
     Hall:-10,HallThresh:-15,HallSpread:-25,HallTint:-55,HallDir:-12,HallFalloff:15,HallSat:-50,
-    Grain:55,GrainSize:-35,GrainRough:45,GrainSpeed:-30,GrainColor:-100,GrainLuma:25,GrainSoft:-30,
-    Sharp:55,SharpRadius:15,SharpEdge:-25,SharpDetail:55,SharpLuma:35
-  }
+    Grain:55,GrainSize:-35,GrainRough:45,GrainSpeed:-30,GrainColor:-100,GrainLuma:25,GrainSoft:-30
+  })
 };
 let customPresets=[];
 function upgradeV4Preset(p){
