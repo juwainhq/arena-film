@@ -372,3 +372,35 @@ test('IG Looks adds fourteen complete signed presets without replacing any origi
   assert.ok(ig['Neon Night'].ShadowTone<0&&ig['Neon Night'].HighlightTint>0);
   assert.notDeepEqual(ig['Golden Hour'],presets['Golden Hour']); // the original stays available separately
 });
+
+test('the top Export button runs Reel export for video and opens image options for photos', () => {
+  assert.match(script, /function handleHeaderExport\(\)\{[\s\S]*?if\(isVideo\)\{ processVideo\(\); return; \}[\s\S]*?setCropPanelOpen\(true,true\)/);
+  assert.match(script, /\$\('hdrDownloadBtn'\)\.addEventListener\('click',handleHeaderExport\)/);
+  assert.match(script, /\$\('hdrDownloadBtn'\)\.textContent=isVideo\?'⤓ Export Reel':'⤓ Export'/);
+  assert.match(script, /\$\('hdrDownloadBtn'\)\.disabled=locked/);
+  assert.equal((html.match(/id="processVideoBtn"/g)||[]).length,1);
+  assert.match(html, /id="videoTrimPanel"[\s\S]*?id="processVideoBtn"/);
+});
+
+test('the controls start in a calmer state with finer color controls tucked away and larger touch targets', () => {
+  assert.match(html, /<div class="effectGroup open" data-group="color">/);
+  assert.match(html, /<div class="effectGroup" data-group="bloom">[\s\S]*?aria-expanded="false" aria-controls="bloomControls"/);
+  assert.match(html, /<details class="advancedColor">/);
+  assert.match(html, /id="settingsToolsBody" hidden/);
+  assert.match(html, /id="settingsToolsToggle" class="panelHeading" aria-expanded="false" aria-controls="settingsToolsBody"/);
+  assert.match(styles, /input\[type=range\]\s*\{[^}]*height:\s*32px/);
+  assert.match(styles, /input\[type=range\]::-webkit-slider-thumb\s*\{[^}]*width:\s*16px;[^}]*height:\s*16px/);
+  assert.match(styles, /\.toolBtn\s*\{[^}]*min-height:\s*42px/);
+  assert.match(script, /settingsToolsToggle'[\s\S]*?body\.hidden=!open/);
+});
+
+test('header Export invokes the active video workflow but never exports a photo accidentally', () => {
+  const handler=script.match(/function handleHeaderExport\(\)\{[\s\S]*?\n\}/)[0];
+  const calls={video:0,photo:0};
+  const state=vm.createContext({exportBusy:false,mediaBusy:false,isVideo:true,calls,
+    processVideo(){calls.video++;},setCropPanelOpen(open,scroll){if(open&&scroll)calls.photo++;}});
+  vm.runInContext(`${handler}\nthis.run=handleHeaderExport;`,state);
+  state.run(); assert.equal(calls.video,1); assert.equal(calls.photo,0);
+  state.isVideo=false; state.run(); assert.equal(calls.video,1); assert.equal(calls.photo,1);
+  state.exportBusy=true; state.run(); assert.equal(calls.photo,1);
+});

@@ -129,10 +129,10 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 #videoEl { display: none; }
 
 /* Flat lists and fine rules echo the portfolio's work and services sections. */
-#sidebar { width: 424px; min-width: 370px; display: flex; flex-direction: column; gap: 36px; padding: 32px 30px 34px; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--panel-border); }
+#sidebar { width: 424px; min-width: 370px; display: flex; flex-direction: column; gap: 24px; padding: 32px 30px 34px; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--panel-border); }
 #sidebar::-webkit-scrollbar { width: 3px; }
 #sidebar::-webkit-scrollbar-thumb { background: var(--border-hover); }
-.sectionLabel { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .3em; text-transform: uppercase; }
+.sectionLabel { display: flex; align-items: center; gap: 14px; margin-bottom: 13px; color: var(--text); font-size: 11px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
 .sectionLabel::after { content: ''; flex: 1; height: 1px; background: var(--panel-border); }
 .sectionHint { margin: -2px 0 18px; color: var(--text-dim2); font-size: 10px; line-height: 1.5; letter-spacing: .03em; }
 .lightHint,:root[data-theme="light"] .darkHint { display: none; }
@@ -159,11 +159,11 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 #deletePresetBtn:hover { border-bottom-color: var(--accent); }
 #deletePresetBtn:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
 #effectsWrap { display: flex; flex-direction: column; gap: 0; counter-reset: effect; }
-.effectGroup { counter-increment: effect; padding: 20px 0 18px; border: 0; border-top: 1px solid var(--panel-border); border-radius: 0; background: none; box-shadow: none; transition: border-color .25s; }
+.effectGroup { counter-increment: effect; padding: 12px 0 10px; border: 0; border-top: 1px solid var(--panel-border); border-radius: 0; background: none; box-shadow: none; transition: border-color .25s; }
 .effectGroup:last-child { border-bottom: 1px solid var(--panel-border); }
 .effectGroup:hover,.effectGroup.open { border-top-color: var(--border-hover); }
 .effectHeader { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 10px; cursor: pointer; user-select: none; }
-.effectTitle { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 0; border: 0; background: none; color: var(--text); text-align: left; font-family: var(--display); font-size: 18px; font-weight: 500; letter-spacing: -.035em; white-space: nowrap; cursor: pointer; }
+.effectTitle { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 38px; padding: 0; border: 0; background: none; color: var(--text); text-align: left; font-family: var(--display); font-size: 18px; font-weight: 500; letter-spacing: -.035em; white-space: nowrap; cursor: pointer; }
 .effectTitle::before { content: counter(effect,decimal-leading-zero); margin-right: 11px; color: var(--text-dim2); font: 500 10px 'JetBrains Mono',monospace; letter-spacing: .02em; }
 .effectTitle i { display: none; }
 .effectTitle .expand { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 26px; height: 26px; margin-left: 3px; border: 1px solid var(--border-strong); background: var(--soft-bg); color: var(--text); transition: border-color .2s, background .2s; }
@@ -171,7 +171,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .effectGroup.open .effectTitle .expand::before { transform: translateY(2px) rotate(225deg); }
 .effectTitle:hover .expand,.effectTitle:focus-visible .expand { border-color: var(--text); background: var(--soft-hover); }
 .effectHeadRight { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; }
-.effectToggle { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 2px 0; border: 0; background: none; color: var(--text); cursor: pointer; white-space: nowrap; }
+.effectToggle { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 2px 0; border: 0; background: none; color: var(--text); cursor: pointer; white-space: nowrap; }
 .toggleTrack { position: relative; display: inline-block; flex: none; width: 27px; height: 15px; border: 1px solid var(--text); background: var(--text); transition: background .2s, border-color .2s; }
 .toggleThumb { position: absolute; top: 2px; left: 15px; width: 9px; height: 9px; background: var(--inverse); transition: left .2s, background .2s; }
 .toggleText { min-width: 19px; text-align: left; font: 600 9px 'JetBrains Mono',monospace; letter-spacing: .05em; }
@@ -185,10 +185,10 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .sliderVal { min-width: 30px; padding: 0; border: 0; border-radius: 0; background: none; color: var(--text); text-align: right; font: 500 11px 'JetBrains Mono',monospace; }
 .sliderVal.negative,.subVal.negative { color: var(--negative); background: none; border: 0; }
 .sliderVal.positive,.subVal.positive { color: var(--accent); background: none; border: 0; }
-.mainSlider { display: flex; flex-direction: column; gap: 6px; margin-top: 19px; }
-.subControls { display: flex; flex-direction: column; gap: 17px; margin-top: 0; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .4s cubic-bezier(.16,1,.3,1), opacity .3s, margin-top .3s; }
-.effectGroup.open .subControls { margin-top: 20px; padding-top: 22px; max-height: 1200px; opacity: 1; border-top: 1px solid var(--panel-border); }
-.subRow { display: flex; flex-direction: column; gap: 7px; }
+.mainSlider { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; }
+.subControls { display: flex; flex-direction: column; gap: 12px; margin-top: 0; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .4s cubic-bezier(.16,1,.3,1), opacity .3s, margin-top .3s; }
+.effectGroup.open .subControls { margin-top: 14px; padding-top: 16px; max-height: 2800px; opacity: 1; border-top: 1px solid var(--panel-border); }
+.subRow { display: flex; flex-direction: column; gap: 3px; }
 .subHead { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .subLabel { display: flex; align-items: baseline; gap: 6px; color: var(--text-dim); font-size: 10px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
 .subLabel span { color: var(--text-dim2); font-size: 10px; font-weight: 400; letter-spacing: 0; text-transform: none; }
@@ -197,14 +197,16 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .subScale span:nth-child(2) { color: var(--text-dim2); }
 .subScale span:first-child { color: var(--negative); }
 .subScale span:last-child { color: var(--accent); }
-input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 2px; background: var(--panel-border); border-radius: 0; outline: none; cursor: pointer; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 32px; padding: 0; background: linear-gradient(var(--panel-border),var(--panel-border)) center / 100% 3px no-repeat; border-radius: 0; outline: none; cursor: pointer; touch-action: pan-y; }
 input[type=range]:focus-visible { outline: 1px solid var(--text); outline-offset: 6px; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -5px; background: var(--slider-thumb,var(--text)); border: 1px solid var(--thumb-border); border-radius: 0; box-shadow: none; cursor: pointer; transition: transform .2s; }
+input[type=range]::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; background: var(--slider-thumb,var(--text)); border: 1px solid var(--thumb-border); border-radius: 0; box-shadow: none; cursor: pointer; transition: transform .2s; }
 input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.18); }
-input[type=range].subSlider { height: 2px; margin: 4px 0 0; }
-input[type=range].subSlider::-webkit-slider-thumb { width: 10px; height: 10px; margin-top: -4px; }
-input[type=range]::-moz-range-thumb { width: 10px; height: 10px; background: var(--slider-thumb,var(--text)); border: 1px solid var(--thumb-border); border-radius: 0; cursor: pointer; }
-input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
+input[type=range].subSlider { height: 30px; margin: 0; }
+input[type=range].subSlider::-webkit-slider-thumb { width: 14px; height: 14px; margin-top: -5px; }
+input[type=range]::-moz-range-track { height: 4px; background: transparent; }
+input[type=range]::-moz-range-thumb { width: 16px; height: 16px; background: var(--slider-thumb,var(--text)); border: 1px solid var(--thumb-border); border-radius: 0; cursor: pointer; }
+input[type=range].subSlider::-moz-range-thumb { width: 14px; height: 14px; }
 .groupReset { padding: 4px 0 4px 7px; background: none; border: 0; border-radius: 0; color: var(--text-dim2); font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
 .groupReset:hover { color: var(--text); }
 /* Dithering stays in the same editorial control language as the other effects. */
@@ -250,7 +252,21 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 [hidden] { display: none !important; }
 #previewStage { position: relative; flex: 1; width: 100%; min-height: 0; }
 .socialPanel { min-width: 0; }
-.panelHeading { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; margin-bottom: 16px; padding: 0; background: none; border: 0; color: var(--text); text-align: left; cursor: pointer; }
+.advancedColor { padding-top: 2px; border-top: 1px solid var(--panel-border); }
+.advancedColor summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 42px; color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .08em; cursor: pointer; list-style: none; }
+.advancedColor summary::-webkit-details-marker { display: none; }
+.advancedColor summary::after { content: '+'; flex: none; color: var(--text); font: 16px 'JetBrains Mono',monospace; }
+.advancedColor[open] summary::after { content: '−'; }
+.advancedColor summary small { margin-left: auto; color: var(--text-dim2); font-size: 9px; font-weight: 400; letter-spacing: 0; }
+.advancedColorRows { display: flex; flex-direction: column; gap: 12px; padding: 6px 0 10px; }
+#settingsToolsToggle { margin-bottom: 0; }
+#settingsToolsBody { padding-top: 10px; }
+#settingsToolsBody[hidden] { display: none; }
+#settingsToolsToggle[aria-expanded="true"] { margin-bottom: 9px; }
+#processVideoBtn { width: 100%; margin: 16px 0 10px; min-height: 54px; font-size: 11px; }
+#hdrDownloadBtn:disabled { opacity: .45; cursor: wait; }
+
+.panelHeading { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; min-height: 44px; margin-bottom: 16px; padding: 0; background: none; border: 0; color: var(--text); text-align: left; cursor: pointer; }
 .panelHeading .sectionLabel { margin: 0; flex: 1; }
 .panelChevron { flex: none; width: 8px; height: 8px; border-right: 2px solid var(--text); border-bottom: 2px solid var(--text); transform: rotate(225deg); }
 .panelHeading[aria-expanded="false"] .panelChevron { transform: rotate(45deg); }
@@ -266,7 +282,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #outputDimensions { color: var(--text); font: 500 12px 'JetBrains Mono',monospace; }
 .socialHint { color: var(--text-dim2); font-size: 10px; line-height: 1.7; }
 .cropTools,.inlineActions { display: flex; gap: 8px; margin: 12px 0 16px; }
-.toolBtn { min-height: 36px; padding: 8px 11px; border: 1px solid var(--panel-border); background: none; color: var(--text-dim); font-size: 10px; text-align: left; cursor: pointer; }
+.toolBtn { min-height: 42px; padding: 9px 12px; border: 1px solid var(--panel-border); background: none; color: var(--text-dim); font-size: 10px; text-align: left; cursor: pointer; }
 .toolBtn:hover,.toolBtn[aria-pressed="true"] { color: var(--text); border-color: var(--text); }
 .toolBtn[aria-pressed="true"] { background: var(--soft-bg); }
 .toolBtn:disabled,.actionBtn:disabled { opacity: .35; cursor: not-allowed; }
@@ -277,7 +293,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 .qualityHeading .fieldLabel { margin: 0; }
 #exportQualityValue { color: var(--text); font: 10px 'JetBrains Mono',monospace; }
 #qualityField { margin: 18px 0; }
-#exportQuality { --slider-thumb: var(--text); }
+#exportQuality { --slider-thumb: var(--text); background: linear-gradient(var(--panel-border),var(--panel-border)) center / 100% 3px no-repeat; }
 .checkLabel { display: flex; align-items: center; gap: 10px; min-height: 38px; color: var(--text-dim); font-size: 11px; cursor: pointer; }
 .checkLabel input { width: 14px; height: 14px; accent-color: var(--accent); }
 #comparisonOptions { margin: 3px 0 12px; }
@@ -391,7 +407,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
   .dropCue { letter-spacing: .12em; }
   .dropCue::after { width: 24px; }
   #dropZone .hint { max-width: 160px; font-size: 9px; letter-spacing: .11em; }
-  #sidebar { padding: 30px 24px 44px; gap: 32px; }
+  #sidebar { padding: 28px 24px 40px; gap: 22px; }
   #glCanvas { max-height: 47vh; }
   #canvasWrap::before { top: auto; bottom: 0; }
   #canvasWrap::after { display: none; }
@@ -512,10 +528,11 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <div class="inlineActions"><button type="button" class="toolBtn" id="setTrimInBtn">Set in at playhead</button><button type="button" class="toolBtn" id="setTrimOutBtn">Set out at playhead</button></div>
         <label class="fieldLabel" for="videoContainer">Video format</label><select id="videoContainer" class="socialSelect"><option value="mp4">MP4 / H.264 · Reels-ready</option><option value="webm">WebM / original workflow</option></select>
         <label class="checkLabel"><input type="checkbox" id="keepVideoAudio" checked>Keep source audio</label>
+        <button class="actionBtn primary" id="processVideoBtn" style="display:none">⤓ Export trimmed MP4</button>
         <p class="socialHint">Preview loops your selection. Maximum 60s. Choose Story / Reel above for a draggable 9:16 crop. Video encoding needs an internet connection.</p>
       </section>
       <div>
-        <div class="sectionLabel">Presets — full pipeline</div>
+        <div class="sectionLabel">Looks</div>
         <div id="presetChips" role="group" aria-label="Featured presets"></div>
         <label class="presetSelectLabel" for="presetSelect">More presets <span id="presetCount">26 looks</span></label>
         <div class="presetSelectWrap"><select id="presetSelect"><option value="">Choose a look</option></select></div>
@@ -524,16 +541,18 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
       </div>
 
       <section id="settingsTools" class="socialPanel" aria-label="Copy and share settings">
-        <div class="sectionLabel">Same edit / anywhere</div>
-        <div class="inlineActions"><button type="button" class="toolBtn" id="copySettingsBtn">Copy settings</button><button type="button" class="toolBtn" id="pasteSettingsBtn">Paste settings</button></div>
-        <button type="button" class="toolBtn" id="shareSettingsBtn">↗ Share this look as a link</button>
-        <div id="shareLinkRow" hidden><label class="fieldLabel" for="shareLinkInput">Look link / no photos included</label><input type="text" id="shareLinkInput" readonly spellcheck="false" aria-label="Shareable look link"></div>
-        <p class="socialHint" id="settingsStatus" role="status" aria-live="polite">Copy on this browser, paste in another session. Links carry settings, never images.</p>
+        <button type="button" id="settingsToolsToggle" class="panelHeading" aria-expanded="false" aria-controls="settingsToolsBody"><span class="sectionLabel">Copy / paste & share</span><span class="panelChevron" aria-hidden="true"></span></button>
+        <div id="settingsToolsBody" hidden>
+          <div class="inlineActions"><button type="button" class="toolBtn" id="copySettingsBtn">Copy settings</button><button type="button" class="toolBtn" id="pasteSettingsBtn">Paste settings</button></div>
+          <button type="button" class="toolBtn" id="shareSettingsBtn">↗ Share this look as a link</button>
+          <div id="shareLinkRow" hidden><label class="fieldLabel" for="shareLinkInput">Look link / no photos included</label><input type="text" id="shareLinkInput" readonly spellcheck="false" aria-label="Shareable look link"></div>
+          <p class="socialHint" id="settingsStatus" role="status" aria-live="polite">Copy on this browser, paste in another session. Links carry settings, never images.</p>
+        </div>
       </section>
 
       <div id="effectsWrap">
-        <div class="sectionLabel">Effects — Intensity + Advanced</div>
-        <p class="sectionHint">All controls: 0 is neutral · <span class="darkHint">white subtracts · red adds</span><span class="lightHint">black subtracts · red adds</span></p>
+        <div class="sectionLabel">Adjustments</div>
+        <p class="sectionHint">0 is neutral · <span class="darkHint">white subtracts · red adds</span><span class="lightHint">black subtracts · red adds</span>. Open an effect for finer controls.</p>
 
         <!-- OVERALL COLOR -->
         <div class="effectGroup open" data-group="color">
@@ -547,19 +566,24 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
             <div class="subRow"><div class="subHead"><div class="subLabel">Saturation</div><div class="subVal" id="valSaturation">0</div></div><input class="subSlider" type="range" id="sliderSaturation" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Temperature <span>cool → warm</span></div><div class="subVal" id="valTemperature">0</div></div><input class="subSlider" type="range" id="sliderTemperature" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Vibrance <span>muted → vivid</span></div><div class="subVal" id="valVibrance">0</div></div><input class="subSlider" type="range" id="sliderVibrance" min="-100" max="100" value="0"></div>
+            <details class="advancedColor">
+              <summary><span>More color controls</span><small>Shadows, highlights & vignette</small></summary>
+              <div class="advancedColorRows">
             <div class="subRow"><div class="subHead"><div class="subLabel">Fade <span>crush → lift blacks</span></div><div class="subVal" id="valFade">0</div></div><input class="subSlider" type="range" id="sliderFade" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Shadow Tone <span>teal → plum</span></div><div class="subVal" id="valShadowTone">0</div></div><input class="subSlider" type="range" id="sliderShadowTone" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Highlight Tone <span>ice → amber</span></div><div class="subVal" id="valHighlightTone">0</div></div><input class="subSlider" type="range" id="sliderHighlightTone" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Highlight Tint <span>green → magenta</span></div><div class="subVal" id="valHighlightTint">0</div></div><input class="subSlider" type="range" id="sliderHighlightTint" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div>
+              </div>
+            </details>
           </div>
         </div>
 
         <!-- BLOOM -->
-        <div class="effectGroup open" data-group="bloom">
+        <div class="effectGroup" data-group="bloom">
           <div class="effectHeader">
-            <button type="button" class="effectTitle" aria-expanded="true" aria-controls="bloomControls"><i style="background:var(--accent)"></i> Bloom <span class="expand" aria-hidden="true"></span></button>
+            <button type="button" class="effectTitle" aria-expanded="false" aria-controls="bloomControls"><i style="background:var(--accent)"></i> Bloom <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><div class="sliderVal" id="valBloom">0</div><button type="button" class="effectToggle" data-toggle="bloom" role="switch" aria-checked="true" aria-label="Bloom effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="bloom">Reset</button></div>
           </div>
           <div class="mainSlider"><input type="range" id="sliderBloom" min="-100" max="100" value="0"></div>
@@ -656,7 +680,6 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
       <div id="actions">
         <button class="actionBtn" id="beforeAfterBtn">◑ Toggle Before / After <kbd style="margin-left:auto;opacity:.6">Space</kbd></button>
         <button class="actionBtn primary" id="downloadBtn">⤓ Original-size PNG <kbd style="margin-left:auto">D</kbd></button>
-        <button class="actionBtn" id="processVideoBtn" style="display:none">⤓ Export trimmed MP4</button>
       </div>
       <div id="shortcuts">
         <div class="kbdRow"><span>Before / After</span><kbd>Space</kbd></div>
@@ -886,7 +909,8 @@ function updateSliderUI(){
     // in dark mode and charcoal in light mode; positive stays red.
     const pct=50+value/2, from=Math.min(pct,50), to=Math.max(pct,50);
     const fill=value<0?'var(--negative)':'var(--accent)';
-    s.style.background=`linear-gradient(90deg, transparent 49.75%, var(--slider-center) 49.75%, var(--slider-center) 50.25%, transparent 50.25%), linear-gradient(90deg, transparent ${from}%, ${fill} ${from}%, ${fill} ${to}%, transparent ${to}%), var(--slider-track)`;
+    s.style.background=`linear-gradient(90deg, transparent 49.75%, var(--slider-center) 49.75%, var(--slider-center) 50.25%, transparent 50.25%), linear-gradient(90deg, transparent ${from}%, ${fill} ${from}%, ${fill} ${to}%, transparent ${to}%), linear-gradient(var(--slider-track),var(--slider-track))`;
+    s.style.backgroundSize='100% 3px'; s.style.backgroundPosition='center'; s.style.backgroundRepeat='no-repeat';
     s.style.setProperty('--slider-thumb',value<0?'var(--negative)':value>0?'var(--accent)':s.classList.contains('subSlider')?'var(--slider-neutral)':'var(--accent)');
     s.style.setProperty('--slider-glow',value<0?'var(--negative-glow)':'var(--accent-glow)');
   });
@@ -1934,7 +1958,12 @@ function downloadImage(){
   a.href=canvas.toDataURL('image/png'); a.click(); splitPreview=previousSplit; render(performance.now()); showToast('Original-size PNG exported');
 }
 $('downloadBtn').addEventListener('click',downloadImage);
-$('hdrDownloadBtn').addEventListener('click',()=>setCropPanelOpen(true,true));
+function handleHeaderExport(){
+  if(exportBusy||mediaBusy) return;
+  if(isVideo){ processVideo(); return; }
+  setCropPanelOpen(true,true);
+}
+$('hdrDownloadBtn').addEventListener('click',handleHeaderExport);
 
 Object.values(sliders).forEach(s=>{
   s.addEventListener('input',userChangedSliders);
@@ -2306,6 +2335,10 @@ function bringPreviewIntoView(){
 }
 function updateSocialUI(){
   const locked=mediaBusy||exportBusy, ratio=social.cropRatio(exportOptions);
+  $('hdrDownloadBtn').disabled=locked;
+  $('hdrDownloadBtn').textContent=isVideo?'⤓ Export Reel':'⤓ Export';
+  $('hdrDownloadBtn').title=isVideo?`Export the selected ${(videoTrim.end-videoTrim.start).toFixed(1)}s video clip`:'Open photo export settings';
+  $('hdrDownloadBtn').setAttribute('aria-label',isVideo?'Export selected video clip':'Open photo export settings');
   document.querySelectorAll('[data-format]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.format===exportOptions.format && !exportOptions.comparison)));
   $('sourceDimensions').textContent=hasContent?`${canvas.width} × ${canvas.height}`:'—';
   const size=social.outputSize(exportOptions,canvas.width,canvas.height);
@@ -2350,6 +2383,10 @@ function renderPhotoStrip(){
   });
 }
 $('cropPanelToggle').addEventListener('click',()=>setCropPanelOpen($('cropPanelBody').hidden));
+$('settingsToolsToggle').addEventListener('click',()=>{
+  const body=$('settingsToolsBody'), open=body.hidden;
+  body.hidden=!open; $('settingsToolsToggle').setAttribute('aria-expanded',String(open));
+});
 document.querySelectorAll('[data-format]').forEach(btn=>btn.addEventListener('click',()=>{
   exportOptions.format=btn.dataset.format; exportOptions.comparison=false;
   cropEditing=hasContent&&exportOptions.format!=='original';

@@ -22,7 +22,7 @@ The **Instagram Export** panel adds one-click formats without removing original-
 
 Pick a format and **drag the crop frame** to reposition it. Touch dragging works too; arrow keys fine-tune the crop, and Shift moves faster. Center resets the framing. Done framing hides the guides without losing the crop. Output dimensions update immediately. Images fill the chosen aspect without distortion; smaller sources are upscaled when necessary to meet the exact output dimensions. Oversized source photos are reduced only if they exceed the device's GPU size limits.
 
-Export **JPG at 80–100% quality** (92% by default) or lossless **PNG**. The header Export button brings this panel into view. The original **Original-size PNG** action and `D` shortcut bypass the crop and keep the full rendered image. Preview zoom, crop guides, and UI labels never appear in normal exports.
+Export **JPG at 80–100% quality** (92% by default) or lossless **PNG**. The header Export button opens these photo settings; with a video loaded, it directly starts the selected Reel export. The original **Original-size PNG** action and `D` shortcut bypass the crop and keep the full rendered image. Preview zoom, crop guides, and UI labels never appear in normal exports.
 
 ### Before / after content
 
