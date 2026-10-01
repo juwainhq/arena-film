@@ -382,14 +382,18 @@ test('the top Export button runs Reel export for video and opens image options f
   assert.match(html, /id="videoTrimPanel"[\s\S]*?id="processVideoBtn"/);
 });
 
-test('the controls start in a calmer state with finer color controls tucked away and larger touch targets', () => {
+test('the calmer controls keep the original slider look with larger hit areas and an active-state thumb', () => {
   assert.match(html, /<div class="effectGroup open" data-group="color">/);
   assert.match(html, /<div class="effectGroup" data-group="bloom">[\s\S]*?aria-expanded="false" aria-controls="bloomControls"/);
   assert.match(html, /<details class="advancedColor">/);
   assert.match(html, /id="settingsToolsBody" hidden/);
   assert.match(html, /id="settingsToolsToggle" class="panelHeading" aria-expanded="false" aria-controls="settingsToolsBody"/);
-  assert.match(styles, /input\[type=range\]\s*\{[^}]*height:\s*32px/);
-  assert.match(styles, /input\[type=range\]::-webkit-slider-thumb\s*\{[^}]*width:\s*16px;[^}]*height:\s*16px/);
+  assert.match(styles, /input\[type=range\]\s*\{[^}]*height:\s*32px[^}]*2px no-repeat/);
+  assert.match(styles, /input\[type=range\]::-webkit-slider-runnable-track\s*\{\s*height:\s*2px/);
+  assert.match(styles, /input\[type=range\]::-webkit-slider-thumb\s*\{[^}]*width:\s*12px;[^}]*height:\s*12px/);
+  assert.match(styles, /input\[type=range\]:active::-webkit-slider-thumb[^}]*transform: scale\(1\.55\)/);
+  assert.match(styles, /input\[type=range\]\.subSlider:active::-webkit-slider-thumb[^}]*transform: scale\(1\.7\)/);
+  assert.match(script, /s\.style\.backgroundSize='100% 2px'/);
   assert.match(styles, /\.toolBtn\s*\{[^}]*min-height:\s*42px/);
   assert.match(script, /settingsToolsToggle'[\s\S]*?body\.hidden=!open/);
 });
