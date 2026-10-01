@@ -18,8 +18,9 @@ test('loaded previews expose zoom controls and keep zoom separate from export pi
   assert.match(script, /canvas\.addEventListener\('wheel',[\s\S]*?\{passive:false\}\)/);
   assert.match(script, /canvas\.addEventListener\('pointermove'/);
   assert.match(script, /zoomControls\.addEventListener\('dblclick',e=>e\.stopPropagation\(\)\)/);
-  assert.match(script, /canvasWrap\.addEventListener\('dblclick',\(\)=>\{ if\(!maskPaintMode\) fileInput\.click\(\); \}\)/);
-  assert.equal((script.match(/canvasWrap\.style\.display='flex'; resetPreviewZoom\(\)/g) || []).length, 2); // image and video uploads
+  assert.match(script, /canvasWrap\.addEventListener\('dblclick',e=>\{ if\(!maskPaintMode && !e\.target\.closest\('#cropOverlay'\)\) fileInput\.click\(\); \}\)/);
+  assert.match(script, /if\(resetView\) resetPreviewZoom\(\)/); // photo imports and carousel switching
+  assert.match(script, /canvasWrap\.style\.display='flex'; resetPreviewZoom\(\)/); // video imports
   assert.match(script, /a\.href=canvas\.toDataURL\('image\/png'\)/); // export source is unchanged
 });
 
@@ -40,7 +41,7 @@ test('preview zoom clamps to 50–500%, pans within the frame, and resets withou
   };
   const zoomOutBtn = {}, zoomInBtn = {};
   const zoomResetBtn = {setAttribute(name, value) { this[name] = value; }};
-  const context = vm.createContext({canvas, canvasWrap, zoomOutBtn, zoomInBtn, zoomResetBtn});
+  const context = vm.createContext({canvas, canvasWrap, zoomOutBtn, zoomInBtn, zoomResetBtn, updateCropOverlay(){},updateSplitDivider(){}});
   const state = script.match(/const MIN_PREVIEW_ZOOM=0\.5, MAX_PREVIEW_ZOOM=5;\nlet previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null;/)[0];
   const functions = script.slice(script.indexOf('function clampPreviewPan(){'), script.indexOf("zoomOutBtn.addEventListener('click'"));
   vm.runInContext(`${state}\n${functions}\nthis.zoom=zoomPreviewTo;this.reset=resetPreviewZoom;this.snapshot=()=>({zoom:previewZoom,x:previewPanX,y:previewPanY});`, context);

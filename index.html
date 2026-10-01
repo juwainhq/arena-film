@@ -87,7 +87,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 :root[data-theme="light"] #themeToggle .moonIcon { opacity: 1; transform: rotate(0) scale(1); }
 
 #content { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-#mainArea { flex: 1; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; background: var(--bg); overflow: hidden; padding: clamp(28px,4.7vw,72px); }
+#mainArea { flex: 1; flex-direction: column; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; background: var(--bg); overflow: hidden; padding: clamp(28px,4.7vw,72px); }
 #dropZone { position: relative; width: 100%; height: 100%; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; border: 0; border-radius: 0; background: transparent; text-align: left; cursor: pointer; }
 #dropZone:focus-visible { outline: 1px solid var(--text); outline-offset: 8px; }
 #dropZone.dragover::after { content: ''; position: absolute; inset: -18px; border: 1px solid var(--border-hover); pointer-events: none; }
@@ -243,6 +243,102 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #toast { position: absolute; top: 32px; left: 50%; transform: translateX(-50%) translateY(-20px); z-index: 50; max-width: 90%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--panel-border); box-shadow: 0 14px 40px var(--shadow); color: var(--text); font-size: 11px; letter-spacing: .07em; text-align: center; opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* Social tools are additive: the same flat type, fine rules, and restrained red. */
+[hidden] { display: none !important; }
+#previewStage { position: relative; flex: 1; width: 100%; min-height: 0; }
+.socialPanel { min-width: 0; }
+.panelHeading { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; margin-bottom: 16px; padding: 0; background: none; border: 0; color: var(--text); text-align: left; cursor: pointer; }
+.panelHeading .sectionLabel { margin: 0; flex: 1; }
+.panelChevron { flex: none; width: 8px; height: 8px; border-right: 2px solid var(--text); border-bottom: 2px solid var(--text); transform: rotate(225deg); }
+.panelHeading[aria-expanded="false"] .panelChevron { transform: rotate(45deg); }
+.panelHeading kbd { color: var(--text-dim2); font: 10px 'JetBrains Mono',monospace; }
+.formatGrid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.formatBtn { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; min-height: 58px; padding: 11px 12px; border: 1px solid var(--panel-border); background: transparent; color: var(--text-dim); text-align: left; font-size: 11px; cursor: pointer; }
+.formatBtn small { color: var(--text-dim2); font: 9px 'JetBrains Mono',monospace; }
+.formatBtn[aria-pressed="true"] { color: var(--text); border-color: var(--text); background: var(--soft-bg); }
+.formatBtn[aria-pressed="true"] small { color: var(--accent); }
+.formatBtn:hover { border-color: var(--border-hover); color: var(--text); }
+.formatBtn.originalFormat { flex-direction: row; justify-content: space-between; align-items: center; min-height: 36px; width: 100%; margin-top: 8px; }
+.outputRow { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 16px 0 10px; font-size: 10px; color: var(--text-dim); }
+#outputDimensions { color: var(--text); font: 500 12px 'JetBrains Mono',monospace; }
+.socialHint { color: var(--text-dim2); font-size: 10px; line-height: 1.7; }
+.cropTools,.inlineActions { display: flex; gap: 8px; margin: 12px 0 16px; }
+.toolBtn { min-height: 36px; padding: 8px 11px; border: 1px solid var(--panel-border); background: none; color: var(--text-dim); font-size: 10px; text-align: left; cursor: pointer; }
+.toolBtn:hover,.toolBtn[aria-pressed="true"] { color: var(--text); border-color: var(--text); }
+.toolBtn[aria-pressed="true"] { background: var(--soft-bg); }
+.toolBtn:disabled,.actionBtn:disabled { opacity: .35; cursor: not-allowed; }
+.toolBtn:focus-visible,.formatBtn:focus-visible,.panelHeading:focus-visible,.photoThumb:focus-visible,.socialSelect:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+.socialSelect { display: block; width: 100%; min-width: 0; min-height: 40px; padding: 8px 30px 8px 10px; border: 1px solid var(--border-strong); border-radius: 0; background: var(--bg); color: var(--text); font-size: 11px; cursor: pointer; }
+.fieldLabel { display: block; margin: 16px 0 9px; color: var(--text-dim); font-size: 10px; font-weight: 500; letter-spacing: .09em; text-transform: uppercase; }
+.qualityHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.qualityHeading .fieldLabel { margin: 0; }
+#exportQualityValue { color: var(--text); font: 10px 'JetBrains Mono',monospace; }
+#qualityField { margin: 18px 0; }
+#exportQuality { --slider-thumb: var(--text); }
+.checkLabel { display: flex; align-items: center; gap: 10px; min-height: 38px; color: var(--text-dim); font-size: 11px; cursor: pointer; }
+.checkLabel input { width: 14px; height: 14px; accent-color: var(--accent); }
+#comparisonOptions { margin: 3px 0 12px; }
+#exportPhotoBtn { margin-top: 14px; }
+#exportZipBtn { margin-top: 8px; padding: 14px 12px; border: 1px solid var(--panel-border); }
+#exportStatus { margin-top: 11px; }
+#cropOverlay { position: absolute; z-index: 3; overflow: hidden; pointer-events: none; }
+#cropFrame { position: absolute; border: 1px solid #fff; box-shadow: 0 0 0 8000px rgba(0,0,0,.52); pointer-events: auto; touch-action: none; cursor: move; outline: none; }
+#cropFrame::before,#cropFrame::after { content: ''; position: absolute; pointer-events: none; opacity: .35; }
+#cropFrame::before { left: 33.333%; right: 33.333%; top: 0; bottom: 0; border-inline: 1px solid #fff; }
+#cropFrame::after { top: 33.333%; bottom: 33.333%; left: 0; right: 0; border-block: 1px solid #fff; }
+#cropFrame:focus-visible { border: 2px solid #d62828; }
+#cropFrameLabel { position: absolute; left: 8px; top: 8px; max-width: calc(100% - 16px); padding: 5px 7px; background: rgba(0,0,0,.75); color: #fff; font: 9px 'JetBrains Mono',monospace; white-space: nowrap; pointer-events: none; }
+#splitDivider { position: absolute; left: 50%; top: 0; bottom: 0; z-index: 2; width: 1px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25); pointer-events: none; }
+.splitBadge { position: absolute; top: 50%; padding: 5px 7px; background: rgba(0,0,0,.7); color: #fff; font: 9px 'JetBrains Mono',monospace; letter-spacing: .12em; }
+.splitBadge.before { right: 12px; }
+.splitBadge.after { left: 12px; }
+#carouselStrip { flex: none; width: 100%; min-width: 0; margin-top: 24px; border-top: 1px solid var(--panel-border); padding-top: 12px; }
+.stripHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.stripTitle { color: var(--text-dim); font-size: 9px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; }
+.stripActions { display: flex; flex-wrap: wrap; gap: 12px; }
+.stripActions button { min-height: 28px; padding: 0; border: 0; background: none; color: var(--text-dim); font-size: 9px; letter-spacing: .08em; cursor: pointer; }
+.stripActions button:hover { color: var(--text); }
+.stripActions button:disabled { opacity: .35; cursor: not-allowed; }
+#photoThumbnails { display: flex; gap: 8px; padding: 3px 2px 6px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--text-dim2) transparent; }
+.photoThumb { flex: none; position: relative; width: 62px; padding: 3px; border: 1px solid var(--panel-border); background: none; color: var(--text-dim2); cursor: pointer; }
+.photoThumb img { display: block; width: 54px; height: 54px; object-fit: cover; background: var(--soft-bg); }
+.photoThumb span { display: block; padding: 5px 0 2px; font: 9px 'JetBrains Mono',monospace; }
+.photoThumb[aria-pressed="true"] { border-color: var(--text); color: var(--text); }
+.photoThumb[aria-pressed="true"]::after { content: ''; position: absolute; right: 7px; bottom: 8px; width: 3px; height: 3px; background: var(--accent); }
+#carouselHint { margin-top: 6px; font-size: 9px; }
+#settingsTools .inlineActions { margin-top: 0; margin-bottom: 8px; }
+#settingsTools .toolBtn { flex: 1; }
+#shareSettingsBtn { width: 100%; }
+#shareLinkRow { margin-top: 10px; }
+#shareLinkInput { width: 100%; padding: 10px; border: 1px solid var(--panel-border); border-radius: 0; background: var(--bg); color: var(--text); font: 10px 'JetBrains Mono',monospace; }
+#settingsStatus { margin-top: 10px; }
+#videoTrimPanel { padding-top: 18px; border-top: 1px solid var(--panel-border); }
+.trimSummary { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; color: var(--text-dim); font-size: 11px; }
+#trimDuration { color: var(--accent); font: 11px 'JetBrains Mono',monospace; }
+.trimQuick { display: flex; gap: 8px; margin: 12px 0 16px; }
+.trimQuick button { flex: 1; text-align: center; }
+#trimTimeline { position: relative; height: 26px; margin: 8px 0 12px; background: var(--soft-bg); border: 1px solid var(--panel-border); }
+#trimSelection { position: absolute; top: -1px; bottom: -1px; border: 1px solid var(--accent); background: var(--accent-bg); pointer-events: none; }
+#trimPlayhead { position: absolute; top: -5px; bottom: -5px; width: 1px; background: var(--text); pointer-events: none; }
+.trimRow { display: grid; grid-template-columns: 25px minmax(0,1fr) 70px; align-items: center; gap: 12px; margin: 17px 0; color: var(--text-dim); font: 10px 'JetBrains Mono',monospace; }
+.trimRow input[type="number"] { min-width: 0; width: 70px; padding: 7px 3px 7px 7px; border: 1px solid var(--panel-border); border-radius: 0; background: var(--bg); color: var(--text); font: 10px 'JetBrains Mono',monospace; }
+#videoSeek { margin: 8px 0; }
+.videoPlayback { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 13px 0; }
+#videoTime { color: var(--text-dim2); font: 10px 'JetBrains Mono',monospace; }
+#cancelExportBtn { align-self: flex-start; padding: 7px 0; border: 0; border-bottom: 1px solid var(--border-hover); background: none; color: var(--text-dim); font-size: 10px; cursor: pointer; }
+#app.isBusy #cropFrame { pointer-events: none; }
+@media (max-width: 900px) {
+  #mainArea.hasPhotos { height: 76vh; min-height: 525px; }
+}
+@media (max-width: 600px) {
+  #mainArea.hasPhotos { height: 72svh; min-height: 510px; }
+  #carouselStrip { margin-top: 16px; }
+  .stripHead { align-items: flex-start; }
+  .stripActions { justify-content: flex-end; gap: 10px; }
+  .stripTitle { line-height: 1.6; font-size: 8px; }
+  #cropFrameLabel { font-size: 8px; padding: 4px; }
+}
+
 /* The portfolio's ambient dot + trailing ring. Never replace the native cursor. */
 .cursor-fx { display: none; position: fixed; top: 0; left: 0; z-index: 9999; opacity: 0; pointer-events: none; border-radius: 9999px; mix-blend-mode: difference; will-change: transform; }
 @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
@@ -333,6 +429,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
   </header>
   <div id="content">
     <main id="mainArea">
+      <div id="previewStage">
       <div id="dropZone">
         <div class="dropTop">
           <div class="dropStatus"><span id="dropIcon" aria-hidden="true"></span> READY FOR AN IMAGE</div>
@@ -343,12 +440,14 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
           <p><span>Drop a photo or video, or <b>click to browse</b></span></p>
         </div>
         <div class="dropBottom">
-          <div class="hint">JPG · PNG · HEIC · HEIF<br>WEBM · MP4 · 60S MAX VIDEO</div>
+          <div class="hint">JPG · PNG · HEIC · HEIF<br>UP TO 10 PHOTOS · REELS TRIM</div>
           <span class="dropCue">UPLOAD MEDIA</span>
         </div>
       </div>
       <div id="canvasWrap" style="display:none">
         <canvas id="glCanvas" title="Scroll to zoom in or out. Drag to pan when zoomed."></canvas>
+        <div id="cropOverlay" hidden><div id="cropFrame" role="group" tabindex="0" aria-label="Crop frame. Drag to reposition, or use arrow keys."><span id="cropFrameLabel"></span></div></div>
+        <div id="splitDivider" hidden><span class="splitBadge before">BEFORE</span><span class="splitBadge after">AFTER</span></div>
         <button type="button" id="maskDoneBtn" aria-label="Finish painting subject mask">Done painting ↗</button>
         <div id="beforeLabel">BEFORE</div>
         <div id="zoomControls" role="group" aria-label="Preview zoom controls">
@@ -358,23 +457,76 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
           <button type="button" id="zoomInBtn" aria-label="Zoom in" title="Zoom in">+</button>
         </div>
       </div>
-      <video id="videoEl" muted playsinline loop></video>
+      <video id="videoEl" muted playsinline></video>
+      </div>
+      <section id="carouselStrip" aria-label="Carousel photos" hidden>
+        <div class="stripHead"><span class="stripTitle" id="carouselCount">Carousel / 01 of 01</span><div class="stripActions"><button type="button" id="applyAllBtn">↗ Apply to all</button><button type="button" id="addPhotosBtn">+ Add</button><button type="button" id="removePhotoBtn">Remove</button></div></div>
+        <div id="photoThumbnails" role="group" aria-label="Switch photo"></div>
+        <p id="carouselHint" class="socialHint">One shared edit. Reposition the crop on each photo.</p>
+      </section>
       <div id="videoProgress">
-        <div id="progressHead"><b>Processing video</b><span id="progressPct">0%</span></div>
+        <div id="progressHead"><b id="progressTitle">Processing video</b><span id="progressPct">0%</span></div>
         <div id="progressBar"><div id="progressFill"></div></div>
-        <div id="progressText">Initializing ffmpeg.wasm…</div>
+        <div id="progressText" role="status" aria-live="polite">Initializing ffmpeg.wasm…</div>
+        <button type="button" id="cancelExportBtn">Cancel export</button>
       </div>
       <div id="toast"></div>
     </main>
     <aside id="sidebar">
+      <section id="exportPanel" class="socialPanel" aria-label="Instagram export">
+        <button type="button" id="cropPanelToggle" class="panelHeading" aria-expanded="true" aria-controls="cropPanelBody"><span class="sectionLabel">Instagram Export</span><kbd>C</kbd><span class="panelChevron" aria-hidden="true"></span></button>
+        <div id="cropPanelBody">
+          <div class="formatGrid" role="group" aria-label="Instagram crop formats">
+            <button type="button" class="formatBtn" data-format="square" aria-pressed="false"><span>Square post</span><small>1:1 · 1080 × 1080</small></button>
+            <button type="button" class="formatBtn" data-format="portrait" aria-pressed="false"><span>Portrait post ↗</span><small>4:5 · 1080 × 1350</small></button>
+            <button type="button" class="formatBtn" data-format="story" aria-pressed="false"><span>Story / Reel</span><small>9:16 · 1080 × 1920</small></button>
+            <button type="button" class="formatBtn" data-format="landscape" aria-pressed="false"><span>Landscape</span><small>1.91:1 · 1080 × 566</small></button>
+          </div>
+          <button type="button" class="formatBtn originalFormat" data-format="original" aria-pressed="true"><span>Original size / no crop</span><small id="sourceDimensions">—</small></button>
+          <div class="outputRow"><span>Output dimensions</span><output id="outputDimensions" aria-live="polite">Upload to see size</output></div>
+          <p class="socialHint" id="cropHint">Pick a format. Drag the crop frame to keep your subject in view.</p>
+          <div class="cropTools"><button type="button" class="toolBtn" id="cropPreviewBtn" aria-pressed="false">Reposition crop</button><button type="button" class="toolBtn" id="centerCropBtn">Center</button></div>
+          <label class="fieldLabel" for="exportFileType">Photo format</label>
+          <select id="exportFileType" class="socialSelect"><option value="jpeg">JPG / smaller, ready for Instagram</option><option value="png">PNG / lossless</option></select>
+          <div id="qualityField"><div class="qualityHeading"><label class="fieldLabel" for="exportQuality">JPG quality</label><output id="exportQualityValue">92%</output></div><input type="range" id="exportQuality" min="80" max="100" value="92" aria-label="JPG export quality"></div>
+          <label class="checkLabel"><input type="checkbox" id="exportComparison">Export a before / after pair</label>
+          <div id="comparisonOptions" hidden><label class="fieldLabel" for="comparisonFormat">Side-by-side layout</label><select id="comparisonFormat" class="socialSelect"><option value="square">Square / 1:1 · 1080 × 1080</option><option value="landscape" selected>Landscape / 2:1 · 2160 × 1080</option><option value="story">Story / 9:16 · 1080 × 1920</option></select><label class="checkLabel"><input type="checkbox" id="comparisonLabels" checked>Before / After labels</label></div>
+          <button type="button" class="toolBtn" id="splitPreviewBtn" aria-pressed="false">◧ Before / after split preview</button>
+          <button type="button" class="actionBtn primary" id="exportPhotoBtn"><span id="exportPhotoLabel">⤓ Export JPG</span><span aria-hidden="true">↗</span></button>
+          <button type="button" class="actionBtn" id="exportZipBtn" disabled><span>⤓ Carousel ZIP</span><span id="zipCount">0 photos</span></button>
+          <p id="exportStatus" class="socialHint" role="status" aria-live="polite">Private by design. Your photos never leave this browser.</p>
+        </div>
+      </section>
+      <section id="videoTrimPanel" class="socialPanel" aria-label="Reels video trim" hidden>
+        <div class="sectionLabel">Reels / Trim</div>
+        <div class="trimSummary"><span>Selected clip</span><output id="trimDuration">0.0s</output></div>
+        <div class="trimQuick" role="group" aria-label="Auto trim for Reels"><button type="button" class="toolBtn" data-trim="15" aria-pressed="false">15s</button><button type="button" class="toolBtn" data-trim="30" aria-pressed="false">30s</button><button type="button" class="toolBtn" data-trim="60" aria-pressed="false">60s</button></div>
+        <div id="trimTimeline" role="img" aria-label="Selected video segment"><div id="trimSelection"></div><div id="trimPlayhead"></div></div>
+        <label class="fieldLabel" for="videoSeek">Playhead / scrub to set points</label><input type="range" id="videoSeek" min="0" max="60" step="0.01" value="0">
+        <div class="videoPlayback"><button type="button" class="toolBtn" id="videoPlayBtn">Pause preview</button><output id="videoTime">0:00.0 / 0:00.0</output></div>
+        <div class="trimRow"><label for="trimIn">In</label><input type="range" id="trimIn" min="0" max="60" step="0.01" value="0" aria-label="Trim in point"><input type="number" id="trimInNumber" min="0" max="60" step="0.1" value="0" aria-label="In point in seconds"></div>
+        <div class="trimRow"><label for="trimOut">Out</label><input type="range" id="trimOut" min="0" max="60" step="0.01" value="60" aria-label="Trim out point"><input type="number" id="trimOutNumber" min="0" max="60" step="0.1" value="60" aria-label="Out point in seconds"></div>
+        <div class="inlineActions"><button type="button" class="toolBtn" id="setTrimInBtn">Set in at playhead</button><button type="button" class="toolBtn" id="setTrimOutBtn">Set out at playhead</button></div>
+        <label class="fieldLabel" for="videoContainer">Video format</label><select id="videoContainer" class="socialSelect"><option value="mp4">MP4 / H.264 · Reels-ready</option><option value="webm">WebM / original workflow</option></select>
+        <label class="checkLabel"><input type="checkbox" id="keepVideoAudio" checked>Keep source audio</label>
+        <p class="socialHint">Preview loops your selection. Maximum 60s. Choose Story / Reel above for a draggable 9:16 crop. Video encoding needs an internet connection.</p>
+      </section>
       <div>
         <div class="sectionLabel">Presets — full pipeline</div>
         <div id="presetChips" role="group" aria-label="Featured presets"></div>
-        <label class="presetSelectLabel" for="presetSelect">More presets <span id="presetCount">12 looks</span></label>
+        <label class="presetSelectLabel" for="presetSelect">More presets <span id="presetCount">26 looks</span></label>
         <div class="presetSelectWrap"><select id="presetSelect"><option value="">Choose a look</option></select></div>
         <button type="button" id="savePresetBtn">+ Save current as preset</button>
         <button type="button" id="deletePresetBtn" hidden>Delete selected saved preset</button>
       </div>
+
+      <section id="settingsTools" class="socialPanel" aria-label="Copy and share settings">
+        <div class="sectionLabel">Same edit / anywhere</div>
+        <div class="inlineActions"><button type="button" class="toolBtn" id="copySettingsBtn">Copy settings</button><button type="button" class="toolBtn" id="pasteSettingsBtn">Paste settings</button></div>
+        <button type="button" class="toolBtn" id="shareSettingsBtn">↗ Share this look as a link</button>
+        <div id="shareLinkRow" hidden><label class="fieldLabel" for="shareLinkInput">Look link / no photos included</label><input type="text" id="shareLinkInput" readonly spellcheck="false" aria-label="Shareable look link"></div>
+        <p class="socialHint" id="settingsStatus" role="status" aria-live="polite">Copy on this browser, paste in another session. Links carry settings, never images.</p>
+      </section>
 
       <div id="effectsWrap">
         <div class="sectionLabel">Effects — Intensity + Advanced</div>
@@ -395,6 +547,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
             <div class="subRow"><div class="subHead"><div class="subLabel">Fade <span>crush → lift blacks</span></div><div class="subVal" id="valFade">0</div></div><input class="subSlider" type="range" id="sliderFade" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Shadow Tone <span>teal → plum</span></div><div class="subVal" id="valShadowTone">0</div></div><input class="subSlider" type="range" id="sliderShadowTone" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Highlight Tone <span>ice → amber</span></div><div class="subVal" id="valHighlightTone">0</div></div><input class="subSlider" type="range" id="sliderHighlightTone" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Highlight Tint <span>green → magenta</span></div><div class="subVal" id="valHighlightTint">0</div></div><input class="subSlider" type="range" id="sliderHighlightTint" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div>
           </div>
@@ -499,19 +652,21 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 
       <div id="actions">
         <button class="actionBtn" id="beforeAfterBtn">◑ Toggle Before / After <kbd style="margin-left:auto;opacity:.6">Space</kbd></button>
-        <button class="actionBtn primary" id="downloadBtn">⤓ Download PNG <kbd style="margin-left:auto">D</kbd></button>
-        <button class="actionBtn" id="processVideoBtn" style="display:none">🎞 Process Video → WebM</button>
+        <button class="actionBtn primary" id="downloadBtn">⤓ Original-size PNG <kbd style="margin-left:auto">D</kbd></button>
+        <button class="actionBtn" id="processVideoBtn" style="display:none">⤓ Export trimmed MP4</button>
       </div>
       <div id="shortcuts">
         <div class="kbdRow"><span>Before / After</span><kbd>Space</kbd></div>
         <div class="kbdRow"><span>Reset all</span><kbd>R</kbd></div>
         <div class="kbdRow"><span>Download</span><kbd>D</kbd></div>
         <div class="kbdRow"><span>Expand all</span><kbd>E</kbd></div>
+        <div class="kbdRow"><span>Crop / export panel</span><kbd>C</kbd></div>
       </div>
     </aside>
   </div>
 </div>
-<input type="file" id="fileInput" accept="image/*,.heic,.heif,image/heic,image/heif,video/*" hidden>
+<input type="file" id="fileInput" accept="image/*,.heic,.heif,image/heic,image/heif,video/*" multiple hidden>
+<input type="file" id="addPhotoInput" accept="image/*,.heic,.heif,image/heic,image/heif" multiple hidden>
 <div id="cursorDot" class="cursor-fx cursor-fx-dot" aria-hidden="true"></div>
 <div id="cursorRing" class="cursor-fx cursor-fx-ring" aria-hidden="true"></div>
 <script id="cursorEffects">
@@ -562,6 +717,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
   sync();
 })();
 </script>
+<script src="social-tools.js"></script>
 <script>
 (() => {
 const themeToggle = document.getElementById('themeToggle');
@@ -586,13 +742,15 @@ const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl2', {preserveDrawingBuffer:true, antialias:false, premultipliedAlpha:false});
 if(!gl){ alert('WebGL 2 not supported'); return; }
 const $ = id => document.getElementById(id);
-const dropZone=$('dropZone'), canvasWrap=$('canvasWrap'), fileInput=$('fileInput'), videoEl=$('videoEl'), beforeLabel=$('beforeLabel'), toastEl=$('toast');
+const social = window.FilmSocial;
+const dropZone=$('dropZone'), canvasWrap=$('canvasWrap'), fileInput=$('fileInput'), beforeLabel=$('beforeLabel'), toastEl=$('toast');
+let videoEl=$('videoEl');
 const zoomControls=$('zoomControls'), zoomOutBtn=$('zoomOutBtn'), zoomResetBtn=$('zoomResetBtn'), zoomInBtn=$('zoomInBtn');
 const progressWrap=$('videoProgress'), progressFill=$('progressFill'), progressText=$('progressText'), progressPct=$('progressPct');
 
 // all sliders
 const ids = [
-  'Exposure','Contrast','Saturation','Temperature','Vibrance','Fade','ShadowTone','HighlightTone','VignStrength','VignSize',
+  'Exposure','Contrast','Saturation','Temperature','Vibrance','Fade','ShadowTone','HighlightTone','HighlightTint','VignStrength','VignSize',
   'Bloom','BloomThresh','BloomSpread','BloomSoft','BloomTint','BloomBlend','BloomAnam',
   'Hall','HallThresh','HallSpread','HallTint','HallDir','HallFalloff','HallSat',
   'Grain','GrainSize','GrainRough','GrainSpeed','GrainColor','GrainLuma','GrainSoft',
@@ -610,6 +768,13 @@ const effectEnabled={color:true,bloom:true,hallation:true,grain:true,dither:true
 let ditherScope='full';
 function effectValue(group,value,neutral=0){ return effectEnabled[group]?value:neutral; }
 
+// Effects are shared across the carousel; framing and subject masks belong to a photo.
+let photos=[], activePhotoIndex=-1, currentPhoto=null, nextPhotoId=1;
+let videoSourceFile=null, videoObjectUrl=null, mediaBusy=false, exportBusy=false, cancelRequested=false, encodingVideo=false;
+let exportOptions={...social.DEFAULT_EXPORT}, cropEditing=false, cropDrag=null, splitPreview=false;
+let videoCrop={x:0.5,y:0.5}, videoTrim={start:0,end:0};
+const disabledBeforeExport=new Map();
+
 // Every slider runs from -100 to +100. Intensity sliders are signed [-1,1],
 // while the detail sliders map zero to a useful neutral shader setting.
 // range = [shader value at -100, at 0, at +100]; legacyZero is the former
@@ -623,6 +788,7 @@ const advancedControls={
   Fade:{range:[-0.6,0,0.25],legacyZero:50},
   ShadowTone:{range:[-1,0,1],legacyZero:50},
   HighlightTone:{range:[-1,0,1],legacyZero:50},
+  HighlightTint:{range:[-1,0,1],legacyZero:50},
   VignStrength:{range:[-0.15,0,0.35],legacyZero:0},
   VignSize:{range:[0.4,1.3,2.2],legacyZero:50},
   BloomThresh:{range:[0.3,0.755,0.95],legacyZero:70},
@@ -666,6 +832,7 @@ function updateFromSliders(){
   params.fade=advancedValue('Fade');
   params.shadowTone=advancedValue('ShadowTone');
   params.highlightTone=advancedValue('HighlightTone');
+  params.highlightTint=advancedValue('HighlightTint');
   params.vignStrength=advancedValue('VignStrength');
   params.vignSize=advancedValue('VignSize');
 
@@ -712,7 +879,7 @@ function updateSliderUI(){
       vals[n].classList.toggle('negative',value<0);
       vals[n].classList.toggle('positive',value>0);
     }
-    // Fill outward from the center for all 40 sliders. Negative is white
+    // Fill outward from the center for all 41 sliders. Negative is white
     // in dark mode and charcoal in light mode; positive stays red.
     const pct=50+value/2, from=Math.min(pct,50), to=Math.max(pct,50);
     const fill=value<0?'var(--negative)':'var(--accent)';
@@ -842,7 +1009,8 @@ uniform float u_bloomStrength; uniform float u_hallationStrength; uniform float 
 uniform float u_grainStrength; uniform float u_grainSize; uniform float u_grainSpeed; uniform float u_grainColor; uniform float u_grainRough; uniform float u_grainLuma; uniform float u_grainSoft;
 uniform float u_time; uniform vec2 u_resolution;
 uniform float u_exposure; uniform float u_contrast; uniform float u_saturation; uniform float u_temperature; uniform float u_vignStrength; uniform float u_vignSize;
-uniform float u_vibrance; uniform float u_fade; uniform float u_shadowTone; uniform float u_highlightTone;
+uniform float u_vibrance; uniform float u_fade; uniform float u_shadowTone; uniform float u_highlightTone; uniform float u_highlightTint;
+uniform sampler2D u_original; uniform int u_splitPreview;
 out vec4 outColor;
 float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y); }
 float noise(vec2 p){
@@ -909,7 +1077,7 @@ void main(){
   }
   // Split tone by luminance, and lift or deepen only the darkest parts.
   // A zero setting skips grading entirely, preserving the original presets.
-  if(abs(u_fade)>0.001 || abs(u_shadowTone)>0.001 || abs(u_highlightTone)>0.001){
+  if(abs(u_fade)>0.001 || abs(u_shadowTone)>0.001 || abs(u_highlightTone)>0.001 || abs(u_highlightTint)>0.001){
     float gradeLuma=clamp(dot(col,vec3(0.2126,0.7152,0.0722)),0.0,1.0);
     float shadow=1.0-smoothstep(0.1,0.7,gradeLuma);
     float highlight=smoothstep(0.3,0.9,gradeLuma);
@@ -919,6 +1087,7 @@ void main(){
     else col+=vec3(0.085,-0.045,0.11)*u_shadowTone*shadow; // plum
     if(u_highlightTone<0.0) col+=vec3(-0.06,0.005,0.12)*(-u_highlightTone)*highlight; // ice
     else col+=vec3(0.12,0.04,-0.075)*u_highlightTone*highlight; // amber
+    col+=vec3(0.075,-0.07,0.09)*u_highlightTint*highlight; // green ↔ magenta highlights
     lum=dot(col,vec3(0.2126,0.7152,0.0722));
   }
 
@@ -970,6 +1139,7 @@ void main(){
   }
 
   outColor=vec4(clamp(col,0.,1.), base.a);
+  if(u_splitPreview==1 && v_texCoord.x<0.5) outColor=texture(u_original,v_texCoord);
 }`;
 
 function compile(t,s){ const sh=gl.createShader(t); gl.shaderSource(sh,s); gl.compileShader(sh); if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(sh)); throw new Error('compile'); } return sh; }
@@ -1155,21 +1325,30 @@ function render(timeMs){
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_fade'),effectValue('color',params.fade));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_shadowTone'),effectValue('color',params.shadowTone));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_highlightTone'),effectValue('color',params.highlightTone));
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_highlightTint'),effectValue('color',params.highlightTint));
+  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.uniform1i(gl.getUniformLocation(progComposite,'u_original'),4);
+  gl.uniform1i(gl.getUniformLocation(progComposite,'u_splitPreview'),splitPreview?1:0);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_vignStrength'),effectValue('color',params.vignStrength));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_vignSize'),params.vignSize);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 }
 
+function uploadVideoTexture(){
+  if(videoEl.readyState<2) return;
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
+}
 function startLoop(){
-  if(animId) cancelAnimationFrame(animId);
+  if(animId!==null) cancelAnimationFrame(animId);
   const loop=t=>{
     animId=requestAnimationFrame(loop);
+    if(exportBusy) return;
     if(isVideo && videoEl && !videoEl.paused && videoEl.readyState>=2){
-      gl.bindTexture(gl.TEXTURE_2D,sourceTexture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-      try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl); }catch(e){}
+      if(videoEl.currentTime>=videoTrim.end || videoEl.currentTime<videoTrim.start){ videoEl.currentTime=videoTrim.start; return; }
+      try{ uploadVideoTexture(); }catch(e){}
     }
-    render(t);
+    render(isVideo ? videoEl.currentTime*1000 : t);
   }; loop(0);
 }
 function showToast(m,ms=3200){ toastEl.textContent=m; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'),ms); }
@@ -1199,6 +1378,7 @@ function setMaskPaintMode(mode){
   maskPaintMode=maskPaintMode===mode ? null : mode;
   updateMaskTools();
   if(maskPaintMode){
+    cropEditing=false; updateSocialUI();
     setMaskStatus(maskPaintMode==='protect'?'Paint over the subject to keep it clear.':'Paint over protected areas to dither them again.');
     // The controls sit below the photo on phones; bring the canvas back into view.
     if(window.matchMedia('(max-width: 900px)').matches){
@@ -1256,7 +1436,7 @@ function paintSubject(e){
   drawSubjectStroke(maskStroke.stroke,previous,point);
   scheduleSubjectMaskUpload();
 }
-function prepareSubjectMask(img,w,h){
+function prepareSubjectMask(img,w,h,detect=true){
   ++maskRequestId; maskDetectionPending=false; maskManuallyCleared=false; maskAutoFailed=false;
   maskStrokes=[]; maskStroke=null; maskPaintMode=null; autoSubjectMask=null;
   const scale=Math.min(1,1024/Math.max(w,h));
@@ -1267,7 +1447,7 @@ function prepareSubjectMask(img,w,h){
   backgroundScope.disabled=false;
   setMaskStatus(ditherScope==='background'?'Finding the subject…':'A subject can be protected in Background Only mode.');
   rebuildSubjectMask(); updateMaskTools();
-  if(ditherScope==='background') detectPerson();
+  if(ditherScope==='background' && detect) detectPerson();
 }
 function clearSubjectMask(forVideo=false){
   ++maskRequestId; maskDetectionPending=false; maskManuallyCleared=true;
@@ -1356,6 +1536,7 @@ function detectPerson(){
       }
     }finally{ if(activeMaskRequest===token) activeMaskRequest=0; }
   });
+  return maskQueue;
 }
 
 function isHeicFile(file){
@@ -1392,83 +1573,208 @@ function loadHeicDecoder(){
 }
 
 let fileLoadId=0;
-async function convertHeic(file,loadId){
-  showToast('Decoding HEIC / HEIF photo…',6000);
-  try{
-    const decode=await loadHeicDecoder();
-    if(loadId!==fileLoadId) return;
-    const converted=await decode({blob:file,toType:'image/png'});
-    if(loadId!==fileLoadId) return;
-    const png=Array.isArray(converted)?converted[0]:converted;
-    if(!(png instanceof Blob) || !png.size) throw new Error('HEIC conversion returned no image');
-    loadImage(png,file,loadId,true);
-  }catch(err){
-    if(loadId!==fileLoadId) return;
-    console.error('HEIC / HEIF decoding failed',err);
-    showToast('Could not open this HEIC / HEIF photo',5000);
+function loadImage(blob){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(blob), img=new Image();
+    img.onload=()=>{ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Could not decode this photo')); };
+    img.src=url;
+  });
+}
+async function convertHeic(file){
+  const decode=await loadHeicDecoder();
+  const converted=await decode({blob:file,toType:'image/png'});
+  const png=Array.isArray(converted)?converted[0]:converted;
+  if(!(png instanceof Blob) || !png.size) throw new Error('HEIC conversion returned no image');
+  return png;
+}
+async function decodePhoto(item){
+  try{ return await loadImage(item.blob||item.file); }
+  catch(error){
+    if(!isHeicFile(item.file) || item.converted) throw error;
+    showToast('Decoding HEIC / HEIF photo…',6000);
+    item.blob=await convertHeic(item.file); item.converted=true;
+    return loadImage(item.blob);
   }
 }
-
-function loadImage(blob,originalFile,loadId,converted=false){
-  const url=URL.createObjectURL(blob);
-  const img=new Image();
-  img.onload=()=>{
-    if(loadId!==fileLoadId){ URL.revokeObjectURL(url); return; }
-    try{
-      const w=img.naturalWidth, h=img.naturalHeight;
-      if(!w||!h) throw new Error('Image has no dimensions');
-      canvas.width=w; canvas.height=h; recreateFBOs(w,h);
-      gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
-      isVideo=false; hasContent=true;
-      prepareSubjectMask(img,w,h);
-      dropZone.style.display='none'; canvasWrap.style.display='flex'; resetPreviewZoom();
-      $('processVideoBtn').style.display='none';
-      $('downloadBtn').innerHTML='⤓ Download PNG';
-      startLoop(); showToast(isHeicFile(originalFile)?'HEIC / HEIF photo loaded':'Image loaded');
-    }catch(err){
-      if(isHeicFile(originalFile) && !converted) convertHeic(originalFile,loadId);
-      else { console.error('Image loading failed',err); showToast('Could not display this image',5000); }
-    }finally{ URL.revokeObjectURL(url); }
-  };
-  img.onerror=()=>{
-    URL.revokeObjectURL(url);
-    if(loadId!==fileLoadId) return;
-    if(isHeicFile(originalFile) && !converted) convertHeic(originalFile,loadId);
-    else showToast('Could not open this image',5000);
-  };
-  img.src=url;
+function isPhotoFile(file){
+  return isHeicFile(file) || file.type.startsWith('image/') || /\.(jpe?g|png|webp|avif|gif|bmp)$/i.test(file.name||'');
 }
-
-function handleFile(file){
-  if(!file) return;
-  const loadId=++fileLoadId;
-  const isVid=file.type.startsWith('video/') && !isHeicFile(file);
-  if(isVid){
-    const url=URL.createObjectURL(file);
-    videoEl.src=url; videoEl.load();
-    videoEl.onloadedmetadata=()=>{
-      if(loadId!==fileLoadId) return;
-      const dur=videoEl.duration;
-      if(dur>60) showToast(`Video ${dur.toFixed(1)}s capped at 60s`,4500);
-      const w=videoEl.videoWidth, h=videoEl.videoHeight;
-      canvas.width=w; canvas.height=h; recreateFBOs(w,h);
-      gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
-      isVideo=true; hasContent=true;
-      clearSubjectMask(true); setDitherScope('full');
-      dropZone.style.display='none'; canvasWrap.style.display='flex'; resetPreviewZoom();
-      $('processVideoBtn').style.display='flex';
-      $('downloadBtn').innerHTML='⤓ Download Frame PNG';
-      videoEl.play().catch(()=>{}); startLoop(); showToast('Video loaded — live preview');
-    };
-  } else loadImage(file,file,loadId);
+function isVideoFile(file){
+  return !isHeicFile(file) && (file.type.startsWith('video/') || /\.(mp4|webm|mov|m4v)$/i.test(file.name||''));
+}
+function saveActivePhotoMask(){
+  if(!currentPhoto || !maskCanvas || isVideo) return;
+  currentPhoto.mask=autoSubjectMask || maskStrokes.length || maskManuallyCleared || maskAutoFailed ? {
+    canvas:maskCanvas, auto:autoSubjectMask, strokes:maskStrokes,
+    cleared:maskManuallyCleared, failed:maskAutoFailed, status:maskStatus.textContent
+  } : null;
+}
+function restorePhotoMask(item,img,w,h){
+  const saved=item.mask;
+  prepareSubjectMask(img,w,h,!saved);
+  if(!saved) return;
+  maskCanvas=saved.canvas; maskCtx=maskCanvas.getContext('2d'); autoSubjectMask=saved.auto;
+  maskStrokes=saved.strokes; maskManuallyCleared=saved.cleared; maskAutoFailed=saved.failed;
+  setMaskStatus(saved.status); rebuildSubjectMask(); updateMaskTools();
+  if(ditherScope==='background' && !autoSubjectMask && !maskManuallyCleared && !maskAutoFailed && !maskDetectionPending) detectPerson();
+}
+function uploadPhoto(item,img,resetView=true){
+  const maximum=Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE),gl.getParameter(gl.MAX_RENDERBUFFER_SIZE));
+  const scale=Math.min(1,maximum/Math.max(img.naturalWidth,img.naturalHeight));
+  const w=Math.max(1,Math.round(img.naturalWidth*scale)), h=Math.max(1,Math.round(img.naturalHeight*scale));
+  item.originalWidth=img.naturalWidth; item.originalHeight=img.naturalHeight; item.width=w; item.height=h;
+  let source=img;
+  if(scale<1){
+    source=document.createElement('canvas'); source.width=w; source.height=h;
+    source.getContext('2d').drawImage(img,0,0,w,h);
+    showToast('Photo resized to fit this device’s GPU limit',4500);
+  }
+  if(canvas.width!==w || canvas.height!==h || !fboSharpened){ canvas.width=w; canvas.height=h; recreateFBOs(w,h); }
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
+  isVideo=false; hasContent=true; currentPhoto=item;
+  restorePhotoMask(item,source,w,h);
+  dropZone.style.display='none'; canvasWrap.style.display='flex';
+  if(resetView) resetPreviewZoom(); else updatePreviewZoom();
+  $('processVideoBtn').style.display='none';
+  $('downloadBtn').innerHTML='⤓ Original-size PNG';
+  updateSocialUI();
+}
+async function createThumbnail(img){
+  const thumb=document.createElement('canvas'), scale=Math.min(1,160/Math.max(img.naturalWidth,img.naturalHeight));
+  thumb.width=Math.max(1,Math.round(img.naturalWidth*scale)); thumb.height=Math.max(1,Math.round(img.naturalHeight*scale));
+  thumb.getContext('2d').drawImage(img,0,0,thumb.width,thumb.height);
+  const blob=await canvasBlob(thumb,'image/jpeg',0.8);
+  return URL.createObjectURL(blob);
+}
+function clearPhotos(){
+  photos.forEach(photo=>{ if(photo.thumbUrl) URL.revokeObjectURL(photo.thumbUrl); });
+  photos=[]; activePhotoIndex=-1; currentPhoto=null;
+  renderPhotoStrip();
+}
+function unloadVideo(){
+  videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load();
+  if(videoObjectUrl){ URL.revokeObjectURL(videoObjectUrl); videoObjectUrl=null; }
+  videoSourceFile=null;
+}
+async function activatePhoto(index){
+  if(exportBusy || mediaBusy || !photos[index] || (index===activePhotoIndex && hasContent)) return;
+  saveActivePhotoMask();
+  const token=++fileLoadId, item=photos[index]; mediaBusy=true; updateSocialUI();
+  try{
+    const img=await decodePhoto(item);
+    if(token!==fileLoadId || photos[index]!==item) return;
+    saveActivePhotoMask(); activePhotoIndex=index; uploadPhoto(item,img); renderPhotoStrip();
+    render(performance.now()); startLoop();
+  }catch(error){ console.error(error); showToast(`Could not open ${item.file.name}`,5000); }
+  finally{ if(token===fileLoadId){ mediaBusy=false; updateSocialUI(); } }
+}
+async function handleFiles(fileList,{append=false}={}){
+  if(exportBusy){ showToast('Wait for the export to finish'); return; }
+  const files=Array.from(fileList||[]); if(!files.length) return;
+  const images=files.filter(isPhotoFile), videos=files.filter(isVideoFile);
+  if(videos.length){
+    if(append || images.length || videos.length>1){ showToast('Choose up to 10 photos, or one video at a time',5000); return; }
+    return handleVideoFile(videos[0]);
+  }
+  if(!images.length){ showToast('Choose a photo or video'); return; }
+  const room=social.MAX_PHOTOS-(append?photos.length:0);
+  if(!room){ showToast('A carousel can contain up to 10 photos'); return; }
+  const chosen=images.slice(0,room), token=++fileLoadId;
+  mediaBusy=true; saveActivePhotoMask();
+  let replacing=!append||isVideo, imported=0, failed=0;
+  updateSocialUI();
+  try{
+    for(let i=0;i<chosen.length;i++){
+      const item={id:nextPhotoId++,file:chosen[i],blob:chosen[i],converted:false,crop:{x:0.5,y:0.5},mask:null,thumbUrl:null};
+      try{
+        const img=await decodePhoto(item);
+        if(token!==fileLoadId) return;
+        item.thumbUrl=await createThumbnail(img);
+        if(token!==fileLoadId){ URL.revokeObjectURL(item.thumbUrl); return; }
+        if(replacing){
+          // Keep the old collection until at least one new photo has decoded successfully.
+          unloadVideo(); clearPhotos(); isVideo=false; hasContent=false;
+          ++maskRequestId; maskDetectionPending=false; replacing=false;
+        }
+        photos.push(item); imported++;
+        if(activePhotoIndex<0){ activePhotoIndex=photos.length-1; uploadPhoto(item,img); startLoop(); }
+        renderPhotoStrip();
+      }catch(error){
+        failed++; console.error('Photo import failed',item.file.name,error);
+      }
+    }
+    if(token!==fileLoadId) return;
+    if(imported){
+      const notes=[`${photos.length} photo${photos.length===1?'':'s'} ready — edits are linked`];
+      if(images.length>room) notes.push('first 10 kept');
+      if(failed) notes.push(`${failed} could not be decoded`);
+      showToast(notes.join(' · '),5000);
+    }else showToast('Could not open these photos — your current media is unchanged',5000);
+  }finally{ if(token===fileLoadId){ mediaBusy=false; updateSocialUI(); } }
+}
+function handleFile(file){ if(file) return handleFiles([file]); }
+function waitForVideoData(element,url){
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>finish(new Error('Video loading timed out')),20000);
+    const ready=()=>finish(), failed=()=>finish(new Error('Unsupported or corrupt video'));
+    function finish(error){ clearTimeout(timer); element.removeEventListener('loadeddata',ready); element.removeEventListener('error',failed); error?reject(error):resolve(); }
+    element.addEventListener('loadeddata',ready,{once:true}); element.addEventListener('error',failed,{once:true});
+    element.src=url; element.load();
+  });
+}
+async function handleVideoFile(file){
+  const token=++fileLoadId, incoming=document.createElement('video'), url=URL.createObjectURL(file);
+  let committed=false;
+  incoming.muted=true; incoming.playsInline=true; incoming.preload='auto'; incoming.hidden=true;
+  videoEl.parentNode.appendChild(incoming); mediaBusy=true; saveActivePhotoMask(); updateSocialUI();
+  try{
+    // Decode separately so an unsupported upload cannot discard a carousel or stop the current video.
+    await waitForVideoData(incoming,url);
+    if(token!==fileLoadId) return;
+    const dur=incoming.duration, w=incoming.videoWidth, h=incoming.videoHeight;
+    if(!(Number.isFinite(dur) && dur>0 && w>0 && h>0)) throw new Error('Video metadata is unavailable');
+    unloadVideo(); clearPhotos(); videoEl.replaceWith(incoming); videoEl=incoming; incoming.id='videoEl';
+    videoSourceFile=file; videoObjectUrl=url; committed=true; wireVideoEvents();
+    canvas.width=w; canvas.height=h; recreateFBOs(w,h); uploadVideoTexture();
+    isVideo=true; hasContent=true; videoCrop={x:0.5,y:0.5}; videoTrim=social.trimRange(dur,0,Math.min(dur,60));
+    clearSubjectMask(true); setDitherScope('full');
+    exportOptions.format='story'; exportOptions.comparison=false; cropEditing=true;
+    dropZone.style.display='none'; canvasWrap.style.display='flex'; resetPreviewZoom();
+    $('processVideoBtn').style.display='flex'; $('downloadBtn').innerHTML='⤓ Original-size frame PNG';
+    updateTrimUI(); await videoEl.play().catch(()=>{}); startLoop();
+    showToast(dur>60?`${dur.toFixed(1)}s video — first 60s selected. Adjust the trim below.`:'Video loaded — drag crop and set trim points',5000);
+  }catch(error){
+    if(token===fileLoadId){ console.error(error); showToast(`${error.message} — current media is unchanged`,5000); }
+  }finally{
+    if(!committed){ incoming.pause(); incoming.removeAttribute('src'); incoming.load(); incoming.remove(); URL.revokeObjectURL(url); }
+    if(token===fileLoadId){ mediaBusy=false; updateSocialUI(); }
+  }
 }
 dropZone.addEventListener('click',()=>fileInput.click());
 dropZone.addEventListener('dragover',e=>{ e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop',e=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
-fileInput.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) handleFile(f); e.target.value=''; });
+dropZone.addEventListener('drop',e=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change',e=>{ handleFiles(e.target.files); e.target.value=''; });
+$('addPhotoInput').addEventListener('change',e=>{ handleFiles(e.target.files,{append:true}); e.target.value=''; });
+$('addPhotosBtn').addEventListener('click',()=>$('addPhotoInput').click());
+$('removePhotoBtn').addEventListener('click',async()=>{
+  if(exportBusy || mediaBusy || !currentPhoto) return;
+  const index=activePhotoIndex, [removed]=photos.splice(index,1);
+  if(removed.thumbUrl) URL.revokeObjectURL(removed.thumbUrl);
+  currentPhoto=null; activePhotoIndex=-1; ++maskRequestId;
+  if(photos.length) await activatePhoto(Math.min(index,photos.length-1));
+  else{
+    ++fileLoadId; hasContent=false; if(animId!==null){ cancelAnimationFrame(animId); animId=null; }
+    clearSubjectMask(); dropZone.style.display='flex'; canvasWrap.style.display='none'; renderPhotoStrip(); updateSocialUI();
+  }
+});
+$('applyAllBtn').addEventListener('click',()=>{
+  // All photos read one shared WebGL settings snapshot. No per-photo grade can drift.
+  showToast(`Current edit is applied to all ${photos.length} photos`);
+  $('carouselHint').textContent='All photos share this edit. Individual crops and masks are kept.';
+});
 
 // Zoom only the displayed canvas. The WebGL pixels and PNG/video exports stay full size.
 function clampPreviewPan(){
@@ -1486,6 +1792,7 @@ function updatePreviewZoom(){
   zoomResetBtn.setAttribute('aria-label',`Preview at ${percent} percent. Reset zoom to 100 percent`);
   zoomOutBtn.disabled=previewZoom<=MIN_PREVIEW_ZOOM;
   zoomInBtn.disabled=previewZoom>=MAX_PREVIEW_ZOOM;
+  updateCropOverlay(); updateSplitDivider();
 }
 function zoomPreviewTo(next,clientX,clientY){
   next=Math.max(MIN_PREVIEW_ZOOM,Math.min(MAX_PREVIEW_ZOOM,next));
@@ -1580,6 +1887,7 @@ document.querySelectorAll('.effectToggle').forEach(toggle=>{
     group.classList.toggle('effectOff',!on);
     toggle.setAttribute('aria-checked',String(on));
     toggle.querySelector('.toggleText').textContent=on?'ON':'OFF';
+    activePresetName=null; syncPresetSelection();
     if(hasContent) render(performance.now());
   });
 });
@@ -1608,22 +1916,22 @@ function toggleBeforeAfter(){
   showOriginal=!showOriginal;
   beforeLabel.textContent=showOriginal?'BEFORE — original':'AFTER';
   beforeLabel.classList.toggle('show',showOriginal);
-  render(performance.now());
+  updateSplitDivider(); render(performance.now());
 }
 $('beforeAfterBtn').addEventListener('click',toggleBeforeAfter);
 $('hdrBeforeBtn').addEventListener('click',toggleBeforeAfter);
 $('hdrUploadBtn').addEventListener('click',()=>fileInput.click());
-canvasWrap.addEventListener('dblclick',()=>{ if(!maskPaintMode) fileInput.click(); });
+canvasWrap.addEventListener('dblclick',e=>{ if(!maskPaintMode && !e.target.closest('#cropOverlay')) fileInput.click(); });
 
 function downloadImage(){
-  if(!hasContent){ showToast('Upload first'); return; }
-  render(performance.now());
+  if(!hasContent || exportBusy || mediaBusy){ showToast('Upload first'); return; }
+  const previousSplit=splitPreview; splitPreview=false; render(performance.now());
   const a=document.createElement('a');
   a.download=`film-lab-${Date.now()}.png`;
-  a.href=canvas.toDataURL('image/png'); a.click(); showToast('PNG exported');
+  a.href=canvas.toDataURL('image/png'); a.click(); splitPreview=previousSplit; render(performance.now()); showToast('Original-size PNG exported');
 }
 $('downloadBtn').addEventListener('click',downloadImage);
-$('hdrDownloadBtn').addEventListener('click',downloadImage);
+$('hdrDownloadBtn').addEventListener('click',()=>setCropPanelOpen(true,true));
 
 Object.values(sliders).forEach(s=>{
   s.addEventListener('input',userChangedSliders);
@@ -1658,7 +1966,7 @@ function convertLegacyValues(values){
 }
 // Built-in looks leave sharpening completely neutral; manual and saved custom settings are unchanged.
 const withoutSharpening=values=>({...values,Sharp:0,SharpRadius:0,SharpEdge:0,SharpDetail:0,SharpLuma:0});
-// Every built-in look is a complete 40-control snapshot, so selecting one also clears
+// Every built-in look is a complete 41-control snapshot, so selecting one also clears
 // advanced settings left behind by another look. Unspecified controls stay neutral.
 const presetFromNeutral=values=>withoutSharpening({
   ...Object.fromEntries(Object.keys(advancedControls).map(name=>[name,0])),
@@ -1742,6 +2050,84 @@ const builtInPresets={
     Grain:12,GrainSize:-26,GrainSpeed:-100,GrainColor:10
   })
 };
+// A separate pack leaves every original look (including the original Golden Hour) intact.
+// Keys are namespaced in the dropdown and share links; labels stay clean and familiar.
+const igPresets={
+  'Moody Dark':presetFromNeutral({
+    Exposure:-15,Contrast:28,Saturation:-18,Vibrance:12,Fade:-62,ShadowTone:-74,HighlightTone:18,
+    VignStrength:24,Bloom:7,BloomThresh:20,Grain:8,GrainSize:-25,GrainSpeed:-100,GrainColor:-100
+  }),
+  'Golden Hour':presetFromNeutral({
+    Exposure:12,Contrast:-12,Saturation:8,Temperature:34,Vibrance:18,Fade:28,ShadowTone:-8,HighlightTone:60,
+    Bloom:22,BloomThresh:-18,BloomSpread:18,BloomSoft:20,BloomTint:35,Hall:8,HallTint:30,
+    Grain:6,GrainSize:-30,GrainSpeed:-100,GrainColor:-100
+  }),
+  'Clean Minimal':presetFromNeutral({
+    Exposure:22,Contrast:-28,Saturation:-32,Temperature:-3,Vibrance:-14,Fade:12,VignStrength:-8
+  }),
+  'Dreamy Pastel':presetFromNeutral({
+    Exposure:18,Contrast:-32,Saturation:-24,Temperature:-15,Vibrance:-14,Fade:42,ShadowTone:12,HighlightTone:-18,
+    Bloom:24,BloomThresh:-25,BloomSpread:32,BloomSoft:40,BloomTint:-15,VignStrength:-7
+  }),
+  'Punchy Vibrant':presetFromNeutral({
+    Exposure:2,Contrast:34,Saturation:26,Vibrance:48,Fade:-45,HighlightTone:6,VignStrength:14
+  }),
+  'Film Fade':presetFromNeutral({
+    Exposure:5,Contrast:-14,Saturation:-26,Temperature:12,Vibrance:-12,Fade:58,HighlightTone:22,
+    Bloom:8,Grain:32,GrainSize:4,GrainRough:12,GrainSpeed:-100,GrainColor:-100,GrainSoft:18
+  }),
+  'B&W Editorial':presetFromNeutral({
+    Exposure:4,Contrast:58,Saturation:-100,Fade:-30,VignStrength:18,
+    Grain:12,GrainSize:-28,GrainSpeed:-100,GrainColor:-100,GrainSoft:10
+  }),
+  'Neon Night':presetFromNeutral({
+    Exposure:-14,Contrast:24,Saturation:12,Temperature:-24,Vibrance:25,Fade:-22,ShadowTone:-58,HighlightTone:-14,HighlightTint:68,
+    Bloom:32,BloomThresh:12,BloomSpread:20,BloomTint:-22,BloomAnam:48,Hall:12,HallTint:-35,
+    Grain:9,GrainSize:-22,GrainSpeed:-100,GrainColor:-80,VignStrength:18
+  }),
+  'Soft Skin':presetFromNeutral({
+    Exposure:14,Contrast:-20,Saturation:-6,Temperature:10,Vibrance:10,Fade:20,HighlightTone:15,
+    Bloom:15,BloomThresh:-15,BloomSpread:25,BloomSoft:38,VignStrength:-6
+  }),
+  'Café Cream':presetFromNeutral({
+    Exposure:8,Contrast:-12,Saturation:-24,Temperature:22,Vibrance:-10,Fade:34,ShadowTone:8,HighlightTone:40,
+    Grain:12,GrainSize:-14,GrainSpeed:-100,GrainColor:-100,GrainSoft:24
+  }),
+  'Coastal Blue':presetFromNeutral({
+    Exposure:12,Contrast:-8,Saturation:-7,Temperature:-17,Vibrance:30,Fade:18,ShadowTone:-32,HighlightTone:-25,
+    Bloom:10,BloomThresh:-12,VignStrength:-5
+  }),
+  'Direct Flash':presetFromNeutral({
+    Exposure:10,Contrast:38,Saturation:8,Temperature:-8,Vibrance:20,Fade:-26,HighlightTone:-12,
+    Bloom:9,BloomThresh:28,Grain:19,GrainSize:-8,GrainSpeed:-100,GrainColor:-100,VignStrength:16
+  }),
+  'Terracotta':presetFromNeutral({
+    Exposure:3,Contrast:12,Saturation:-16,Temperature:28,Vibrance:14,Fade:15,ShadowTone:14,HighlightTone:50,
+    Hall:6,HallTint:48,Grain:10,GrainSize:-16,GrainSpeed:-100,GrainColor:-100
+  }),
+  'Sage Green':presetFromNeutral({
+    Exposure:10,Contrast:-16,Saturation:-22,Temperature:-5,Vibrance:-8,Fade:30,ShadowTone:-22,HighlightTint:-34,
+    Grain:8,GrainSize:-20,GrainSpeed:-100,GrainColor:-100,GrainSoft:16
+  })
+};
+const igPresetNotes={
+  'Moody Dark':'Crushed blacks and cool teal shadows',
+  'Golden Hour':'Warm amber highlights and gently lifted shadows',
+  'Clean Minimal':'Bright, low-contrast and quietly desaturated',
+  'Dreamy Pastel':'Soft diffusion, faded blacks and cool pastel color',
+  'Punchy Vibrant':'Vivid color, selective vibrance and deep blacks',
+  'Film Fade':'Vintage fade, muted color and still film grain',
+  'B&W Editorial':'High-contrast monochrome with fine editorial texture',
+  'Neon Night':'Cool teal shadows and magenta city-light highlights',
+  'Soft Skin':'Flattering warmth and delicate highlight diffusion',
+  'Café Cream':'Creamy warmth and muted café color',
+  'Coastal Blue':'Airy blue tones and gentle teal shadows',
+  'Direct Flash':'Bright flash energy with deep contrast and fine grain',
+  'Terracotta':'Earthy warmth, copper highlights and soft texture',
+  'Sage Green':'Muted greens and softly lifted shadows'
+};
+function presetDisplayName(name){ return name.startsWith('ig:')?name.slice(3):name; }
+
 // Keep the original six one-tap looks visible; everything else lives in the dropdown.
 const featuredPresetNames=[...Object.keys(legacyBuiltInPresets),'Noir Crunch'];
 let activePresetName=null, availablePresets=new Map();
@@ -1755,7 +2141,10 @@ function upgradeV4Preset(p){
   });
   return {...p,values,version:2};
 }
-function saveCustom(){ localStorage.setItem('film_lab_presets_v4', JSON.stringify(customPresets)); }
+function saveCustom(){
+  try{ localStorage.setItem('film_lab_presets_v4',JSON.stringify(customPresets)); }
+  catch(error){ showToast('Preset kept in this tab; browser storage is unavailable',5000); }
+}
 try{
   const saved=localStorage.getItem('film_lab_presets_v4');
   if(saved!==null){
@@ -1803,7 +2192,7 @@ function syncPresetSelection(){
 function renderChips(){
   const chips=$('presetChips'), select=$('presetSelect');
   chips.replaceChildren(); select.replaceChildren();
-  availablePresets=new Map(Object.entries(builtInPresets));
+  availablePresets=new Map([...Object.entries(builtInPresets),...Object.entries(igPresets).map(([name,values])=>['ig:'+name,values])]);
   customPresets.forEach(cp=>availablePresets.set(cp.name,cp.values));
   const placeholder=document.createElement('option'); placeholder.value=''; placeholder.textContent='Choose a look'; placeholder.disabled=true;
   select.appendChild(placeholder);
@@ -1827,10 +2216,12 @@ function renderChips(){
     }
     if(name==='Golden Hour') addGroup('For your feed');
     else if(name==='Teal & Ember') addGroup('Color stories');
-    else if(!Object.prototype.hasOwnProperty.call(builtInPresets,name) && group?.label!=='Saved presets') addGroup('Saved presets');
+    else if(name.startsWith('ig:') && group?.label!=='IG Looks') addGroup('IG Looks');
+    else if(!Object.prototype.hasOwnProperty.call(builtInPresets,name) && !name.startsWith('ig:') && group?.label!=='Saved presets') addGroup('Saved presets');
     if(!group) addGroup('More looks');
-    const option=document.createElement('option'); option.value=name; option.textContent=name;
+    const option=document.createElement('option'); option.value=name; option.textContent=presetDisplayName(name);
     if(socialPresetNotes[name]) option.title=socialPresetNotes[name];
+    if(name.startsWith('ig:')) option.title=igPresetNotes[presetDisplayName(name)]||'';
     group.appendChild(option); moreCount++;
   }
   $('presetCount').textContent=`${moreCount} ${moreCount===1?'look':'looks'}`;
@@ -1841,6 +2232,7 @@ function applyPreset(name, values){
   cancelPresetAnimation();
   activePresetName=name; syncPresetSelection();
   setDitherScope(values.DitherScope==='background'?'background':'full');
+  if(values.Effects || name.startsWith('ig:')) setEffectStates(values.Effects||{});
   const start=getCurrentValues();
   // Old saved presets have no newer sliders; animate those back to neutral.
   const target=Object.fromEntries(ids.map(k=>[k,Number(values[k]??0)]));
@@ -1854,7 +2246,7 @@ function applyPreset(name, values){
     presetFrame=p<1 ? requestAnimationFrame(step) : null;
   }
   presetFrame=requestAnimationFrame(step);
-  showToast(`Preset: ${name}`);
+  showToast(`Preset: ${presetDisplayName(name)}`);
 }
 function deleteCustomPreset(name){
   if(!customPresets.some(p=>p.name===name) || !confirm(`Delete "${name}"?`)) return;
@@ -1868,15 +2260,384 @@ $('presetSelect').addEventListener('change',e=>{
   if(availablePresets.has(name)) applyPreset(name,availablePresets.get(name));
 });
 $('savePresetBtn').addEventListener('click',()=>{
-  const name=prompt('Preset name:'); if(!name) return;
-  const values={...getCurrentValues(),DitherScope:ditherScope};
+  const name=(prompt('Preset name:')||'').trim(); if(!name) return;
+  if(name.startsWith('ig:')){ showToast('Please choose a name without the reserved ig: prefix'); return; }
+  const values={...getCurrentValues(),DitherScope:ditherScope,Effects:{...effectEnabled}};
   customPresets=customPresets.filter(c=>c.name!==name);
   customPresets.push({name,values,version:2}); saveCustom();
   activePresetName=name; renderChips(); showToast(`Saved "${name}"`);
 });
 $('deletePresetBtn').addEventListener('click',()=>{ if(activePresetName) deleteCustomPreset(activePresetName); });
 
+// Instagram framing, consistent carousel exports, and portable edit settings.
+function getCropPosition(){ return !isVideo && currentPhoto ? currentPhoto.crop : videoCrop; }
+function updateCropOverlay(){
+  const overlay=$('cropOverlay'), frame=$('cropFrame'), ratio=social.cropRatio(exportOptions);
+  overlay.hidden=!hasContent || !cropEditing || ratio===null || !!maskPaintMode;
+  if(overlay.hidden) return;
+  const box=canvas.getBoundingClientRect(), wrap=canvasWrap.getBoundingClientRect();
+  const rect=social.cropRect(canvas.width,canvas.height,ratio,getCropPosition());
+  Object.assign(overlay.style,{left:`${box.left-wrap.left}px`,top:`${box.top-wrap.top}px`,width:`${box.width}px`,height:`${box.height}px`});
+  Object.assign(frame.style,{left:`${rect.x/canvas.width*box.width}px`,top:`${rect.y/canvas.height*box.height}px`,width:`${rect.width/canvas.width*box.width}px`,height:`${rect.height/canvas.height*box.height}px`});
+  $('cropFrameLabel').textContent=exportOptions.comparison?'SAME CROP / BOTH PANELS':'DRAG TO FRAME';
+  frame.setAttribute('aria-label',`Crop frame. Drag or use arrow keys. Horizontal ${Math.round(getCropPosition().x*100)} percent, vertical ${Math.round(getCropPosition().y*100)} percent.`);
+}
+function updateSplitDivider(){
+  const divider=$('splitDivider'); divider.hidden=!hasContent || !splitPreview || showOriginal;
+  if(divider.hidden) return;
+  const box=canvas.getBoundingClientRect(), wrap=canvasWrap.getBoundingClientRect();
+  Object.assign(divider.style,{left:`${box.left-wrap.left+box.width/2}px`,top:`${box.top-wrap.top}px`,height:`${box.height}px`,bottom:'auto'});
+}
+function setCropPanelOpen(open,scroll=false){
+  $('cropPanelBody').hidden=!open;
+  $('cropPanelToggle').setAttribute('aria-expanded',String(open));
+  if(!open) cropEditing=false;
+  else if(hasContent && social.cropRatio(exportOptions)!==null && !maskPaintMode) cropEditing=true;
+  updateSocialUI();
+  if(scroll) $('exportPanel').scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
+function bringPreviewIntoView(){
+  if(window.matchMedia('(max-width: 900px)').matches && hasContent){
+    canvas.scrollIntoView({block:'center',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  }
+}
+function updateSocialUI(){
+  const locked=mediaBusy||exportBusy, ratio=social.cropRatio(exportOptions);
+  document.querySelectorAll('[data-format]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.format===exportOptions.format && !exportOptions.comparison)));
+  $('sourceDimensions').textContent=hasContent?`${canvas.width} × ${canvas.height}`:'—';
+  const size=social.outputSize(exportOptions,canvas.width,canvas.height);
+  $('outputDimensions').textContent=!hasContent && exportOptions.format==='original' && !exportOptions.comparison?'Upload to see size':`${size.width} × ${size.height}`;
+  $('exportFileType').value=exportOptions.type; $('exportQuality').value=exportOptions.quality;
+  $('exportQualityValue').textContent=`${exportOptions.quality}%`; $('exportQuality').setAttribute('aria-valuetext',`${exportOptions.quality} percent`);
+  $('qualityField').hidden=exportOptions.type==='png';
+  $('exportComparison').checked=exportOptions.comparison; $('exportComparison').disabled=isVideo||exportBusy;
+  $('comparisonOptions').hidden=!exportOptions.comparison;
+  $('comparisonFormat').value=exportOptions.comparisonFormat; $('comparisonLabels').checked=exportOptions.labels;
+  $('exportPhotoLabel').textContent=`⤓ Export ${exportOptions.comparison?'before / after':isVideo?'frame':''} ${exportOptions.type==='png'?'PNG':'JPG'}`.replace(/  /g,' ');
+  $('exportPhotoBtn').disabled=!hasContent||locked;
+  $('exportZipBtn').disabled=!photos.length||isVideo||locked;
+  $('zipCount').textContent=`${photos.length} photo${photos.length===1?'':'s'}`;
+  $('cropPreviewBtn').disabled=!hasContent||ratio===null||locked;
+  $('cropPreviewBtn').setAttribute('aria-pressed',String(cropEditing));
+  $('cropPreviewBtn').textContent=cropEditing?'Done framing':'Reposition crop';
+  $('centerCropBtn').disabled=!hasContent||ratio===null||locked;
+  $('cropHint').textContent=exportOptions.comparison?'Both panels use the same framing. Drag the crop; arrow keys fine-tune it.':ratio===null?'Original size keeps the full image. Choose an Instagram format to crop.':'Drag the frame to reposition. Arrow keys fine-tune; Shift moves faster.';
+  $('splitPreviewBtn').disabled=!hasContent||locked; $('splitPreviewBtn').setAttribute('aria-pressed',String(splitPreview));
+  $('videoTrimPanel').hidden=!isVideo;
+  $('downloadBtn').disabled=!hasContent||locked;
+  $('processVideoBtn').disabled=!isVideo||!hasContent||locked;
+  if(isVideo) $('processVideoBtn').textContent=`⤓ Export ${(videoTrim.end-videoTrim.start).toFixed(1)}s ${$('videoContainer').value.toUpperCase()}`;
+  $('addPhotosBtn').disabled=photos.length>=social.MAX_PHOTOS||locked;
+  $('removePhotoBtn').disabled=!photos.length||locked; $('applyAllBtn').disabled=!photos.length||locked;
+  $('mainArea').classList.toggle('hasPhotos',photos.length>0&&!isVideo);
+  document.querySelectorAll('.photoThumb').forEach(btn=>{ btn.disabled=locked; });
+  updateCropOverlay(); updateSplitDivider();
+}
+function renderPhotoStrip(){
+  const strip=$('carouselStrip'), list=$('photoThumbnails');
+  strip.hidden=!photos.length||isVideo; list.replaceChildren();
+  $('carouselCount').textContent=`Carousel / ${String(activePhotoIndex+1).padStart(2,'0')} of ${String(photos.length).padStart(2,'0')}`;
+  photos.forEach((photo,index)=>{
+    const btn=document.createElement('button'); btn.type='button'; btn.className='photoThumb';
+    btn.setAttribute('aria-pressed',String(index===activePhotoIndex)); btn.setAttribute('aria-label',`Photo ${index+1}: ${photo.file.name}`);
+    btn.title=photo.file.name; btn.disabled=exportBusy||mediaBusy;
+    const image=document.createElement('img'); image.src=photo.thumbUrl; image.alt=''; image.width=54; image.height=54;
+    const number=document.createElement('span'); number.textContent=String(index+1).padStart(2,'0');
+    btn.append(image,number); btn.addEventListener('click',()=>activatePhoto(index)); list.appendChild(btn);
+  });
+}
+$('cropPanelToggle').addEventListener('click',()=>setCropPanelOpen($('cropPanelBody').hidden));
+document.querySelectorAll('[data-format]').forEach(btn=>btn.addEventListener('click',()=>{
+  exportOptions.format=btn.dataset.format; exportOptions.comparison=false;
+  cropEditing=hasContent&&exportOptions.format!=='original';
+  if(cropEditing){ setMaskPaintMode(null); resetPreviewZoom(); }
+  updateSocialUI(); if(cropEditing) bringPreviewIntoView();
+}));
+$('cropPreviewBtn').addEventListener('click',()=>{
+  cropEditing=!cropEditing;
+  if(cropEditing){ setMaskPaintMode(null); resetPreviewZoom(); bringPreviewIntoView(); }
+  updateSocialUI();
+});
+$('centerCropBtn').addEventListener('click',()=>{ Object.assign(getCropPosition(),{x:0.5,y:0.5}); updateCropOverlay(); });
+$('exportFileType').addEventListener('change',e=>{ exportOptions.type=e.target.value; updateSocialUI(); });
+$('exportQuality').addEventListener('input',e=>{ exportOptions.quality=Number(e.target.value); updateSocialUI(); });
+$('exportComparison').addEventListener('change',e=>{
+  exportOptions.comparison=e.target.checked; cropEditing=hasContent&&social.cropRatio(exportOptions)!==null;
+  if(cropEditing){ setMaskPaintMode(null); resetPreviewZoom(); }
+  updateSocialUI(); if(cropEditing) bringPreviewIntoView();
+});
+$('comparisonFormat').addEventListener('change',e=>{ exportOptions.comparisonFormat=e.target.value; updateSocialUI(); });
+$('comparisonLabels').addEventListener('change',e=>{ exportOptions.labels=e.target.checked; });
+$('splitPreviewBtn').addEventListener('click',()=>{
+  splitPreview=!splitPreview; showOriginal=false; beforeLabel.classList.remove('show');
+  updateSocialUI(); render(performance.now());
+});
+const cropFrame=$('cropFrame');
+cropFrame.addEventListener('dblclick',e=>e.stopPropagation());
+cropFrame.addEventListener('pointerdown',e=>{
+  if(exportBusy || mediaBusy || (e.pointerType==='mouse' && e.button!==0)) return;
+  e.preventDefault(); e.stopPropagation(); cropFrame.focus({preventScroll:true});
+  const box=canvas.getBoundingClientRect();
+  cropDrag={id:e.pointerId,x:e.clientX,y:e.clientY,position:{...getCropPosition()},box};
+  cropFrame.setPointerCapture(e.pointerId);
+});
+cropFrame.addEventListener('pointermove',e=>{
+  if(!cropDrag || cropDrag.id!==e.pointerId) return;
+  const position=social.moveCrop(canvas.width,canvas.height,social.cropRatio(exportOptions),cropDrag.position,
+    (e.clientX-cropDrag.x)*canvas.width/cropDrag.box.width,(e.clientY-cropDrag.y)*canvas.height/cropDrag.box.height);
+  Object.assign(getCropPosition(),position); updateCropOverlay();
+});
+function finishCropDrag(e){
+  if(!cropDrag || cropDrag.id!==e.pointerId) return;
+  cropDrag=null; if(cropFrame.hasPointerCapture(e.pointerId)) cropFrame.releasePointerCapture(e.pointerId);
+}
+cropFrame.addEventListener('pointerup',finishCropDrag); cropFrame.addEventListener('pointercancel',finishCropDrag);
+cropFrame.addEventListener('lostpointercapture',()=>{cropDrag=null;});
+cropFrame.addEventListener('keydown',e=>{
+  if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key) || exportBusy || mediaBusy) return;
+  e.preventDefault(); e.stopPropagation();
+  const amount=Math.min(canvas.width,canvas.height)*0.005*(e.shiftKey?5:1);
+  const dx=e.key==='ArrowLeft'?-amount:e.key==='ArrowRight'?amount:0, dy=e.key==='ArrowUp'?-amount:e.key==='ArrowDown'?amount:0;
+  Object.assign(getCropPosition(),social.moveCrop(canvas.width,canvas.height,social.cropRatio(exportOptions),getCropPosition(),dx,dy));
+  updateCropOverlay();
+});
+cropFrame.addEventListener('wheel',e=>{
+  if(!hasContent) return;
+  e.preventDefault();
+  const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?canvasWrap.clientHeight:1);
+  zoomPreviewTo(previewZoom*Math.exp(-delta*0.0016),e.clientX,e.clientY);
+},{passive:false});
+function setEffectStates(states){
+  Object.keys(effectEnabled).forEach(name=>{ effectEnabled[name]=states[name]!==false; });
+  document.querySelectorAll('.effectToggle').forEach(toggle=>{
+    const on=effectEnabled[toggle.dataset.toggle]; toggle.setAttribute('aria-checked',String(on));
+    toggle.querySelector('.toggleText').textContent=on?'ON':'OFF'; toggle.closest('.effectGroup').classList.toggle('effectOff',!on);
+  });
+}
+function canvasBlob(source,type='image/png',quality=1){
+  return new Promise((resolve,reject)=>source.toBlob(blob=>blob?resolve(blob):reject(new Error('Image encoding failed — try a smaller output')),type,quality));
+}
+function downloadBlob(blob,name){
+  const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+function drawComparisonLabel(ctx,text,x,panelWidth,width){
+  const padding=Math.round(width*0.014), size=Math.max(14,Math.round(width*0.016));
+  ctx.font=`600 ${size}px Arial, sans-serif`; ctx.textBaseline='top';
+  const textWidth=ctx.measureText(text).width;
+  ctx.fillStyle='rgba(0,0,0,.78)'; ctx.fillRect(x+padding,padding,Math.min(panelWidth-padding*2,textWidth+padding),size+padding);
+  ctx.fillStyle='#fff'; ctx.fillText(text,x+padding*1.5,padding*1.5);
+}
+function makeExportCanvas(options=exportOptions,position=getCropPosition(),forVideo=false){
+  const o=social.normalizeExport(options), size=social.outputSize(o,canvas.width,canvas.height,forVideo);
+  const output=document.createElement('canvas'); output.width=size.width; output.height=size.height;
+  const ctx=output.getContext('2d'); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+  if(o.type==='jpeg' || forVideo){ ctx.fillStyle='#000'; ctx.fillRect(0,0,output.width,output.height); }
+  const crop=social.cropRect(canvas.width,canvas.height,social.cropRatio(o,forVideo),position);
+  const draw=(x,w)=>ctx.drawImage(canvas,crop.x,crop.y,crop.width,crop.height,x,0,w,output.height);
+  // These are export pixels only. Zoom, crop guides, and transient comparison UI are never baked in.
+  const originalView=showOriginal, splitView=splitPreview; splitPreview=false;
+  try{
+    if(o.comparison && !forVideo){
+      const half=output.width/2; showOriginal=true; render(0); draw(0,half);
+      showOriginal=false; render(0); draw(half,half);
+      if(o.labels){ drawComparisonLabel(ctx,'BEFORE',0,half,output.width); drawComparisonLabel(ctx,'AFTER',half,half,output.width); }
+    }else{
+      showOriginal=false; render(isVideo?videoEl.currentTime*1000:0); draw(0,output.width);
+    }
+  }finally{ showOriginal=originalView; splitPreview=splitView; }
+  return output;
+}
+function setEditorBusy(busy){
+  exportBusy=busy; $('app').classList.toggle('isBusy',busy);
+  if(busy){
+    document.querySelectorAll('button,input,select').forEach(control=>{
+      if(control.id==='cancelExportBtn') return;
+      disabledBeforeExport.set(control,control.disabled); control.disabled=true;
+    });
+    cropFrame.tabIndex=-1;
+  }else{
+    disabledBeforeExport.forEach((disabled,control)=>{ control.disabled=disabled; }); disabledBeforeExport.clear();
+    cropFrame.tabIndex=0; updateSocialUI(); renderPhotoStrip();
+  }
+}
+function checkExportCancelled(){ if(cancelRequested) throw new DOMException('Export cancelled','AbortError'); }
+function beginExport(title){
+  const view={original:showOriginal,split:splitPreview,playing:isVideo&&!videoEl.paused,time:videoEl.currentTime,
+    zoom:previewZoom,panX:previewPanX,panY:previewPanY};
+  cancelRequested=false; cancelPresetAnimation(); if(maskUploadFrame) uploadSubjectMask();
+  if(animId!==null){ cancelAnimationFrame(animId); animId=null; }
+  if(isVideo) videoEl.pause();
+  setEditorBusy(true); showOriginal=false; splitPreview=false; beforeLabel.classList.remove('show'); updateSplitDivider();
+  $('progressTitle').textContent=title; progressWrap.classList.add('show'); progressFill.style.width='0%'; progressPct.textContent='0%';
+  if(window.matchMedia('(max-width: 900px)').matches) progressWrap.scrollIntoView({block:'center',behavior:'auto'});
+  return view;
+}
+function finishExport(view){
+  showOriginal=view.original; splitPreview=view.split; beforeLabel.classList.toggle('show',showOriginal);
+  previewZoom=view.zoom; previewPanX=view.panX; previewPanY=view.panY;
+  setEditorBusy(false); updatePreviewZoom(); render(performance.now());
+  if(view.playing) videoEl.play().catch(()=>{});
+  startLoop(); progressWrap.classList.remove('show');
+}
+async function exportPhoto(){
+  if(!hasContent || exportBusy || mediaBusy){ showToast('Upload a photo first'); return; }
+  const options={...exportOptions}, view=beginExport('Exporting photo');
+  try{
+    if(ditherScope==='background' && maskDetectionPending){ progressText.textContent='Finishing the subject mask…'; await maskQueue; }
+    checkExportCancelled(); progressText.textContent='Rendering your Instagram-ready image…';
+    const output=makeExportCanvas(options), type=options.type==='png'?'image/png':'image/jpeg';
+    const blob=await canvasBlob(output,type,options.quality/100); checkExportCancelled();
+    const name=social.safeFilename(currentPhoto?.file.name||videoSourceFile?.name||'frame');
+    downloadBlob(blob,`${name}-${options.comparison?'before-after':options.format}.${options.type==='png'?'png':'jpg'}`);
+    $('exportStatus').textContent=`${output.width} × ${output.height} ${options.type==='png'?'PNG':`JPG · ${options.quality}%`} exported.`;
+    showToast('Instagram export ready');
+  }catch(error){
+    if(error.name==='AbortError') showToast('Export cancelled');
+    else{ console.error(error); showToast(error.message,5000); $('exportStatus').textContent=error.message; }
+  }finally{ finishExport(view); }
+}
+async function exportCarousel(){
+  if(isVideo || !photos.length || exportBusy || mediaBusy) return;
+  saveActivePhotoMask();
+  const selected=activePhotoIndex, options={...exportOptions}, view=beginExport('Exporting carousel'), entries=[];
+  let missingMasks=0;
+  try{
+    for(let i=0;i<photos.length;i++){
+      checkExportCancelled();
+      const item=photos[i]; progressText.textContent=`Photo ${i+1}/${photos.length} · preparing…`;
+      const img=await decodePhoto(item); checkExportCancelled(); uploadPhoto(item,img,false);
+      if(ditherScope==='background' && maskDetectionPending) await maskQueue;
+      checkExportCancelled(); saveActivePhotoMask();
+      if(ditherScope==='background' && effectEnabled.dither && params.dither && !autoSubjectMask && !maskStrokes.some(s=>s.mode==='protect')) missingMasks++;
+      const output=makeExportCanvas(options,item.crop), blob=await canvasBlob(output,options.type==='png'?'image/png':'image/jpeg',options.quality/100);
+      entries.push({name:`${String(i+1).padStart(2,'0')}-${social.safeFilename(item.file.name)}-${options.comparison?'before-after':options.format}.${options.type==='png'?'png':'jpg'}`,blob});
+      const pct=Math.round((i+1)/photos.length*90); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%';
+      progressText.textContent=`Photo ${i+1}/${photos.length} · same settings, individual framing`;
+      await new Promise(resolve=>setTimeout(resolve,0));
+    }
+    checkExportCancelled(); progressText.textContent='Packing the ZIP on this device…';
+    const zip=await social.createZip(entries); checkExportCancelled();
+    downloadBlob(zip,`film-lab-carousel-${Date.now()}.zip`);
+    $('exportStatus').textContent=`${entries.length} matching ${options.type==='png'?'PNGs':'JPGs'} exported as ZIP.${missingMasks?` Background dither skipped on ${missingMasks} photo(s) without a protected subject.`:''}`;
+    showToast(`${entries.length} photos → ZIP`,4500);
+  }catch(error){
+    if(error.name==='AbortError') showToast('Carousel export cancelled');
+    else{ console.error(error); showToast(`Export failed: ${error.message}`,5000); $('exportStatus').textContent=error.message; }
+  }finally{
+    try{ const item=photos[selected]; if(item){ const img=await decodePhoto(item); activePhotoIndex=selected; uploadPhoto(item,img,false); } }
+    catch(error){ console.error('Preview restore failed',error); }
+    finishExport(view);
+  }
+}
+$('exportPhotoBtn').addEventListener('click',exportPhoto); $('exportZipBtn').addEventListener('click',exportCarousel);
+$('cancelExportBtn').addEventListener('click',()=>{
+  cancelRequested=true; progressText.textContent='Cancelling…';
+  if(ffmpegFetchController) ffmpegFetchController.abort();
+  if((encodingVideo || ffmpegLoading) && ffmpegInstance){
+    try{ if(ffmpegInstance.terminate) ffmpegInstance.terminate(); else if(ffmpegInstance.exit) ffmpegInstance.exit(); }catch(error){}
+    ffmpegInstance=null;
+  }
+});
+function settingsSnapshot(){
+  return social.sanitizeSettings({version:1,values:getCurrentValues(),effects:{...effectEnabled},scope:ditherScope,preset:activePresetName,export:{...exportOptions}},ids,Object.keys(effectEnabled));
+}
+function restoreSettings(snapshot){
+  const data=social.sanitizeSettings(snapshot,ids,Object.keys(effectEnabled));
+  cancelPresetAnimation(); setValues(data.values); setEffectStates(data.effects); setDitherScope(data.scope);
+  exportOptions={...data.export}; if(isVideo) exportOptions.comparison=false;
+  const candidate=availablePresets.get(data.preset);
+  activePresetName=candidate && ids.every(id=>Number(candidate[id]??0)===data.values[id])?data.preset:null;
+  syncPresetSelection(); cropEditing=hasContent&&social.cropRatio(exportOptions)!==null&&!maskPaintMode;
+  updateSocialUI(); if(hasContent) render(performance.now());
+}
+async function copySettings(){
+  const text=JSON.stringify(settingsSnapshot()); let stored=false, copied=false;
+  try{ localStorage.setItem('film_lab_settings_clipboard_v1',text); stored=true; }catch(error){}
+  try{ await navigator.clipboard.writeText(text); copied=true; }catch(error){}
+  $('settingsStatus').textContent=copied?'Settings copied. Paste in another session, or on any device that has this clipboard.':stored?'Settings saved on this browser. Paste works across sessions; system clipboard is unavailable.':'Clipboard and local storage are unavailable. Use a look link instead.';
+  showToast(copied?'Settings copied':stored?'Settings saved on this browser':'Use a look link to share settings');
+}
+function parsePastedSettings(text){
+  if(typeof text!=='string' || text.length>20000) throw new Error('Invalid copied settings');
+  const hashIndex=text.indexOf('#look=v1.');
+  return hashIndex>=0?social.decodeSettings(text.slice(hashIndex).trim(),ids,Object.keys(effectEnabled)):social.sanitizeSettings(JSON.parse(text),ids,Object.keys(effectEnabled));
+}
+async function pasteSettings(){
+  let data=null, source='clipboard';
+  try{ data=parsePastedSettings(await navigator.clipboard.readText()); }catch(error){}
+  if(!data){ try{ data=parsePastedSettings(localStorage.getItem('film_lab_settings_clipboard_v1')); source='saved browser copy'; }catch(error){} }
+  if(!data){ showToast('Copy settings first, or open a shared look link',4500); return; }
+  restoreSettings(data); $('settingsStatus').textContent=`Settings pasted from ${source}. Photos and subject masks are not changed.`; showToast('Settings pasted');
+}
+async function shareSettings(){
+  const url=new URL(location.href); url.hash=social.encodeSettings(settingsSnapshot());
+  $('shareLinkRow').hidden=false; $('shareLinkInput').value=url.href;
+  try{ history.replaceState(null,'',url.href); }catch(error){}
+  let copied=false; try{ await navigator.clipboard.writeText(url.href); copied=true; }catch(error){}
+  $('settingsStatus').textContent=copied?'Look link copied. It carries effects, switches, and export format — never your photos.':'Your link is ready below. Select and copy it to share this look.';
+  $('shareLinkInput').select(); showToast(copied?'Look link copied':'Look link ready');
+}
+function restoreSharedLook(){
+  if(!location.hash.startsWith('#look=')) return;
+  try{ restoreSettings(social.decodeSettings(location.hash,ids,Object.keys(effectEnabled))); $('settingsStatus').textContent='Shared look loaded. Upload your own photos to use it.'; showToast('Shared look loaded'); }
+  catch(error){ $('settingsStatus').textContent='This look link is invalid or from an unsupported version. Your settings are unchanged.'; }
+}
+$('copySettingsBtn').addEventListener('click',copySettings); $('pasteSettingsBtn').addEventListener('click',pasteSettings); $('shareSettingsBtn').addEventListener('click',shareSettings);
+window.addEventListener('hashchange',()=>{ if(!exportBusy) restoreSharedLook(); });
+function updateTrimUI(){
+  if(!isVideo) return;
+  const dur=videoEl.duration, length=videoTrim.end-videoTrim.start;
+  for(const id of ['trimIn','trimOut','trimInNumber','trimOutNumber','videoSeek']) $(id).max=dur;
+  $('trimIn').value=videoTrim.start; $('trimOut').value=videoTrim.end;
+  $('trimInNumber').value=videoTrim.start.toFixed(2); $('trimOutNumber').value=videoTrim.end.toFixed(2);
+  $('trimIn').setAttribute('aria-valuetext',social.timeLabel(videoTrim.start)); $('trimOut').setAttribute('aria-valuetext',social.timeLabel(videoTrim.end));
+  $('trimDuration').textContent=`${length.toFixed(1)}s`;
+  $('trimSelection').style.left=videoTrim.start/dur*100+'%'; $('trimSelection').style.width=length/dur*100+'%';
+  $('trimTimeline').setAttribute('aria-label',`Selected segment: ${social.timeLabel(videoTrim.start)} to ${social.timeLabel(videoTrim.end)} of ${social.timeLabel(dur)}`);
+  document.querySelectorAll('[data-trim]').forEach(btn=>btn.setAttribute('aria-pressed',String(Math.abs(Number(btn.dataset.trim)-length)<0.05)));
+  updateVideoPlayback(); updateSocialUI();
+}
+function updateVideoPlayback(){
+  if(!isVideo || !Number.isFinite(videoEl.duration)) return;
+  $('videoSeek').value=videoEl.currentTime; $('videoSeek').setAttribute('aria-valuetext',social.timeLabel(videoEl.currentTime));
+  $('videoTime').textContent=`${social.timeLabel(videoEl.currentTime)} / ${social.timeLabel(videoEl.duration)}`;
+  $('trimPlayhead').style.left=videoEl.currentTime/videoEl.duration*100+'%';
+  $('videoPlayBtn').textContent=videoEl.paused?'Play selection':'Pause preview';
+}
+function changeTrim(start,end,changed){
+  if(!isVideo || exportBusy || mediaBusy) return;
+  videoTrim=social.trimRange(videoEl.duration,start,end,changed);
+  if(videoEl.currentTime<videoTrim.start || videoEl.currentTime>=videoTrim.end) videoEl.currentTime=videoTrim.start;
+  updateTrimUI();
+}
+document.querySelectorAll('[data-trim]').forEach(btn=>btn.addEventListener('click',()=>{
+  if(!isVideo || exportBusy || mediaBusy) return;
+  videoTrim=social.autoTrim(videoEl.duration,videoTrim.start,Number(btn.dataset.trim)); videoEl.currentTime=videoTrim.start; updateTrimUI();
+  showToast(`${(videoTrim.end-videoTrim.start).toFixed(1)}s selected for Reels`);
+}));
+for(const id of ['trimIn','trimInNumber']) $(id).addEventListener(id.endsWith('Number')?'change':'input',e=>changeTrim(Number(e.target.value),videoTrim.end,'start'));
+for(const id of ['trimOut','trimOutNumber']) $(id).addEventListener(id.endsWith('Number')?'change':'input',e=>changeTrim(videoTrim.start,Number(e.target.value),'end'));
+$('setTrimInBtn').addEventListener('click',()=>changeTrim(videoEl.currentTime,videoTrim.end,'start'));
+$('setTrimOutBtn').addEventListener('click',()=>changeTrim(videoTrim.start,videoEl.currentTime,'end'));
+$('videoSeek').addEventListener('input',e=>{ if(!isVideo || exportBusy || mediaBusy) return; videoEl.pause(); videoEl.currentTime=Number(e.target.value); updateVideoPlayback(); });
+$('videoPlayBtn').addEventListener('click',()=>{
+  if(!isVideo || exportBusy || mediaBusy) return;
+  if(videoEl.paused){ if(videoEl.currentTime<videoTrim.start || videoEl.currentTime>=videoTrim.end) videoEl.currentTime=videoTrim.start; videoEl.play().catch(()=>showToast('Tap play to start the preview')); }
+  else videoEl.pause(); updateVideoPlayback();
+});
+$('videoContainer').addEventListener('change',updateSocialUI);
+function wireVideoEvents(){
+  videoEl.addEventListener('timeupdate',updateVideoPlayback); videoEl.addEventListener('play',updateVideoPlayback); videoEl.addEventListener('pause',updateVideoPlayback);
+  videoEl.addEventListener('ended',()=>{ if(isVideo && !exportBusy){ videoEl.currentTime=videoTrim.start; videoEl.play().catch(()=>{}); } });
+  videoEl.addEventListener('seeked',()=>{ if(isVideo && !exportBusy){ uploadVideoTexture(); render(videoEl.currentTime*1000); updateVideoPlayback(); } });
+}
+wireVideoEvents();
+
 window.addEventListener('keydown',e=>{
+  if(exportBusy || e.ctrlKey || e.metaKey || e.altKey) return;
+  // C is safe on focused buttons; text fields and native selects retain their typing keys.
+  if(e.key.toLowerCase()==='c' && !['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName) && !e.target.isContentEditable){ e.preventDefault(); setCropPanelOpen($('cropPanelBody').hidden); return; }
   // Space on a focused button must activate that button, not the Before shortcut.
   if(['INPUT','BUTTON','TEXTAREA','SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
   if(e.code==='Space'){ e.preventDefault(); toggleBeforeAfter(); }
@@ -1892,94 +2653,174 @@ window.addEventListener('keydown',e=>{
   }
 });
 
-// video processing (same as before, using new params)
-let ffmpegInstance=null, ffmpegLoading=false;
+// WebGL-rendered frames keep the entire effect pipeline; ffmpeg encodes only the selected clip.
+let ffmpegInstance=null, ffmpegLoading=false, ffmpegFetchController=null, lastFFmpegLog='';
+let encoderProgressBase=90, encoderProgressSpan=8;
+function loadExportScript(src,signal=ffmpegFetchController?.signal){
+  return new Promise((resolve,reject)=>{
+    const script=document.createElement('script'); let settled=false;
+    const timer=setTimeout(()=>finish(new Error('Video encoder script unavailable')),20000);
+    const aborted=()=>finish(new DOMException('Export cancelled','AbortError'));
+    function finish(error){
+      if(settled) return; settled=true; clearTimeout(timer); signal?.removeEventListener('abort',aborted);
+      if(error){ script.remove(); reject(error); }else resolve();
+    }
+    if(signal?.aborted){ aborted(); return; }
+    signal?.addEventListener('abort',aborted,{once:true});
+    script.src=src; script.onload=()=>finish(); script.onerror=()=>finish(new Error('Video encoder script unavailable')); document.head.appendChild(script);
+  });
+}
 async function loadFFmpeg(){
   if(ffmpegInstance) return ffmpegInstance;
-  if(ffmpegLoading){ showToast('ffmpeg.wasm loading…'); return null; }
-  ffmpegLoading=true; progressWrap.classList.add('show'); progressText.textContent='Loading ffmpeg.wasm…'; progressFill.style.width='5%';
+  if(ffmpegLoading) throw new Error('Video encoder is already loading');
+  ffmpegLoading=true; const urls=[]; let ff=null; ffmpegFetchController=new AbortController();
   try{
+    progressText.textContent='Loading video engine (about 31 MB on first use)…';
     if(!window.FFmpegWASM){
-      await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+      try{ await loadExportScript('vendor/ffmpeg/ffmpeg.js'); }
+      catch(error){ checkExportCancelled(); await loadExportScript('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js'); }
     }
-    if(window.FFmpegWASM?.FFmpeg){
-      const {FFmpeg}=window.FFmpegWASM; const ff=new FFmpeg();
-      await ff.load({coreURL:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js', wasmURL:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'});
-      ffmpegInstance=ff; ffmpegLoading=false; return ff;
+    checkExportCancelled();
+    if(!window.FFmpegWASM?.FFmpeg) throw new Error('Video encoder is unavailable');
+    ff=new window.FFmpegWASM.FFmpeg(); ffmpegInstance=ff;
+    // The small worker is served from this origin. Blob core URLs avoid cross-origin
+    // importScripts restrictions in static hosts and the Arena preview; no COOP/COEP is needed.
+    let core=null, wasm=null;
+    for(const base of ['https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/','https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/']){
+      try{
+        const results=await Promise.all(['ffmpeg-core.js','ffmpeg-core.wasm'].map(async(file)=>{
+          const response=await fetch(base+file,{signal:ffmpegFetchController.signal});
+          if(!response.ok) throw new Error(`Encoder download failed (${response.status})`);
+          return new Blob([await response.arrayBuffer()],{type:file.endsWith('.wasm')?'application/wasm':'text/javascript'});
+        }));
+        [core,wasm]=results; break;
+      }catch(error){ if(cancelRequested) checkExportCancelled(); }
     }
-  }catch(err){ console.warn('0.12 fail',err); }
-  try{
-    if(!window.FFmpeg?.createFFmpeg){
-      await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
-    }
-    const {createFFmpeg}=window.FFmpeg; const ff=createFFmpeg({log:true, corePath:'https://unpkg.com/@ffmpeg/core@0.11.6/dist/ffmpeg-core.js'}); await ff.load();
-    ffmpegInstance=ff; ffmpegLoading=false; return ff;
-  }catch(err){ console.error(err); progressText.textContent='Failed to load ffmpeg'; showToast('ffmpeg load failed'); ffmpegLoading=false; return null; }
+    if(!core || !wasm) throw new Error('Could not download the video engine. Check your connection and try again.');
+    checkExportCancelled();
+    const coreURL=URL.createObjectURL(core), wasmURL=URL.createObjectURL(wasm); urls.push(coreURL,wasmURL);
+    ff.on('log',({message})=>{lastFFmpegLog=message;});
+    ff.on('progress',({progress})=>{
+      if(!encodingVideo || !Number.isFinite(progress)) return;
+      const pct=Math.max(parseInt(progressPct.textContent)||0,Math.round(encoderProgressBase+social.clamp(progress,0,1)*encoderProgressSpan));
+      progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%';
+    });
+    progressText.textContent='Initializing ffmpeg.wasm…';
+    const loadTimer=setTimeout(()=>ff.terminate(),60000);
+    try{ await ff.load({coreURL,wasmURL}); }finally{ clearTimeout(loadTimer); }
+    checkExportCancelled();
+    ffmpegInstance=ff; return ff;
+  }catch(error){
+    if(ff) try{ ff.terminate(); }catch(ignore){}
+    if(ffmpegInstance===ff) ffmpegInstance=null;
+    throw error;
+  }finally{
+    ffmpegLoading=false; ffmpegFetchController=null; urls.forEach(url=>URL.revokeObjectURL(url));
+  }
 }
-function seekVideo(t){ return new Promise(res=>{ const on=()=>{ videoEl.removeEventListener('seeked',on); setTimeout(res,30); }; videoEl.addEventListener('seeked',on); videoEl.currentTime=t; setTimeout(()=>{ videoEl.removeEventListener('seeked',on); res(); },1200); }); }
+function seekVideo(t){
+  return new Promise((resolve,reject)=>{
+    if(videoEl.readyState>=2 && Math.abs(videoEl.currentTime-t)<0.0001){ resolve(); return; }
+    const timer=setTimeout(()=>finish(new Error('Video frame seeking timed out')),8000);
+    const seeked=()=>finish(), failed=()=>finish(new Error('Could not read this video frame'));
+    function finish(error){ clearTimeout(timer); videoEl.removeEventListener('seeked',seeked); videoEl.removeEventListener('error',failed); error?reject(error):resolve(); }
+    videoEl.addEventListener('seeked',seeked,{once:true}); videoEl.addEventListener('error',failed,{once:true});
+    videoEl.currentTime=t;
+  });
+}
 async function processVideo(){
-  if(!isVideo||!hasContent){ showToast('Upload video first'); return; }
-  const dur=Math.min(videoEl.duration,60); if(!dur||isNaN(dur)){ showToast('Metadata not ready'); return; }
-  const fps=24, total=Math.max(1,Math.floor(dur*fps));
-  const ff=await loadFFmpeg(); if(!ff) return;
-  // VideoFrame is a WebCodecs image source; use it when WebGL supports the
-  // upload, and fall back to the video element + canvas for other browsers.
-  let useWebCodecs=typeof window.VideoFrame==='function';
-  progressWrap.classList.add('show'); progressFill.style.width='0%'; progressPct.textContent='0%'; progressText.textContent=`Extracting ${total} frames @ ${fps}fps — ${useWebCodecs?'WebCodecs':'canvas fallback'}`;
-  const wasPlaying=!videoEl.paused, wasShowingOriginal=showOriginal;
-  videoEl.pause(); showOriginal=false;
-  // The live preview loop must not overwrite an exported frame before toBlob.
-  if(animId!==null){ cancelAnimationFrame(animId); animId=null; }
-  const writeFile=async(n,d)=>{ if(ff.writeFile) await ff.writeFile(n,d); else ff.FS('writeFile',n,d); };
-  const readFile=async(n)=>{ if(ff.readFile) return await ff.readFile(n); else return ff.FS('readFile',n); };
-  const exec=async(a)=>{ if(ff.exec) await ff.exec(a); else await ff.run(...a); };
+  if(!isVideo || !hasContent || exportBusy || mediaBusy){ showToast('Upload video first'); return; }
+  const trim=social.trimRange(videoEl.duration,videoTrim.start,videoTrim.end), dur=trim.end-trim.start;
+  const fps=24, total=Math.max(1,Math.ceil(dur*fps)), container=$('videoContainer').value;
+  const keepAudio=$('keepVideoAudio').checked&&!!videoSourceFile, options={...exportOptions,comparison:false}, position={...videoCrop};
+  const view=beginExport(`Exporting ${container.toUpperCase()} / Reel`), files=new Set(), segments=[];
+  // Two-second sections bound raw-frame memory, even for 60s full-HD clips with heavy grain.
+  const CHUNK_FRAMES=48;
+  let ff=null, useWebCodecs=typeof window.VideoFrame==='function', mountedSource=false, sourceDir=false, audioSource='source-video';
+  const writeFile=async(n,d)=>{ files.add(n); if(ff.writeFile) await ff.writeFile(n,d); else ff.FS('writeFile',n,d); };
+  const readFile=async(n)=>ff.readFile?ff.readFile(n):ff.FS('readFile',n);
+  const deleteFile=async(n)=>{ try{ if(ff.deleteFile) await ff.deleteFile(n); else ff.FS('unlink',n); files.delete(n); }catch(error){} };
+  const exec=async(args)=>{
+    lastFFmpegLog=''; const code=ff.exec?await ff.exec(args):await ff.run(...args);
+    if(typeof code==='number' && code!==0) throw new Error(`Video encoding failed (${code}): ${lastFFmpegLog.slice(0,180)}`);
+  };
   try{
-    for(let i=0;i<total;i++){
-      const t=i/fps; await seekVideo(t);
-      gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-      if(useWebCodecs){
-        let frame=null;
+    ff=await loadFFmpeg(); checkExportCancelled();
+    progressFill.style.width='0%'; progressPct.textContent='0%';
+    if(keepAudio){
+      // WORKERFS reads slices of the original Blob without duplicating a long upload in WASM RAM.
+      if(ff.mount && ff.createDir){
         try{
-          frame=new VideoFrame(videoEl,{timestamp:Math.round(t*1e6)});
-          gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,frame);
-        }catch(e){
-          useWebCodecs=false;
-          gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
-        }finally{ frame?.close(); }
-      }else{
-        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
+          await ff.createDir('/source'); sourceDir=true;
+          mountedSource=await ff.mount('WORKERFS',{blobs:[{name:'source-video',data:videoSourceFile}]},'/source');
+          if(mountedSource) audioSource='/source/source-video';
+        }catch(error){ console.warn('Audio file mount unavailable; using memory fallback',error); }
       }
-      render(t*1000);
-      const blob=await new Promise(r=> canvas.toBlob(r,'image/png',1.0)); const buf=await blob.arrayBuffer(); const u8=new Uint8Array(buf);
-      const fname=`frame_${String(i).padStart(4,'0')}.png`; await writeFile(fname,u8);
-      const pct=Math.round((i+1)/total*70); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Frame ${i+1}/${total} · ${useWebCodecs?'WebCodecs':'canvas fallback'}`;
-      await new Promise(r=> setTimeout(r,0));
+      if(!mountedSource) await writeFile('source-video',new Uint8Array(await videoSourceFile.arrayBuffer()));
     }
-    progressText.textContent='Encoding WebM…'; progressFill.style.width='75%';
-    try{ await exec(['-framerate',String(fps),'-i','frame_%04d.png','-c:v','libvpx-vp9','-b:v','2M','-auto-alt-ref','0','-pix_fmt','yuv420p','output.webm']); }
-    catch(e){ await exec(['-framerate',String(fps),'-i','frame_%04d.png','-c:v','libvpx','-b:v','2M','-pix_fmt','yuv420p','output.webm']); }
-    progressFill.style.width='95%'; progressText.textContent='Finalizing…';
-    const data=await readFile('output.webm'); const outBlob=new Blob([data.buffer?data:data],{type:'video/webm'}); const outUrl=URL.createObjectURL(outBlob);
-    const a=document.createElement('a'); a.href=outUrl; a.download=`film-lab-${Date.now()}.webm`; a.click();
-    setTimeout(()=> URL.revokeObjectURL(outUrl),60000);
-    for(let i=0;i<total;i++){ const fn=`frame_${String(i).padStart(4,'0')}.png`; try{ if(ff.deleteFile) await ff.deleteFile(fn); else ff.FS('unlink',fn); }catch(e){} }
-    try{ if(ff.deleteFile) await ff.deleteFile('output.webm'); else ff.FS('unlink','output.webm'); }catch(e){}
-    progressFill.style.width='100%'; progressPct.textContent='100%'; progressText.textContent=`Done! ${total} frames → WebM`; showToast(`Video: ${total} frames → WebM`,4000);
-    setTimeout(()=> progressWrap.classList.remove('show'),3000);
-  }catch(err){ console.error(err); progressText.textContent='Error: '+err.message; showToast('Failed: '+err.message,5000); }
-  finally{
-    showOriginal=wasShowingOriginal;
-    if(wasPlaying) videoEl.play().catch(()=>{});
-    startLoop();
+    for(let chunkStart=0,part=0;chunkStart<total;chunkStart+=CHUNK_FRAMES,part++){
+      const count=Math.min(CHUNK_FRAMES,total-chunkStart);
+      for(let j=0;j<count;j++){
+        checkExportCancelled();
+        const i=chunkStart+j, t=Math.min(trim.end-0.0001,trim.start+i/fps); await seekVideo(t); checkExportCancelled();
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+        if(useWebCodecs){
+          let frame=null;
+          try{
+            frame=new VideoFrame(videoEl,{timestamp:Math.round(t*1e6)});
+            gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,frame);
+            if(gl.getError()!==gl.NO_ERROR) throw new Error('VideoFrame texture upload unsupported');
+          }catch(error){
+            useWebCodecs=false; gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
+          }finally{ frame?.close(); }
+        }else gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
+        const output=makeExportCanvas(options,position,true), blob=await canvasBlob(output,'image/jpeg',0.98);
+        checkExportCancelled(); await writeFile(`frame_${String(j).padStart(4,'0')}.jpg`,new Uint8Array(await blob.arrayBuffer()));
+        const pct=Math.round((i+1)/total*90); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%';
+        progressText.textContent=`Frame ${i+1}/${total} · ${output.width} × ${output.height} · ${useWebCodecs?'WebCodecs':'canvas fallback'}`;
+        await new Promise(resolve=>setTimeout(resolve,0));
+      }
+      checkExportCancelled(); encodingVideo=true;
+      encoderProgressBase=chunkStart/total*90; encoderProgressSpan=count/total*90;
+      progressText.textContent=`Encoding section ${part+1}/${Math.ceil(total/CHUNK_FRAMES)} — raw frames are freed after each section…`;
+      const segment=`part_${String(part).padStart(4,'0')}.${container}`;
+      files.add(segment);
+      await exec(social.videoArgs({fps,duration:count/fps,container,audio:false,output:segment}));
+      encodingVideo=false; checkExportCancelled(); segments.push(segment);
+      for(let j=0;j<count;j++) await deleteFile(`frame_${String(j).padStart(4,'0')}.jpg`);
+    }
+    await writeFile('segments.txt',new TextEncoder().encode(segments.map(name=>`file '${name}'`).join('\n')));
+    checkExportCancelled(); encodingVideo=true; encoderProgressBase=90; encoderProgressSpan=8;
+    progressText.textContent=`Joining ${container.toUpperCase()}${keepAudio?' and matching source audio':''}…`;
+    const outputName='output.'+container; files.add(outputName);
+    await exec(social.muxVideoArgs({start:trim.start,duration:dur,container,audio:keepAudio,source:audioSource}));
+    encodingVideo=false; checkExportCancelled(); progressText.textContent='Finalizing…';
+    const data=await readFile(outputName), out=new Blob([data],{type:container==='mp4'?'video/mp4':'video/webm'});
+    downloadBlob(out,`${social.safeFilename(videoSourceFile?.name||'reel')}-${dur.toFixed(1)}s.${container}`);
+    const size=social.outputSize(options,canvas.width,canvas.height,true);
+    $('exportStatus').textContent=`${dur.toFixed(1)}s ${container.toUpperCase()} · ${size.width} × ${size.height} exported${keepAudio?' with source audio (if present)':''}.`;
+    showToast(`${dur.toFixed(1)}s ${container.toUpperCase()} exported`,4500);
+  }catch(error){
+    if(cancelRequested || error.name==='AbortError') showToast('Video export cancelled');
+    else{ console.error(error); $('exportStatus').textContent=`${error.message} Try a shorter clip or the other video format.`; showToast('Video export failed — try a shorter clip or the other format',6000); }
+  }finally{
+    encodingVideo=false;
+    if(ff){
+      for(const name of files) await deleteFile(name);
+      if(mountedSource) try{ await ff.unmount('/source'); }catch(error){}
+      if(sourceDir) try{ await ff.deleteDir('/source'); }catch(error){}
+    }
+    try{ await seekVideo(view.time); uploadVideoTexture(); }catch(error){ console.warn('Could not restore video playhead',error); }
+    finishExport(view); updateVideoPlayback();
   }
 }
 $('processVideoBtn').addEventListener('click',processVideo);
 
 // init
-updateFromSliders(); updateSliderUI(); render(performance.now());
+updateFromSliders(); updateSliderUI(); updateSocialUI(); restoreSharedLook(); render(performance.now());
 window.addEventListener('dragover',e=> e.preventDefault());
-window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ const f=e.dataTransfer.files[0]; if(f && (isHeicFile(f)||f.type.startsWith('image/')||f.type.startsWith('video/'))){ e.preventDefault(); handleFile(f); } } });
-console.log('Film Lab v4 — 40 signed controls — WebGL2', gl.getParameter(gl.VERSION));
+window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ e.preventDefault(); handleFiles(e.dataTransfer.files); } });
+console.log('Film Lab — Instagram tools · 41 signed controls — WebGL2', gl.getParameter(gl.VERSION));
 })();
 </script>
 </body>

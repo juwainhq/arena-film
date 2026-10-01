@@ -16,9 +16,10 @@ const legacyPresets = script.match(/const legacyBuiltInPresets=\{[\s\S]*?\n\};/)
 const withoutSharpening = script.match(/const withoutSharpening=values=>[^\n]+;/)[0];
 const presetFromNeutral = script.match(/const presetFromNeutral=values=>withoutSharpening\(\{[\s\S]*?\n\}\);/)[0];
 const builtIns = script.match(/const builtInPresets=\{[\s\S]*?\n\};/)[0];
+const igPack = script.match(/const igPresets=\{[\s\S]*?\n\};/)[0];
 const sliders = {}, params = {};
 const context = vm.createContext({sliders, params});
-vm.runInContext(`${config}\n${mapper}\n${update}\n${converter}\n${upgrade}\n${legacyPresets}\n${withoutSharpening}\n${presetFromNeutral}\n${builtIns}\nthis.controls=advancedControls;this.mapValue=advancedValue;this.update=updateFromSliders;this.convert=convertLegacyValues;this.upgrade=upgradeV4Preset;this.oldPresets=legacyBuiltInPresets;this.presets=builtInPresets;`, context);
+vm.runInContext(`${config}\n${mapper}\n${update}\n${converter}\n${upgrade}\n${legacyPresets}\n${withoutSharpening}\n${presetFromNeutral}\n${builtIns}\n${igPack}\nthis.igPresets=igPresets;this.controls=advancedControls;this.mapValue=advancedValue;this.update=updateFromSliders;this.convert=convertLegacyValues;this.upgrade=upgradeV4Preset;this.oldPresets=legacyBuiltInPresets;this.presets=builtInPresets;`, context);
 const {controls, mapValue, update: updateFromSliders, convert, upgrade: upgradeV4Preset, oldPresets, presets} = context;
 const advancedInputs = [...html.matchAll(/<input class="subSlider" type="range" id="slider(\w+)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
 const intensityInputs = [...html.matchAll(/<input type="range" id="slider(Bloom|Hall|Grain|Dither|Sharp)" min="(-?\d+)" max="(-?\d+)" value="(-?\d+)"/g)];
@@ -82,8 +83,8 @@ test('effect switches bypass rendering at neutral without changing slider values
   }
 });
 
-test('all 40 controls start at 0 with centered -100 to +100 scales', () => {
-  assert.equal(advancedInputs.length, 35);
+test('all 41 controls start at 0 with centered -100 to +100 scales', () => {
+  assert.equal(advancedInputs.length, 36);
   assert.equal(intensityInputs.length, 5);
   assert.deepEqual(advancedInputs.map(m => m[1]).sort(), Object.keys(controls).sort());
   for (const [, name, min, max, value] of [...advancedInputs, ...intensityInputs]) {
@@ -147,12 +148,12 @@ test('negative effects are rendered as subtraction, inverse grain, blur, or brig
 
 test('color grading is signed, GPU-backed, and neutral for older looks', () => {
   const shader = script.match(/const fsComposite=`([\s\S]*?)`;/)[1];
-  for (const name of ['u_vibrance','u_fade','u_shadowTone','u_highlightTone']) {
+  for (const name of ['u_vibrance','u_fade','u_shadowTone','u_highlightTone','u_highlightTint']) {
     assert.match(shader, new RegExp(`uniform float ${name};`), `${name} declared`);
     assert.ok(script.includes(`'${name}'),effectValue('color',params.`), `${name} bypasses with Color & Light`);
   }
   assert.match(shader, /if\(abs\(u_vibrance\)>0\.001\)/);
-  assert.match(shader, /if\(abs\(u_fade\)>0\.001 \|\| abs\(u_shadowTone\)>0\.001 \|\| abs\(u_highlightTone\)>0\.001\)/);
+  assert.match(shader, /if\(abs\(u_fade\)>0\.001 \|\| abs\(u_shadowTone\)>0\.001 \|\| abs\(u_highlightTone\)>0\.001 \|\| abs\(u_highlightTint\)>0\.001\)/);
   assert.match(shader, /u_shadowTone<0\.0[\s\S]*?u_shadowTone\*shadow/);
   assert.match(shader, /u_highlightTone<0\.0[\s\S]*?u_highlightTone\*highlight/);
   assert.match(shader, /if\(u_fade>0\.0\)[\s\S]*?col\+=col\*u_fade\*shadow/);
@@ -163,7 +164,7 @@ test('eighteen complete presets, legacy translations and v4 upgrades retain old 
   const social = ['Golden Hour','Soft Portrait','Retro 2000','Cloudy Pastel','Moody Coffee','Neon Nights'];
   const stories = ['Teal & Ember','Rosé Haze','Chrome Flash','Instant Film','Coastal Fade','After Hours'];
   assert.deepEqual(Object.keys(presets).sort(), [...classic,...social,...stories].sort());
-  assert.equal(Object.keys(presets['Noir Crunch']).length, 40);
+  assert.equal(Object.keys(presets['Noir Crunch']).length, 41);
   for (const name of [...classic,...social,...stories]) {
     for (const key of ['Dither','DitherSteps','DitherSize','DitherBrush']) assert.equal(presets[name][key], 0, `${name}: dithering stays opt-in`);
     if([...classic,...social].includes(name)) for (const key of ['Vibrance','Fade','ShadowTone','HighlightTone']) assert.equal(presets[name][key], 0, `${name}: legacy color unchanged`);
@@ -229,7 +230,7 @@ test('older saved presets fade new sliders to zero while preserving custom sharp
   const state = vm.createContext({
     ids:Object.keys(inputs), sliders:inputs, presetFrame:null, activePresetName:null,
     performance:{now:()=>0}, requestAnimationFrame(fn){frames.push(fn);return frames.length;},
-    cancelPresetAnimation(){}, syncPresetSelection(){ selections.push(state.activePresetName); },
+    cancelPresetAnimation(){}, syncPresetSelection(){ selections.push(state.activePresetName); }, presetDisplayName:name=>name, setEffectStates(){},
     setDitherScope(scope){ scopeChanges.push(scope); },
     updateFromSliders(){}, updateSliderUI(){}, render(){}, showToast(){},
   });
@@ -295,7 +296,7 @@ test('six original presets stay visible; the rest are grouped in a keyboard-acce
   const chips=new Element('div'),select=new Element('select'),count=new Element('span'),deleteBtn=new Element('button');
   const elements={presetChips:chips,presetSelect:select,presetCount:count,deletePresetBtn:deleteBtn};
   const state=vm.createContext({
-    builtInPresets:presets, legacyBuiltInPresets:oldPresets, featuredPresetNames:featured,
+    builtInPresets:presets, igPresets:context.igPresets, igPresetNotes:{}, presetDisplayName:name=>name.startsWith('ig:')?name.slice(3):name, legacyBuiltInPresets:oldPresets, featuredPresetNames:featured,
     customPresets:[], activePresetName:null, availablePresets:new Map(),
     $:id=>elements[id], document:{createElement:tag=>new Element(tag), querySelectorAll:selector=>selector==='#presetChips .chip'?chips.children:[]},
   });
@@ -307,10 +308,11 @@ test('six original presets stay visible; the rest are grouped in a keyboard-acce
   assert.deepEqual(chips.children.map(chip=>chip.textContent),featured);
   assert.ok(chips.children.every(chip=>chip.type==='button' && chip.attributes['aria-pressed']==='false'));
   assert.equal(select.children[0].disabled,true);
-  assert.equal(count.textContent,'12 looks');
+  assert.equal(count.textContent,'26 looks');
   assert.deepEqual(select.children.slice(1).map(group=>[group.label,group.children.map(opt=>opt.value)]),[
     ['For your feed',['Golden Hour','Soft Portrait','Retro 2000','Cloudy Pastel','Moody Coffee','Neon Nights']],
     ['Color stories',['Teal & Ember','Rosé Haze','Chrome Flash','Instant Film','Coastal Fade','After Hours']],
+    ['IG Looks',Object.keys(context.igPresets).map(name=>'ig:'+name)],
   ]);
   state.activePresetName='Golden Hour'; state.sync();
   assert.equal(select.value,'Golden Hour'); assert.equal(deleteBtn.hidden,true);
@@ -318,14 +320,14 @@ test('six original presets stay visible; the rest are grouped in a keyboard-acce
   assert.equal(select.value,''); assert.equal(chips.children.at(-1).attributes['aria-pressed'],'true');
 
   state.customPresets.push({name:'Weekend',values:{Exposure:23}}); state.draw();
-  assert.equal(count.textContent,'13 looks');
+  assert.equal(count.textContent,'27 looks');
   assert.deepEqual(select.children.at(-1).children.map(opt=>opt.value),['Weekend']);
   assert.equal(select.children.at(-1).label,'Saved presets');
   state.activePresetName='Weekend'; state.sync();
   assert.equal(select.value,'Weekend'); assert.equal(deleteBtn.hidden,false);
   state.customPresets=[]; state.draw();
   assert.equal(select.value,''); assert.equal(deleteBtn.hidden,true);
-  assert.equal(count.textContent,'12 looks');
+  assert.equal(count.textContent,'26 looks');
 });
 
 test('selecting, adjusting, saving, and deleting looks keeps both preset controls in sync', () => {
@@ -338,12 +340,35 @@ test('selecting, adjusting, saving, and deleting looks keeps both preset control
 });
 
 test('video processing retains a 60s cap, WebCodecs fallback and frame progress', () => {
-  assert.match(script, /Math\.min\(videoEl\.duration,60\)/);
+  assert.match(script, /social\.trimRange\(videoEl\.duration,videoTrim\.start,videoTrim\.end\)/);
+  assert.match(script, /t=Math\.min\(trim\.end-0\.0001,trim\.start\+i\/fps\)/);
   assert.match(script, /@ffmpeg\/ffmpeg@0\.12\.10\/dist\/umd\/ffmpeg\.js/);
-  assert.match(script, /@ffmpeg\/ffmpeg@0\.11\.6\/dist\/ffmpeg\.min\.js/);
+  assert.match(script, /vendor\/ffmpeg\/ffmpeg\.js/);
+  assert.match(script, /social\.videoArgs\(\{fps,duration:count\/fps,container,audio:false,output:segment\}\)/);
   assert.match(script, /typeof window\.VideoFrame==='function'/);
   assert.match(script, /frame=new VideoFrame\(videoEl/);
   assert.match(script, /useWebCodecs=false;[\s\S]*?gl\.texImage2D\([\s\S]*?videoEl\)/);
   assert.match(script, /Frame \$\{i\+1\}\/\$\{total\}/);
   assert.match(script, /cancelAnimationFrame\(animId\)/);
+});
+
+
+test('IG Looks adds fourteen complete signed presets without replacing any original look', () => {
+  const ig=context.igPresets;
+  assert.deepEqual(Object.keys(ig),['Moody Dark','Golden Hour','Clean Minimal','Dreamy Pastel','Punchy Vibrant','Film Fade','B&W Editorial','Neon Night','Soft Skin','Café Cream','Coastal Blue','Direct Flash','Terracotta','Sage Green']);
+  assert.equal(Object.keys(presets).length,18);
+  for(const [name,values] of Object.entries(ig)){
+    assert.deepEqual(Object.keys(values).sort(),[...Object.keys(controls),'Bloom','Hall','Grain','Dither','Sharp'].sort(),name);
+    for(const [id,value] of Object.entries(values)) assert.ok(Number.isInteger(value)&&value>=-100&&value<=100,`${name}: ${id}`);
+    for(const id of ['Sharp','SharpRadius','SharpEdge','SharpDetail','SharpLuma','Dither','DitherSteps','DitherSize','DitherBrush']) assert.equal(values[id],0,`${name}: ${id} remains opt-in`);
+  }
+  assert.ok(ig['Moody Dark'].Fade<0&&ig['Moody Dark'].ShadowTone<0);
+  assert.ok(ig['Golden Hour'].HighlightTone>0&&ig['Golden Hour'].Fade>0);
+  assert.ok(ig['Clean Minimal'].Exposure>0&&ig['Clean Minimal'].Saturation<0&&ig['Clean Minimal'].Contrast<0);
+  assert.ok(ig['Dreamy Pastel'].Fade>0&&ig['Dreamy Pastel'].Temperature<0&&ig['Dreamy Pastel'].Bloom>0);
+  assert.ok(ig['Punchy Vibrant'].Saturation>0&&ig['Punchy Vibrant'].Fade<0);
+  assert.ok(ig['Film Fade'].Fade>0&&ig['Film Fade'].Grain>0&&ig['Film Fade'].Saturation<0);
+  assert.equal(ig['B&W Editorial'].Saturation,-100);
+  assert.ok(ig['Neon Night'].ShadowTone<0&&ig['Neon Night'].HighlightTint>0);
+  assert.notDeepEqual(ig['Golden Hour'],presets['Golden Hour']); // the original stays available separately
 });

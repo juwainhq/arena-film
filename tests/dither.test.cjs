@@ -69,7 +69,7 @@ test('protect and erase brushes track image coordinates through zoom, including 
   assert.match(script, /function scheduleSubjectMaskUpload\(\)\{[\s\S]*?requestAnimationFrame\(\(\)=>\{ maskUploadFrame=0; uploadSubjectMask\(\); \}\)/);
   assert.match(script, /if\(maskUploadFrame\) uploadSubjectMask\(\); \/\/ export must see the final brush stroke immediately/);
   assert.match(styles, /#canvasWrap\.maskPainting #glCanvas \{ cursor: crosshair; touch-action: none; \}/);
-  assert.match(script, /if\(!maskPaintMode\) fileInput\.click\(\)/);
+  assert.match(script, /if\(!maskPaintMode && !e\.target\.closest\('#cropOverlay'\)\) fileInput\.click\(\)/);
   assert.match(html, /id="protectSubjectBtn" aria-pressed="false"/);
   assert.match(html, /id="eraseSubjectBtn" aria-pressed="false"/);
   assert.match(html, /id="maskStatus" role="status" aria-live="polite"/);
@@ -89,7 +89,7 @@ test('still-photo grain remains frozen despite Speed; video grain can still anim
 test('presets and resets return new sliders to neutral and remember scope for saved looks', () => {
   assert.match(script, /Bloom:0,Hall:0,Grain:0,Dither:0,Sharp:0/);
   assert.match(script, /setDitherScope\(values\.DitherScope==='background'\?'background':'full'\)/);
-  assert.match(script, /const values=\{\.\.\.getCurrentValues\(\),DitherScope:ditherScope\}/);
+  assert.match(script, /const values=\{\.\.\.getCurrentValues\(\),DitherScope:ditherScope,Effects:\{\.\.\.effectEnabled\}\}/);
   assert.match(script, /if\(btn\.dataset\.reset==='dither'\) setDitherScope\('full'\)/);
   assert.match(script, /ids\.forEach\(k=>\{ sliders\[k\]\.value=0; \}\);\n    setDitherScope\('full'\)/);
   assert.match(script, /const dur=340/);
