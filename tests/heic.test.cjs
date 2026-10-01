@@ -10,7 +10,7 @@ const fileHandlers = script.slice(script.indexOf('function isHeicFile('), script
 function makeContext(overrides = {}) {
   const toasts = [], errors = [], revoked = [];
   const context = vm.createContext({
-    Blob, window: {},
+    Blob, window: {}, randomGrainSeed: () => 123,
     document: {createElement: () => ({}), head: {appendChild: () => {}}},
     URL: {createObjectURL: () => 'blob:sample', revokeObjectURL: url => revoked.push(url)},
     showToast: text => toasts.push(text),

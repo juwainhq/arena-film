@@ -12,7 +12,7 @@ test('loaded previews expose zoom controls and keep zoom separate from export pi
   for (const id of ['zoomOutBtn', 'zoomResetBtn', 'zoomInBtn']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  assert.match(html, /id="zoomControls" role="group" aria-label="Preview zoom controls"/);
+  assert.match(html, /id="zoomControls" role="group" aria-label="Preview zoom and rotation controls"/);
   assert.match(styles, /#canvasWrap \{[^}]*overflow: hidden;/);
   assert.match(script, /canvas\.style\.transform=`translate3d\(/);
   assert.match(script, /canvas\.addEventListener\('wheel',[\s\S]*?\{passive:false\}\)/);

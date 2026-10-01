@@ -347,7 +347,8 @@ test('video processing retains a 60s cap, WebCodecs fallback and frame progress'
   assert.match(script, /social\.videoArgs\(\{fps,duration:count\/fps,container,audio:false,output:segment\}\)/);
   assert.match(script, /typeof window\.VideoFrame==='function'/);
   assert.match(script, /frame=new VideoFrame\(videoEl/);
-  assert.match(script, /useWebCodecs=false;[\s\S]*?gl\.texImage2D\([\s\S]*?videoEl\)/);
+  assert.match(script, /useWebCodecs=false; uploadVideoTexture\(\)/);
+  assert.match(script, /else uploadVideoTexture\(\)/);
   assert.match(script, /Frame \$\{i\+1\}\/\$\{total\}/);
   assert.match(script, /cancelAnimationFrame\(animId\)/);
 });

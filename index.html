@@ -126,6 +126,12 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 #zoomControls button:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; z-index: 1; }
 #zoomControls button:disabled { opacity: .35; cursor: default; background: var(--bg); color: var(--text); }
 #zoomControls #zoomResetBtn { width: 56px; font: 500 10px 'JetBrains Mono',monospace; }
+#zoomControls #rotateMediaBtn { font-size: 21px; }
+#grainSeedRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--panel-border); }
+#grainSeedRow span { color: var(--text-dim2); font-size: 9px; line-height: 1.5; letter-spacing: .12em; text-transform: uppercase; }
+#randomizeGrainBtn { flex: none; min-height: 34px; padding: 0 10px; border: 1px solid var(--border-strong); background: transparent; color: var(--text); font-size: 9px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+#randomizeGrainBtn:hover,#randomizeGrainBtn:focus-visible { background: var(--text); color: var(--inverse); }
+#randomizeGrainBtn:disabled { opacity: .4; cursor: default; }
 #videoEl { display: none; }
 
 /* Flat lists and fine rules echo the portfolio's work and services sections. */
@@ -473,8 +479,9 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <div id="splitDivider" hidden><span class="splitBadge before">BEFORE</span><span class="splitBadge after">AFTER</span></div>
         <button type="button" id="maskDoneBtn" aria-label="Finish painting subject mask">Done painting ↗</button>
         <div id="beforeLabel">BEFORE</div>
-        <div id="zoomControls" role="group" aria-label="Preview zoom controls">
+        <div id="zoomControls" role="group" aria-label="Preview zoom and rotation controls">
           <span class="zoomInstructions" aria-hidden="true">Scroll to zoom · drag when zoomed</span>
+          <button type="button" id="rotateMediaBtn" aria-label="Rotate media 90 degrees clockwise" title="Rotate media 90° clockwise">↻</button>
           <button type="button" id="zoomOutBtn" aria-label="Zoom out" title="Zoom out">−</button>
           <button type="button" id="zoomResetBtn" aria-label="Reset preview zoom to 100%" title="Reset zoom to fit">100%</button>
           <button type="button" id="zoomInBtn" aria-label="Zoom in" title="Zoom in">+</button>
@@ -624,14 +631,15 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="grainControls"><i style="background:var(--text-dim)"></i> Film Grain <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><div class="sliderVal" id="valGrain">0</div><button type="button" class="effectToggle" data-toggle="grain" role="switch" aria-checked="true" aria-label="Film Grain effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button class="groupReset" data-reset="grain">Reset</button></div>
           </div>
-          <div class="mainSlider"><input type="range" id="sliderGrain" min="-100" max="100" value="0"></div>
+          <div class="mainSlider"><div class="subLabel">Amount <span>grain strength</span></div><input type="range" id="sliderGrain" min="-100" max="100" value="0" aria-label="Grain Amount"></div>
           <div class="subControls" id="grainControls">
-            <div class="subRow"><div class="subHead"><div class="subLabel">Size <span>clump</span></div><div class="subVal" id="valGrainSize">0</div></div><input class="subSlider" type="range" id="sliderGrainSize" min="-100" max="100" value="0"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Roughness <span>detail</span></div><div class="subVal" id="valGrainRough">0</div></div><input class="subSlider" type="range" id="sliderGrainRough" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Size <span>fine → coarse</span></div><div class="subVal" id="valGrainSize">0</div></div><input class="subSlider" type="range" id="sliderGrainSize" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Roughness <span>uniform → irregular</span></div><div class="subVal" id="valGrainRough">0</div></div><input class="subSlider" type="range" id="sliderGrainRough" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Speed <span>video only · photos stay still</span></div><div class="subVal" id="valGrainSpeed">0</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Color <span>mono → chroma</span></div><div class="subVal" id="valGrainColor">0</div></div><input class="subSlider" type="range" id="sliderGrainColor" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Luma Influence <span>midtones</span></div><div class="subVal" id="valGrainLuma">0</div></div><input class="subSlider" type="range" id="sliderGrainLuma" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>blur grain</span></div><div class="subVal" id="valGrainSoft">0</div></div><input class="subSlider" type="range" id="sliderGrainSoft" min="-100" max="100" value="0"></div>
+            <div id="grainSeedRow"><span>Static grain pattern<br>per photo</span><button type="button" id="randomizeGrainBtn">↻ Randomize</button></div>
           </div>
         </div>
 
@@ -803,7 +811,15 @@ let photos=[], activePhotoIndex=-1, currentPhoto=null, nextPhotoId=1;
 let videoSourceFile=null, videoObjectUrl=null, mediaBusy=false, exportBusy=false, cancelRequested=false, encodingVideo=false;
 let exportOptions={...social.DEFAULT_EXPORT}, cropEditing=false, cropDrag=null, splitPreview=false;
 let videoCrop={x:0.5,y:0.5}, videoTrim={start:0,end:0};
+let videoRotation=0, videoFrameCanvas=null, videoFrameContext=null, videoGrainSeed=randomGrainSeed();
 const disabledBeforeExport=new Map();
+function randomGrainSeed(){
+  const values=new Uint32Array(1);
+  if(globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(values);
+  else values[0]=Math.floor(Math.random()*0xffffffff);
+  return 1+(values[0]%65535);
+}
+function rotateCropPosition(position){ return {x:1-position.y,y:position.x}; }
 
 // Every slider runs from -100 to +100. Intensity sliders are signed [-1,1],
 // while the detail sliders map zero to a useful neutral shader setting.
@@ -1037,17 +1053,16 @@ in vec2 v_texCoord;
 uniform sampler2D u_base; uniform sampler2D u_bloom; uniform sampler2D u_hallation; uniform sampler2D u_subjectMask;
 uniform float u_ditherStrength; uniform float u_ditherSteps; uniform float u_ditherSize; uniform int u_ditherBackgroundOnly;
 uniform float u_bloomStrength; uniform float u_hallationStrength; uniform float u_bloomTint; uniform float u_bloomBlend; uniform float u_bloomAnam; uniform float u_hallFalloff;
-uniform float u_grainStrength; uniform float u_grainSize; uniform float u_grainSpeed; uniform float u_grainColor; uniform float u_grainRough; uniform float u_grainLuma; uniform float u_grainSoft;
+uniform float u_grainStrength; uniform float u_grainSize; uniform float u_grainSpeed; uniform float u_grainColor; uniform float u_grainRough; uniform float u_grainLuma; uniform float u_grainSoft; uniform float u_grainSeed;
 uniform float u_time; uniform vec2 u_resolution;
 uniform float u_exposure; uniform float u_contrast; uniform float u_saturation; uniform float u_temperature; uniform float u_vignStrength; uniform float u_vignSize;
 uniform float u_vibrance; uniform float u_fade; uniform float u_shadowTone; uniform float u_highlightTone; uniform float u_highlightTint;
 uniform sampler2D u_original; uniform int u_splitPreview;
 out vec4 outColor;
-float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y); }
-float noise(vec2 p){
-  vec2 i=floor(p); vec2 f=fract(p); f=f*f*(3.-2.*f);
-  float a=hash(i); float b=hash(i+vec2(1.,0.)); float c=hash(i+vec2(0.,1.)); float d=hash(i+vec2(1.,1.));
-  return mix(mix(a,b,f.x), mix(c,d,f.x), f.y);
+float grainHash(vec2 p){
+  p=fract(p*vec2(123.34,345.45)+vec2(u_grainSeed*0.013,u_grainSeed*0.071));
+  p+=dot(p,p+34.345);
+  return fract(p.x*p.y);
 }
 float orderedDither(vec2 pixel){
   const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
@@ -1125,17 +1140,23 @@ void main(){
   // The signed grain amount flips the noise pattern at negative values.
   if(abs(u_grainStrength)>0.001){
     float size=max(u_grainSize,0.5);
-    vec2 guv=v_texCoord*u_resolution/size;
+    vec2 pixel=v_texCoord*u_resolution;
     float t=u_time*u_grainSpeed;
-    guv+=vec2(t*7.3, t*5.9);
-    float n=noise(guv);
-    float n2=noise(guv*1.73+13.7);
-    float n3=noise(guv*3.1+7.3);
-    float grain = n*0.55 + n2*0.35 + n3*0.10*u_grainRough;
-    // softness: blur via mix with smooth noise
-    float nSmooth = mix(n, (n+n2)*0.5, u_grainSoft*0.6);
-    grain = mix(grain, nSmooth, u_grainSoft*0.4);
-    grain=(grain-0.5)*2.0;
+    vec2 cell=floor((pixel+vec2(t*7.3,t*5.9))/size);
+    float a=grainHash(cell);
+    float b=grainHash(cell+vec2(17.0,43.0));
+    float c=grainHash(cell+vec2(71.0,11.0));
+    float d=grainHash(cell+vec2(29.0,97.0));
+    // A four-sample distribution gives natural, less digital-looking particle variation.
+    float gaussian=(a+b+c+d-2.0)*0.82;
+    float irregular=(a*2.0-1.0)*0.82+(b*2.0-1.0)*0.18;
+    float roughness=clamp(u_grainRough,0.0,1.0);
+    float grain=mix(gaussian,irregular,roughness);
+    float clusters=grainHash(floor(cell*0.25)+vec2(53.0,19.0))*2.0-1.0;
+    grain*=mix(1.0,0.82+clusters*0.36,roughness);
+    float softNeighbour=(grainHash(cell+vec2(1.0,0.0))+grainHash(cell-vec2(1.0,0.0))+
+      grainHash(cell+vec2(0.0,1.0))+grainHash(cell-vec2(0.0,1.0))-2.0)*0.41;
+    grain=mix(grain,softNeighbour,clamp(u_grainSoft,0.0,1.0)*0.45);
     float lumaMask = 1.0 - abs(lum-0.5)* (1.2 - u_grainLuma*0.5);
     lumaMask = mix(1.0, lumaMask, u_grainLuma);
     lumaMask=clamp(lumaMask,0.2,1.0);
@@ -1337,6 +1358,7 @@ function render(timeMs){
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainRough'),params.grainRough);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainLuma'),params.grainLuma);
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSoft'),params.grainSoft);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_grainSeed'),isVideo ? videoGrainSeed : (currentPhoto?.grainSeed??1));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_time'),isVideo ? (timeMs??performance.now())*0.001 : 0);
   gl.uniform2f(gl.getUniformLocation(progComposite,'u_resolution'),canvas.width,canvas.height);
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,subjectMaskTexture);
@@ -1368,7 +1390,16 @@ function uploadVideoTexture(){
   if(videoEl.readyState<2) return;
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
+  const rotation=((videoRotation%360)+360)%360;
+  if(!rotation){ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl); return; }
+  const sourceW=videoEl.videoWidth, sourceH=videoEl.videoHeight;
+  const swapped=rotation===90||rotation===270, width=swapped?sourceH:sourceW, height=swapped?sourceW:sourceH;
+  if(!videoFrameCanvas){ videoFrameCanvas=document.createElement('canvas'); videoFrameContext=videoFrameCanvas.getContext('2d'); }
+  if(videoFrameCanvas.width!==width || videoFrameCanvas.height!==height){ videoFrameCanvas.width=width; videoFrameCanvas.height=height; }
+  videoFrameContext.setTransform(1,0,0,1,0,0); videoFrameContext.clearRect(0,0,width,height);
+  videoFrameContext.translate(width/2,height/2); videoFrameContext.rotate(rotation*Math.PI/180);
+  videoFrameContext.drawImage(videoEl,-sourceW/2,-sourceH/2,sourceW,sourceH);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoFrameCanvas);
 }
 function startLoop(){
   if(animId!==null) cancelAnimationFrame(animId);
@@ -1650,17 +1681,38 @@ function restorePhotoMask(item,img,w,h){
   setMaskStatus(saved.status); rebuildSubjectMask(); updateMaskTools();
   if(ditherScope==='background' && !autoSubjectMask && !maskManuallyCleared && !maskAutoFailed && !maskDetectionPending) detectPerson();
 }
+function rotateCanvas(source,width,height,degrees){
+  const rotation=((degrees%360)+360)%360;
+  if(!rotation) return source;
+  const swapped=rotation===90 || rotation===270;
+  const output=document.createElement('canvas');
+  output.width=swapped?height:width; output.height=swapped?width:height;
+  const ctx=output.getContext('2d');
+  ctx.translate(output.width/2,output.height/2); ctx.rotate(rotation*Math.PI/180);
+  ctx.drawImage(source,-width/2,-height/2,width,height);
+  return output;
+}
+function rotatePhotoMask(saved,degrees){
+  if(!saved) return;
+  saved.canvas=rotateCanvas(saved.canvas,saved.canvas.width,saved.canvas.height,degrees);
+  if(saved.auto) saved.auto=rotateCanvas(saved.auto,saved.auto.width,saved.auto.height,degrees);
+  saved.strokes=saved.strokes.map(stroke=>({...stroke,points:stroke.points.map(point=>({x:1-point.y,y:point.x}))}));
+}
 function uploadPhoto(item,img,resetView=true){
   const maximum=Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE),gl.getParameter(gl.MAX_RENDERBUFFER_SIZE));
   const scale=Math.min(1,maximum/Math.max(img.naturalWidth,img.naturalHeight));
-  const w=Math.max(1,Math.round(img.naturalWidth*scale)), h=Math.max(1,Math.round(img.naturalHeight*scale));
-  item.originalWidth=img.naturalWidth; item.originalHeight=img.naturalHeight; item.width=w; item.height=h;
-  let source=img;
+  const baseW=Math.max(1,Math.round(img.naturalWidth*scale)), baseH=Math.max(1,Math.round(img.naturalHeight*scale));
+  item.originalWidth=img.naturalWidth; item.originalHeight=img.naturalHeight;
+  let baseSource=img;
   if(scale<1){
-    source=document.createElement('canvas'); source.width=w; source.height=h;
-    source.getContext('2d').drawImage(img,0,0,w,h);
+    baseSource=document.createElement('canvas'); baseSource.width=baseW; baseSource.height=baseH;
+    baseSource.getContext('2d').drawImage(img,0,0,baseW,baseH);
     showToast('Photo resized to fit this device’s GPU limit',4500);
   }
+  const rotation=((item.rotation||0)%360+360)%360, swapped=rotation===90||rotation===270;
+  const w=swapped?baseH:baseW, h=swapped?baseW:baseH;
+  const source=rotateCanvas(baseSource,baseW,baseH,rotation);
+  item.width=w; item.height=h; item.grainSeed=item.grainSeed||randomGrainSeed();
   if(canvas.width!==w || canvas.height!==h || !fboSharpened){ canvas.width=w; canvas.height=h; recreateFBOs(w,h); }
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
@@ -1672,11 +1724,12 @@ function uploadPhoto(item,img,resetView=true){
   $('downloadBtn').innerHTML='⤓ Original-size PNG';
   updateSocialUI();
 }
-async function createThumbnail(img){
+async function createThumbnail(img,rotation=0){
   const thumb=document.createElement('canvas'), scale=Math.min(1,160/Math.max(img.naturalWidth,img.naturalHeight));
   thumb.width=Math.max(1,Math.round(img.naturalWidth*scale)); thumb.height=Math.max(1,Math.round(img.naturalHeight*scale));
   thumb.getContext('2d').drawImage(img,0,0,thumb.width,thumb.height);
-  const blob=await canvasBlob(thumb,'image/jpeg',0.8);
+  const oriented=rotateCanvas(thumb,thumb.width,thumb.height,rotation);
+  const blob=await canvasBlob(oriented,'image/jpeg',0.8);
   return URL.createObjectURL(blob);
 }
 function clearPhotos(){
@@ -1718,7 +1771,7 @@ async function handleFiles(fileList,{append=false}={}){
   updateSocialUI();
   try{
     for(let i=0;i<chosen.length;i++){
-      const item={id:nextPhotoId++,file:chosen[i],blob:chosen[i],converted:false,crop:{x:0.5,y:0.5},mask:null,thumbUrl:null};
+      const item={id:nextPhotoId++,file:chosen[i],blob:chosen[i],converted:false,rotation:0,grainSeed:randomGrainSeed(),crop:{x:0.5,y:0.5},mask:null,thumbUrl:null};
       try{
         const img=await decodePhoto(item);
         if(token!==fileLoadId) return;
@@ -1768,6 +1821,7 @@ async function handleVideoFile(file){
     if(!(Number.isFinite(dur) && dur>0 && w>0 && h>0)) throw new Error('Video metadata is unavailable');
     unloadVideo(); clearPhotos(); videoEl.replaceWith(incoming); videoEl=incoming; incoming.id='videoEl';
     videoSourceFile=file; videoObjectUrl=url; committed=true; wireVideoEvents();
+    videoRotation=0; videoGrainSeed=randomGrainSeed();
     canvas.width=w; canvas.height=h; recreateFBOs(w,h); uploadVideoTexture();
     isVideo=true; hasContent=true; videoCrop={x:0.5,y:0.5}; videoTrim=social.trimRange(dur,0,Math.min(dur,60));
     clearSubjectMask(true); setDitherScope('full');
@@ -2339,6 +2393,8 @@ function bringPreviewIntoView(){
 }
 function updateSocialUI(){
   const locked=mediaBusy||exportBusy, ratio=social.cropRatio(exportOptions);
+  $('rotateMediaBtn').disabled=!hasContent||locked;
+  $('randomizeGrainBtn').disabled=!hasContent||locked;
   $('hdrDownloadBtn').disabled=locked;
   $('hdrDownloadBtn').textContent=isVideo?'⤓ Export Reel':'⤓ Export';
   $('hdrDownloadBtn').title=isVideo?`Export the selected ${(videoTrim.end-videoTrim.start).toFixed(1)}s video clip`:'Open photo export settings';
@@ -2372,6 +2428,47 @@ function updateSocialUI(){
   $('mainArea').classList.toggle('hasPhotos',photos.length>0&&!isVideo);
   document.querySelectorAll('.photoThumb').forEach(btn=>{ btn.disabled=locked; });
   updateCropOverlay(); updateSplitDivider();
+}
+$('randomizeGrainBtn').addEventListener('click',()=>{
+  if(!hasContent||mediaBusy||exportBusy) return;
+  let seed=randomGrainSeed();
+  const previous=isVideo?videoGrainSeed:currentPhoto?.grainSeed;
+  if(seed===previous) seed=seed%65535+1;
+  if(isVideo) videoGrainSeed=seed;
+  else if(currentPhoto) currentPhoto.grainSeed=seed;
+  render(performance.now()); showToast('Grain pattern randomized · photo grain stays still');
+});
+$('rotateMediaBtn').addEventListener('click',rotateActiveMedia);
+async function rotateActiveMedia(){
+  if(!hasContent||mediaBusy||exportBusy) return;
+  if(isVideo){
+    videoRotation=(videoRotation+90)%360; videoCrop=rotateCropPosition(videoCrop);
+    const swapped=videoRotation===90||videoRotation===270;
+    canvas.width=swapped?videoEl.videoHeight:videoEl.videoWidth;
+    canvas.height=swapped?videoEl.videoWidth:videoEl.videoHeight;
+    recreateFBOs(canvas.width,canvas.height); uploadVideoTexture();
+    resetPreviewZoom(); render(videoEl.currentTime*1000); updateSocialUI();
+    showToast(`Video rotated ${videoRotation}° clockwise`); return;
+  }
+  if(!currentPhoto) return;
+  const item=currentPhoto;
+  mediaBusy=true; updateSocialUI();
+  try{
+    const img=await decodePhoto(item);
+    if(currentPhoto!==item) return;
+    saveActivePhotoMask();
+    item.mask && rotatePhotoMask(item.mask,90);
+    item.rotation=((item.rotation||0)+90)%360;
+    item.crop=rotateCropPosition(item.crop);
+    uploadPhoto(item,img,false);
+    resetPreviewZoom(); render(performance.now());
+    const oldThumb=item.thumbUrl;
+    item.thumbUrl=await createThumbnail(img,item.rotation);
+    if(oldThumb) URL.revokeObjectURL(oldThumb);
+    renderPhotoStrip(); updateSocialUI();
+    showToast(`Photo rotated ${item.rotation}° clockwise`);
+  }catch(error){ console.error(error); showToast(`Could not rotate this photo: ${error.message}`,5000); }
+  finally{ mediaBusy=false; updateSocialUI(); }
 }
 function renderPhotoStrip(){
   const strip=$('carouselStrip'), list=$('photoThumbnails');
@@ -2780,7 +2877,7 @@ async function processVideo(){
   const view=beginExport(`Exporting ${container.toUpperCase()} / Reel`), files=new Set(), segments=[];
   // Two-second sections bound raw-frame memory, even for 60s full-HD clips with heavy grain.
   const CHUNK_FRAMES=48;
-  let ff=null, useWebCodecs=typeof window.VideoFrame==='function', mountedSource=false, sourceDir=false, audioSource='source-video';
+  let ff=null, useWebCodecs=videoRotation===0&&typeof window.VideoFrame==='function', mountedSource=false, sourceDir=false, audioSource='source-video';
   const writeFile=async(n,d)=>{ files.add(n); if(ff.writeFile) await ff.writeFile(n,d); else ff.FS('writeFile',n,d); };
   const readFile=async(n)=>ff.readFile?ff.readFile(n):ff.FS('readFile',n);
   const deleteFile=async(n)=>{ try{ if(ff.deleteFile) await ff.deleteFile(n); else ff.FS('unlink',n); files.delete(n); }catch(error){} };
@@ -2807,17 +2904,16 @@ async function processVideo(){
       for(let j=0;j<count;j++){
         checkExportCancelled();
         const i=chunkStart+j, t=Math.min(trim.end-0.0001,trim.start+i/fps); await seekVideo(t); checkExportCancelled();
-        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
         if(useWebCodecs){
+          gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
           let frame=null;
           try{
             frame=new VideoFrame(videoEl,{timestamp:Math.round(t*1e6)});
             gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,frame);
             if(gl.getError()!==gl.NO_ERROR) throw new Error('VideoFrame texture upload unsupported');
-          }catch(error){
-            useWebCodecs=false; gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
-          }finally{ frame?.close(); }
-        }else gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl);
+          }catch(error){ useWebCodecs=false; uploadVideoTexture(); }
+          finally{ frame?.close(); }
+        }else uploadVideoTexture();
         const output=makeExportCanvas(options,position,true), blob=await canvasBlob(output,'image/jpeg',0.98);
         checkExportCancelled(); await writeFile(`frame_${String(j).padStart(4,'0')}.jpg`,new Uint8Array(await blob.arrayBuffer()));
         const pct=Math.round((i+1)/total*90); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%';
