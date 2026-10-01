@@ -82,7 +82,9 @@ test('protect and erase brushes track image coordinates through zoom, including 
 test('still-photo grain remains frozen despite Speed; video grain can still animate', () => {
   assert.match(script, /'u_grainSpeed'\),isVideo \? params\.grainSpeed : 0/);
   assert.match(script, /'u_time'\),isVideo \? \(timeMs\?\?performance\.now\(\)\)\*0\.001 : 0/);
-  assert.match(composite, /float t=u_time\*u_grainSpeed/);
+  assert.match(composite, /float frameIndex=floor\(u_time\*240\.0\)/);
+  assert.match(composite, /float frameSeed=u_grainSeed\+frameIndex\*\(71\.731\+u_grainSpeed\*13\.0\)/);
+  assert.doesNotMatch(composite, /pixel\+vec2\(t\*7\.3,t\*5\.9\)/);
   assert.match(html, /Speed <span>video only · photos stay still<\/span>/);
 });
 

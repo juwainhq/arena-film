@@ -1059,10 +1059,17 @@ uniform float u_exposure; uniform float u_contrast; uniform float u_saturation; 
 uniform float u_vibrance; uniform float u_fade; uniform float u_shadowTone; uniform float u_highlightTone; uniform float u_highlightTint;
 uniform sampler2D u_original; uniform int u_splitPreview;
 out vec4 outColor;
-float grainHash(vec2 p){
-  p=fract(p*vec2(123.34,345.45)+vec2(u_grainSeed*0.013,u_grainSeed*0.071));
+float grainHash(vec2 p,float seed){
+  p=fract(p*vec2(123.34,345.45)+vec2(seed*0.013,seed*0.071));
   p+=dot(p,p+34.345);
   return fract(p.x*p.y);
+}
+float grainValueNoise(vec2 p,float seed){
+  vec2 cell=floor(p), local=fract(p);
+  local=local*local*(3.0-2.0*local);
+  float a=grainHash(cell,seed), b=grainHash(cell+vec2(1.0,0.0),seed);
+  float c=grainHash(cell+vec2(0.0,1.0),seed), d=grainHash(cell+vec2(1.0,1.0),seed);
+  return mix(mix(a,b,local.x),mix(c,d,local.x),local.y)*2.0-1.0;
 }
 float orderedDither(vec2 pixel){
   const float bayer[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
@@ -1137,35 +1144,42 @@ void main(){
     lum=dot(col,vec3(0.2126,0.7152,0.0722));
   }
 
-  // The signed grain amount flips the noise pattern at negative values.
+  // Signed Amount inverts the same film-like pattern when negative.
   if(abs(u_grainStrength)>0.001){
     float size=max(u_grainSize,0.5);
-    vec2 pixel=v_texCoord*u_resolution;
-    float t=u_time*u_grainSpeed;
-    vec2 cell=floor((pixel+vec2(t*7.3,t*5.9))/size);
-    float a=grainHash(cell);
-    float b=grainHash(cell+vec2(17.0,43.0));
-    float c=grainHash(cell+vec2(71.0,11.0));
-    float d=grainHash(cell+vec2(29.0,97.0));
-    // A four-sample distribution gives natural, less digital-looking particle variation.
-    float gaussian=(a+b+c+d-2.0)*0.82;
-    float irregular=(a*2.0-1.0)*0.82+(b*2.0-1.0)*0.18;
+    vec2 grainCoord=(v_texCoord*u_resolution)/size;
     float roughness=clamp(u_grainRough,0.0,1.0);
-    float grain=mix(gaussian,irregular,roughness);
-    float clusters=grainHash(floor(cell*0.25)+vec2(53.0,19.0))*2.0-1.0;
-    grain*=mix(1.0,0.82+clusters*0.36,roughness);
-    float softNeighbour=(grainHash(cell+vec2(1.0,0.0))+grainHash(cell-vec2(1.0,0.0))+
-      grainHash(cell+vec2(0.0,1.0))+grainHash(cell-vec2(0.0,1.0))-2.0)*0.41;
-    grain=mix(grain,softNeighbour,clamp(u_grainSoft,0.0,1.0)*0.45);
-    float lumaMask = 1.0 - abs(lum-0.5)* (1.2 - u_grainLuma*0.5);
-    lumaMask = mix(1.0, lumaMask, u_grainLuma);
-    lumaMask=clamp(lumaMask,0.2,1.0);
+    float softness=clamp(u_grainSoft,0.0,1.0);
+    // Quantize time into frame keys. Hashing a new seed per frame avoids a drifting/static pattern.
+    // Speed changes the seed stride; the photo path supplies time and speed as zero.
+    float frameIndex=floor(u_time*240.0);
+    float frameSeed=u_grainSeed+frameIndex*(71.731+u_grainSpeed*13.0);
+
+    // Layer fine, medium, and coarse value-noise octaves; shared coarse structure forms gentle halide-like clumps.
+    float fine=grainValueNoise(grainCoord,frameSeed+3.17);
+    float medium=grainValueNoise(grainCoord*0.5+vec2(13.7,31.9),frameSeed+29.41);
+    float coarse=grainValueNoise(grainCoord*0.25+vec2(47.2,7.3),frameSeed+67.83);
+    float fineWeight=mix(0.62,0.48,softness);
+    float mediumWeight=mix(0.27,0.34,softness);
+    float coarseWeight=1.0-fineWeight-mediumWeight;
+    float grainBase=fine*fineWeight+medium*mediumWeight+coarse*coarseWeight;
+    float clumpEnvelope=mix(1.0,0.78+coarse*0.44,roughness);
+    float monoGrain=grainBase*clumpEnvelope;
+
+    // Color emulsions decorrelate their channel noise; blue carries slightly stronger grain.
+    float redGrain=mix(grainBase,grainValueNoise(grainCoord,frameSeed+109.7),0.68)*clumpEnvelope;
+    float greenGrain=mix(grainBase,grainValueNoise(grainCoord,frameSeed+233.9),0.68)*clumpEnvelope;
+    float blueGrain=mix(grainBase,grainValueNoise(grainCoord,frameSeed+419.3),0.68)*clumpEnvelope;
+    vec3 monochrome=vec3(monoGrain);
+    vec3 chromatic=vec3(redGrain*0.88,greenGrain,blueGrain*1.28);
+    vec3 grainNoise=mix(monochrome,chromatic,clamp(u_grainColor,0.0,1.0));
+
+    // Film grain is most visible in midtones and falls away toward both tonal extremes.
+    float grainLuma=clamp(dot(col,vec3(0.2126,0.7152,0.0722)),0.0,1.0);
+    float lumaCurve=0.35+0.35*clamp(u_grainLuma,0.0,1.0);
+    float lumaMask=1.0-abs(grainLuma*2.0-1.0)*lumaCurve;
     float intensity=u_grainStrength*0.22*lumaMask;
-    vec3 grainCol=vec3(grain);
-    vec3 grainChroma=vec3(grain*1.1, grain*0.9, grain*1.2);
-    grainChroma.r+=grain*0.14; grainChroma.b-=grain*0.09;
-    vec3 finalGrain=mix(grainCol, grainChroma, u_grainColor);
-    col+=finalGrain*intensity;
+    col+=grainNoise*intensity;
   }
 
   // Zero is neutral; negative strength brightens the edges instead.
