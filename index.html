@@ -4512,7 +4512,7 @@ async function processVideo(multiClipPlan=null){
     const data=await readFile(outputName), out=new Blob([data],{type:container==='mp4'?'video/mp4':'video/webm'});
     const filename=`${social.safeFilename(videoSourceFile?.name||'reel')}-${dur.toFixed(1)}s.${container}`;
     downloadBlob(out,filename);
-    $('videoExportStatus').textContent=`Download ready · ${dur.toFixed(1)}s ${container.toUpperCase()} · ${outputSize.width} × ${outputSize.height}.${audioRequested&&!keepAudio?' Original audio is omitted for gaps or transitions.':''} Download started automatically.`;
+    $('videoExportStatus').textContent=`Download ready · ${dur.toFixed(1)}s ${container.toUpperCase()} · ${outputSize.width} × ${outputSize.height}.${audioRequested&&!keepAudio?' Original audio is omitted for gaps, transitions, or multiple source clips.':''} Download started automatically.`;
     showToast('Download ready — saving video',2600);
   }catch(error){
     if(cancelRequested || error.name==='AbortError') showToast('Video export cancelled');
