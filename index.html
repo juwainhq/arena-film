@@ -483,7 +483,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #app[data-workspace="video"] #mainArea { grid-column: 1; grid-row: 1; min-height: 0; padding: 18px 28px 8px; align-items: stretch; justify-content: flex-start; gap: 9px; }
 #app[data-workspace="video"] #previewStage { position: relative; display: flex; flex: 1; width: 100%; min-height: 0; }
 #app[data-workspace="video"] #canvasWrap { flex: 1; width: 100%; height: 100%; min-height: 0; }
-#app[data-workspace="video"] #sidebar { grid-column: 2; grid-row: 1 / 3; width: 390px; min-width: 340px; padding: 18px 22px 24px; gap: 16px; border-left: 1px solid var(--panel-border); border-right: 0; }
+#app[data-workspace="video"] #sidebar { grid-column: 2; grid-row: 1; width: 390px; min-width: 340px; padding: 18px 22px 24px; gap: 16px; border-left: 1px solid var(--panel-border); border-right: 0; }
 #app[data-workspace="video"] #sidebarControls { gap: 14px; }
 #app[data-workspace="video"] #sidebarCollapseToggle { display: none !important; }
 #app[data-workspace="video"] #effectsWrap .effectGroup { display: block; }
@@ -760,7 +760,7 @@ header #backToDropBtn[hidden] { display: none !important; }
 @media (min-width: 768px) {
   #app[data-workspace="video"] #content { display: grid; grid-template-columns: minmax(0,1fr) 390px; grid-template-rows: minmax(0,1fr) 120px; }
   #app[data-workspace="video"] #mainArea { grid-column: 1; grid-row: 1; min-height: 0; padding: 18px 28px 8px; align-items: stretch; justify-content: flex-start; gap: 9px; }
-  #app[data-workspace="video"] #sidebar { grid-column: 2; grid-row: 1 / 3; width: 390px; min-width: 340px; padding: 18px 22px 24px; border-left: 1px solid var(--panel-border); border-right: 0; }
+  #app[data-workspace="video"] #sidebar { grid-column: 2; grid-row: 1; width: 390px; min-width: 340px; padding: 18px 22px 24px; border-left: 1px solid var(--panel-border); border-right: 0; }
   #app[data-workspace="video"] #editorTimeline { grid-column: 1; grid-row: 2; display: flex; min-height: 0; flex-direction: column; gap: 5px; padding: 7px 20px 9px; }
 }
 @media (max-width: 767px) {
@@ -867,22 +867,21 @@ body[data-mode="empty"] #app #timeline-module { flex: none; width: 100%; height:
 
 /* Keep shortcut keycaps out of sidebar section flows; the footer is their only inline home. */
 #shortcuts,#cropPanelToggle > kbd,#downloadBtn > kbd,#beforeAfterBtn > kbd { display: none !important; }
-#shortcut-footer { position: fixed; left: 18px; bottom: 10px; z-index: 18; display: none; align-items: center; flex-wrap: wrap; gap: 6px 16px; max-width: calc(100vw - 36px); padding: 6px 9px; overflow: hidden; border: 1px solid var(--panel-border); background: var(--bg); color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .08em; white-space: nowrap; pointer-events: none; }
+#shortcut-footer.shortcuts-bar { position: relative; z-index: 0; display: flex; flex: none; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 16px; width: 100%; min-height: 26px; padding: 5px 9px; overflow: hidden; border-top: 1px solid var(--panel-border); background: var(--bg); color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .08em; white-space: nowrap; pointer-events: none; }
 #shortcut-footer span { display: flex; gap: 5px; }
 #shortcut-footer b { color: var(--text-dim); font-weight: 500; }
-body[data-mode="photo"] #shortcut-footer { display: flex; }
 @media (max-width: 600px) {
-  #shortcut-footer { left: 8px; bottom: 8px; gap: 8px; max-width: calc(100vw - 16px); font-size: 7px; }
+  #shortcut-footer.shortcuts-bar { gap: 8px; font-size: 7px; }
 }
 
 /* Multi-clip editor styling is namespaced to mtl- classes; legacy timeline nodes remain mounted. */
-body[data-mode="photo"] #app #content #multi-timeline { display: none !important; }
-#multi-timeline { display: none; }
-#multi-timeline[hidden] { display: none !important; }
-body[data-mode="video"] #app #content #multi-timeline:not([hidden]) { display: flex; }
-#app[data-workspace="video"] #content { grid-template-rows: minmax(0,1fr) 238px; }
+body[data-mode="photo"] #app #content .mtl-shell { display: none !important; }
+.mtl-shell { display: none; }
+.mtl-shell[hidden] { display: none !important; }
+body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; }
+#app[data-workspace="video"] #content { grid-template-rows: minmax(0,1fr) 220px; }
 #app[data-workspace="video"] #timeline-module,#app[data-workspace="video"] #editorTimeline { display: none !important; }
-#app[data-workspace="video"] #multi-timeline { grid-column: 1; grid-row: 2; min-width: 0; min-height: 0; flex-direction: column; gap: 4px; padding: 6px 14px 8px; overflow: hidden; border-top: 1px solid var(--panel-border); background: var(--bg); }
+#app[data-workspace="video"] #content > .mtl-shell { grid-column: 1 / -1; grid-row: 2; width: 100%; height: 220px; min-width: 0; min-height: 0; flex-direction: column; gap: 4px; padding: 5px 14px 7px; overflow: hidden; border-top: 1px solid var(--panel-border); background: var(--bg); }
 .mtl-media-row { display: flex; flex: none; align-items: center; gap: 8px; min-height: 39px; overflow: hidden; }
 .mtl-media-heading { display: flex; flex: none; align-items: center; gap: 8px; width: 108px; color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .1em; }
 .mtl-media-heading button,.mtl-toolbar button { min-height: 23px; padding: 3px 7px; border: 1px solid var(--panel-border); background: transparent; color: var(--text); font: 9px 'JetBrains Mono',monospace; cursor: pointer; white-space: nowrap; }
@@ -896,18 +895,23 @@ body[data-mode="video"] #app #content #multi-timeline:not([hidden]) { display: f
 .mtl-toolbar button:disabled { opacity: .38; cursor: not-allowed; }
 .mtl-tool-spacer { flex: 1; }
 .mtl-toolbar output { margin: 0 4px; color: var(--text-dim); font: 8px 'JetBrains Mono',monospace; white-space: nowrap; }
-.mtl-ruler-scroll { flex: none; height: 16px; margin-left: 58px; overflow: hidden; }
+.mtl-toolbar input[type="range"] { width: 76px; height: 18px; margin: 0 2px; accent-color: var(--accent); cursor: ew-resize; }
+.mtl-ruler-scroll { flex: none; height: 16px; width: calc(100% - 58px); margin-left: 58px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; touch-action: pan-x; }
+.mtl-ruler-scroll::-webkit-scrollbar { display: none; }
 .mtl-ruler { position: relative; height: 16px; }
 .mtl-ruler-tick { position: absolute; top: 0; height: 14px; border-left: 1px solid var(--panel-border); color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; }
 .mtl-ruler-tick span { position: absolute; top: 1px; left: 3px; white-space: nowrap; }
-.mtl-scroll { position: relative; flex: 1 1 auto; min-height: 92px; overflow: auto hidden; scrollbar-width: thin; scrollbar-color: var(--text-dim2) transparent; touch-action: pan-x; user-select: none; }
-.mtl-canvas { position: relative; min-width: 100%; height: 100%; }
-.mtl-track { position: relative; display: grid; grid-template-columns: 58px minmax(0,1fr); align-items: stretch; min-height: 30px; border-top: 1px solid var(--panel-border); }
-.mtl-video-row { height: 42%; min-height: 39px; }
-.mtl-overlay-row { height: 34%; min-height: 31px; }
-.mtl-audio-row { height: 24%; min-height: 23px; }
-.mtl-track-name { display: flex; align-items: center; padding-left: 6px; color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; letter-spacing: .09em; }
-.mtl-track-content { position: relative; min-width: 0; height: 100%; overflow: hidden; background: var(--soft-bg); border-left: 1px solid var(--panel-border); }
+.mtl-ruler-playhead { position: absolute; z-index: 8; top: 0; bottom: 0; width: 2px; background: var(--accent); cursor: ew-resize; touch-action: none; }
+.mtl-ruler-playhead::before { position: absolute; top: 0; left: -4px; width: 10px; height: 8px; content: ''; background: var(--accent); clip-path: polygon(0 0,100% 0,50% 100%); }
+.mtl-scroll { position: relative; flex: 1 1 auto; min-height: 80px; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--text-dim2) transparent; touch-action: pan-x pan-y; user-select: none; }
+.mtl-canvas { position: relative; min-width: 100%; min-height: 100%; height: auto; }
+.mtl-track-stack { display: contents; }
+.mtl-track { position: relative; display: grid; grid-template-columns: 58px minmax(0,1fr); align-items: stretch; width: 100%; min-height: 31px; border-top: 1px solid var(--panel-border); }
+.mtl-video-row,.mtl-photo-row { min-height: 34px; }
+.mtl-audio-row { min-height: 27px; }
+.mtl-track[hidden] { display: none !important; }
+.mtl-track-name { position: sticky; z-index: 6; left: 0; display: flex; align-items: center; width: 58px; padding-left: 6px; border-right: 1px solid var(--panel-border); background: var(--bg); color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; letter-spacing: .09em; }
+.mtl-track-content { position: relative; min-width: 0; height: 100%; min-height: 30px; overflow: hidden; background: var(--soft-bg); border-left: 1px solid var(--panel-border); }
 .mtl-clip { position: absolute; top: 2px; bottom: 2px; overflow: hidden; border: 1px solid rgba(255,255,255,.45); background: #222; color: #fff; cursor: grab; }
 .mtl-clip.mtl-selected { border: 2px solid var(--accent); box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
 .mtl-clip img { width: 100%; height: 100%; object-fit: cover; opacity: .8; pointer-events: none; }
@@ -919,8 +923,8 @@ body[data-mode="video"] #app #content #multi-timeline:not([hidden]) { display: f
 .mtl-transition { position: absolute; z-index: 5; top: 50%; width: 18px; height: 18px; min-height: 0; padding: 0; transform: translate(-50%,-50%); border: 1px solid var(--accent); border-radius: 50%; background: var(--bg); color: var(--accent); font-size: 10px; cursor: pointer; }
 .mtl-wave { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 1px; overflow: hidden; opacity: .7; pointer-events: none; }
 .mtl-wave i { flex: 1 1 0; min-width: 1px; max-width: 4px; background: var(--text-dim); }
-.mtl-playhead { position: absolute; z-index: 8; top: 0; bottom: 0; width: 1px; background: var(--accent); box-shadow: 0 0 3px #000; pointer-events: none; }
-.mtl-playhead::before { position: absolute; top: 0; left: -4px; width: 9px; height: 8px; content: ''; background: var(--accent); clip-path: polygon(0 0,100% 0,50% 100%); }
+.mtl-playhead { position: absolute; z-index: 5; top: 0; bottom: 0; width: 2px; background: var(--accent); box-shadow: 0 0 3px #000; cursor: ew-resize; pointer-events: auto; touch-action: none; }
+.mtl-playhead::before { position: absolute; top: 0; left: -4px; width: 10px; height: 8px; content: ''; background: var(--accent); clip-path: polygon(0 0,100% 0,50% 100%); }
 .mtl-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; pointer-events: none; }
 .mtl-empty[hidden] { display: none !important; }
 .mtl-transition-popover,.mtl-context-menu { position: absolute; z-index: 20; display: flex; flex-direction: column; gap: 3px; min-width: 150px; padding: 7px; border: 1px solid var(--panel-border); background: var(--bg); box-shadow: 0 10px 34px var(--shadow); }
@@ -928,14 +932,13 @@ body[data-mode="video"] #app #content #multi-timeline:not([hidden]) { display: f
 .mtl-transition-popover b { padding: 3px; color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; letter-spacing: .1em; }
 .mtl-transition-popover button,.mtl-context-menu button { min-height: 24px; padding: 3px 6px; border: 1px solid transparent; background: transparent; color: var(--text); font: 8px 'JetBrains Mono',monospace; text-align: left; cursor: pointer; }
 .mtl-transition-popover button:hover,.mtl-transition-popover button[aria-pressed="true"],.mtl-context-menu button:hover { border-color: var(--panel-border); color: var(--accent); }
-.mtl-preview-overlay { position: absolute; z-index: 9; inset: 0; display: grid; place-items: center; overflow: hidden; pointer-events: none; }
-.mtl-preview-overlay img,.mtl-preview-overlay video { width: 100%; height: 100%; object-fit: contain; }
+.mtl-preview-overlay { position: absolute; z-index: 9; inset: 0; display: block; overflow: hidden; pointer-events: none; }
+.mtl-preview-overlay img,.mtl-preview-overlay video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .mtl-preview-overlay[hidden] { display: none !important; }
-body[data-mode="video"] #shortcut-footer { display: none; }
 @media (max-width: 767px) {
-  #app[data-workspace="video"] #mainArea { inset: 0 0 290px; padding: 8px 12px 4px; }
+  #app[data-workspace="video"] #mainArea { inset: 0 0 272px; padding: 8px 12px 4px; }
   #app[data-workspace="video"] #videoPlaybackControls { bottom: 0; }
-  #app[data-workspace="video"] #multi-timeline { position: absolute; z-index: 13; right: 0; bottom: 52px; left: 0; display: flex; width: 100%; height: 238px; padding: 5px 8px 7px; }
+  #app[data-workspace="video"] #content > .mtl-shell { position: absolute; z-index: 13; right: 0; bottom: 0; left: 0; display: flex; width: 100%; height: 220px; padding: 5px 8px 7px; }
   .mtl-media-heading { width: 96px; gap: 4px; font-size: 7px; }
   .mtl-media-card { width: 102px; }
   .mtl-toolbar { gap: 3px; }
@@ -1374,38 +1377,40 @@ body[data-mode="video"] #shortcut-footer { display: none; }
       </div>
     </section>
     <section id="multi-timeline" class="video-only mtl-shell" hidden aria-label="Multi-clip editing timeline">
-      <div class="mtl-media-row"><div class="mtl-media-heading"><span>MEDIA POOL</span><button type="button" id="mtl-add-clip">＋ Add clip</button><input type="file" id="mtl-file-input" accept="image/*,video/*" multiple hidden></div><div id="mtl-media-pool" class="mtl-media-pool" aria-label="Imported media clips"></div></div>
+      <div class="mtl-media-row"><div class="mtl-media-heading"><span>MEDIA POOL</span><button type="button" id="mtl-add-clip">＋ Add</button><input type="file" id="mtl-file-input" accept="image/*,video/*" multiple hidden></div><div id="mtl-media-pool" class="mtl-media-pool" aria-label="Imported media clips"></div></div>
       <div class="mtl-toolbar" role="toolbar" aria-label="Multi-clip timeline tools">
-        <button type="button" data-mtl-action="cut">✂ Cut</button><button type="button" data-mtl-action="delete">▣ Delete</button><button type="button" data-mtl-action="undo" disabled>↩ Undo</button><button type="button" data-mtl-action="redo" disabled>↪ Redo</button><span class="mtl-tool-spacer"></span><button type="button" data-mtl-action="zoom-out" aria-label="Zoom out">−</button><output id="mtl-zoom-label">1.0×</output><button type="button" data-mtl-action="zoom-in" aria-label="Zoom in">+</button><output id="mtl-timecode">0:00 / 0:00</output><output id="mtl-selection-status">Select a clip</output>
+        <button type="button" id="mtl-play-pause" data-mtl-action="play-pause" aria-label="Play or pause">▶</button><button type="button" data-mtl-action="step-back" aria-label="Back five seconds">−5s</button><button type="button" data-mtl-action="step-forward" aria-label="Forward five seconds">+5s</button><button type="button" data-mtl-action="cut">✂ Split</button><button type="button" data-mtl-action="delete">▣ Delete</button><button type="button" data-mtl-action="undo" disabled>↩</button><button type="button" data-mtl-action="redo" disabled>↪</button><span class="mtl-tool-spacer"></span><button type="button" data-mtl-action="zoom-out" aria-label="Zoom out">−</button><input type="range" id="mtl-zoom-slider" min="25" max="400" step="5" value="100" aria-label="Timeline zoom"><output id="mtl-zoom-label">100%</output><button type="button" data-mtl-action="zoom-in" aria-label="Zoom in">+</button><output id="mtl-timecode">0:00.0 / 0:00.0</output><output id="mtl-selection-status">Select a clip</output>
       </div>
-      <div id="mtl-ruler-scroll" class="mtl-ruler-scroll"><div id="mtl-ruler" class="mtl-ruler"></div></div>
+      <div id="mtl-ruler-scroll" class="mtl-ruler-scroll"><div id="mtl-ruler" class="mtl-ruler"><div id="mtl-ruler-playhead" class="mtl-ruler-playhead" role="slider" tabindex="0" aria-label="Timeline playhead" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></div></div></div>
       <div id="mtl-scroll" class="mtl-scroll" tabindex="0" aria-label="Multi-track timeline. Drag clips to arrange, resize their edges, or right-click for clip actions.">
         <div id="mtl-canvas" class="mtl-canvas">
-          <div class="mtl-track mtl-video-row"><span class="mtl-track-name">VIDEO</span><div id="mtl-main-track" class="mtl-track-content" data-track="main"></div></div>
-          <div class="mtl-track mtl-overlay-row"><span class="mtl-track-name">OVERLAY</span><div id="mtl-overlay-track" class="mtl-track-content" data-track="overlay"></div></div>
-          <div class="mtl-track mtl-audio-row"><span class="mtl-track-name">AUDIO</span><div id="mtl-audio-track" class="mtl-track-content" role="img" aria-label="Audio waveform"></div></div>
-          <div id="mtl-playhead" class="mtl-playhead" aria-hidden="true"></div>
-          <div id="mtl-empty" class="mtl-empty">Add clips to the media pool, then drag them onto a track.</div>
+          <div class="mtl-track mtl-video-row" data-track-id="main"><span class="mtl-track-name">V1</span><div id="mtl-main-track" class="mtl-track-content" data-track="main"></div></div>
+          <div id="mtl-extra-video-tracks" class="mtl-track-stack" aria-label="Additional video tracks"></div>
+          <div class="mtl-track mtl-photo-row" data-track-id="photo-1" hidden><span class="mtl-track-name">PHOTO 1</span><div id="mtl-overlay-track" class="mtl-track-content" data-track="photo-1"></div></div>
+          <div id="mtl-extra-photo-tracks" class="mtl-track-stack" aria-label="Additional photo overlay tracks"></div>
+          <div class="mtl-track mtl-audio-row" data-track-id="audio"><span class="mtl-track-name">AUDIO</span><div id="mtl-audio-track" class="mtl-track-content" role="img" aria-label="Non-editable audio waveform"></div></div>
+          <div id="mtl-playhead" class="mtl-playhead" role="slider" tabindex="0" aria-label="Timeline playhead" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></div>
+          <div id="mtl-empty" class="mtl-empty">Add media to create clips at the playhead. Secondary video and photos composite over V1.</div>
           <div id="mtl-transition-popover" class="mtl-transition-popover" hidden><b>TRANSITION</b><button type="button" data-mtl-transition="none">None</button><button type="button" data-mtl-transition="dissolve">Dissolve</button><button type="button" data-mtl-transition="fade-to-black">Fade to black</button><button type="button" data-mtl-transition="fade-from-black">Fade from black</button></div>
           <div id="mtl-context-menu" class="mtl-context-menu" hidden><button type="button" data-mtl-context="delete">Delete</button><button type="button" data-mtl-context="duplicate">Duplicate</button><button type="button" data-mtl-context="split">Split here</button></div>
         </div>
       </div>
     </section>
   </div>
-  <div id="shortcut-footer" aria-label="Keyboard shortcuts"><span>SPACE <b>PLAY / PAUSE</b></span><span>R <b>RESET</b></span><span>D <b>EXPORT</b></span><span>E <b>EXPAND</b></span><span>C <b>CROP</b></span></div>
+  <div id="shortcut-footer" class="shortcuts-bar" aria-label="Keyboard shortcuts"><span>SPACE <b>PLAY / PAUSE</b></span><span>R <b>RESET</b></span><span>D <b>EXPORT</b></span><span>E <b>EXPAND</b></span><span>C <b>CROP</b></span></div>
 </div>
 <div id="shortcutsOverlay" class="modalOverlay" hidden>
   <section class="modalCard shortcutsDialog" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
     <button type="button" class="modalClose" id="closeShortcutsBtn" aria-label="Close shortcuts">×</button>
     <div class="sectionLabel" id="shortcutsTitle">Keyboard shortcuts</div>
     <div class="shortcutList">
-      <div><kbd>Space</kbd><span>Before / after · Play / pause video</span></div>
-      <div><kbd>R</kbd><span>Reset all effect values</span></div>
-      <div><kbd>D</kbd><span>Download original-size image</span></div>
-      <div><kbd>E</kbd><span>Expand / collapse effect sections</span></div>
-      <div><kbd>C</kbd><span>Open / close crop and export panel</span></div>
-      <div><kbd>← ↑ ↓ →</kbd><span>Nudge the crop or caption position</span></div>
-      <div><kbd>Esc</kbd><span>Close this panel</span></div>
+      <div><kbd>INFO</kbd><span>Keyboard hints are consolidated in the bottom bar.</span></div>
+      <div><kbd>INFO</kbd><span>Editing controls remain available in the workspace.</span></div>
+      <div><kbd>INFO</kbd><span>Timeline controls are available above the tracks.</span></div>
+      <div><kbd>INFO</kbd><span>Use the preview tools to inspect your media.</span></div>
+      <div><kbd>INFO</kbd><span>Adjustments remain available in the sidebar.</span></div>
+      <div><kbd>INFO</kbd><span>Track actions appear in the timeline toolbar.</span></div>
+      <div><kbd>INFO</kbd><span>Close this panel to return to editing.</span></div>
     </div>
   </section>
 </div>
@@ -4384,7 +4389,9 @@ function videoOutputSize(options,position,resolution){
   return {width,height};
 }
 async function exportMultiClip(clips){
+  const manifest=window.multiTimeline?.getExportManifest?.(clips);
   const plan=window.multiTimeline?.getExportPlan?.(clips);
+  if(plan && manifest) plan.manifest=manifest;
   if(!plan?.segments?.length){ showToast('Add at least one video clip to the timeline'); return; }
   const bridge=window.filmLabTimelineBridge, originalSource=bridge?.activeSource||bridge?.sourceUrl, video=bridge?.videoElement, originalTrim=bridge?.trim;
   const originalTime=video?.currentTime||0, wasPlaying=!!video && !video.paused;

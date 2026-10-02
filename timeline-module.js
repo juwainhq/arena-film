@@ -282,7 +282,7 @@
     },
     getExportPlan, mapOutputTime,
   };
-  window.filmLabTimeline = api;
+  window.filmLabTimeline = Object.assign(window.filmLabTimeline || {}, api);
   observedVideo();
   new MutationObserver(() => observedVideo()).observe(document.getElementById('previewStage'), { childList: true });
   renderRuler(); updateZoomLabel(); render();

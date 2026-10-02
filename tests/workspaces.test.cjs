@@ -64,7 +64,9 @@ test('workspace state shows subtle top-bar mode and only exposes video controls 
 
 test('video workspace places the canvas and playback above a full-width timeline with the sidebar on the right', () => {
   assert.match(styles, /#app\[data-workspace="video"\] #content \{ display: grid; grid-template-columns: minmax\(0,1fr\) 390px; grid-template-rows: minmax\(0,1fr\) 120px;/);
-  assert.match(styles, /#app\[data-workspace="video"\] #sidebar \{ grid-column: 2; grid-row: 1 \/ 3;/);
+  assert.match(styles, /#app\[data-workspace="video"\] #sidebar \{ grid-column: 2; grid-row: 1;/);
+  assert.match(styles, /#app\[data-workspace="video"\] #content \{ grid-template-rows: minmax\(0,1fr\) 220px;/);
+  assert.match(styles, /#app\[data-workspace="video"\] #content > \.mtl-shell \{ grid-column: 1 \/ -1; grid-row: 2;/);
   assert.match(styles, /#app\[data-workspace="video"\] #editorTimeline \{ grid-column: 1; grid-row: 2;/);
   assert.match(styles, /\.timelineHeader \{ display: flex; align-items: center; \}/);
   assert.match(styles, /#timelineTrack \{ position: relative; display: block; flex: 1 1 auto;/);
@@ -176,7 +178,19 @@ test('multi-clip editor is additive, multi-track, and keeps the first-upload vid
   assert.match(script, /Segment \$\{segmentIndex\}\/\$\{segmentCount\}/);
   assert.match(html, /id="shortcut-footer"/);
   assert.match(styles, /#shortcuts,#cropPanelToggle > kbd,#downloadBtn > kbd/);
-  assert.match(styles, /#shortcut-footer \{ position: fixed/);
+  assert.match(html, /id="shortcut-footer" class="shortcuts-bar"/);
+  assert.equal((html.match(/class="shortcuts-bar"/g) || []).length, 1, 'only one shortcuts bar is rendered');
+  assert.match(styles, /#shortcut-footer\.shortcuts-bar \{ position: relative; z-index: 0;/);
+  assert.match(html, /data-mtl-action="step-back"[\s\S]*?−5s[\s\S]*?data-mtl-action="step-forward"[\s\S]*?\+5s/);
+  assert.match(html, /id="mtl-zoom-slider"/);
+  assert.match(html, /id="mtl-extra-video-tracks"/);
+  assert.match(html, /id="mtl-extra-photo-tracks"/);
+  assert.match(multiTimeline, /const filmLabState = window\.filmLabState/);
+  assert.match(multiTimeline, /clips: filmLabState\.clips/);
+  assert.match(multiTimeline, /function ensureTrack\(kind, id = null\)/);
+  assert.match(multiTimeline, /function getExportManifest\(clips = state\.clips\)/);
+  assert.match(multiTimeline, /playing: \{ configurable: true, enumerable: true, get: \(\) => state\.transportPlaying \}/);
+  assert.match(timeline, /Object\.assign\(window\.filmLabTimeline \|\| \{\}, api\)/);
   assert.match(styles, /\.mtl-clip\.mtl-selected/);
   assert.match(styles, /#app\[data-workspace="video"\] #timeline-module,#app\[data-workspace="video"\] #editorTimeline \{ display: none !important; \}/);
   assert.match(html, /<section id="timeline-module" class="video-only"/);

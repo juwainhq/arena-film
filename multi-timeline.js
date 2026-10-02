@@ -18,23 +18,98 @@
   const emptyHint = byId('mtl-empty');
   const transitionMenu = byId('mtl-transition-popover');
   const contextMenu = byId('mtl-context-menu');
+  const timeArea = byId('mtl-time-area');
+  const globalPlayhead = playhead;
+  const rulerPlayhead = byId('mtl-ruler-playhead');
+  const extraVideoTracks = byId('mtl-extra-video-tracks');
+  const extraPhotoTracks = byId('mtl-extra-photo-tracks');
+  const zoomSlider = byId('mtl-zoom-slider');
+  const filmLabState = window.filmLabState || (window.filmLabState = { clips: [] });
+  filmLabState.clips ||= [];
   const state = {
-    clips: [], media: new Map(), selected: null, contextClip: null, contextTime: 0,
-    projectDuration: 0, pixelsPerSecond: 18, zoom: 1, timelineTime: 0,
+    clips: filmLabState.clips, tracks: [], media: new Map(), selected: null, contextClip: null, contextTime: 0,
+    projectDuration: 0, pixelsPerSecond: 18, zoom: 100, timelineTime: 0,
     activeMain: null, transportPlaying: false, inGap: false, pendingMain: null, switchToken: 0, switchingSource: false,
     lastTick: 0, raf: 0, undo: [], redo: [], initialized: false,
-    firstMediaId: null, lastOverlaySignature: '',
+    firstMediaId: null, nextVideoTrack: 2, nextPhotoTrack: 2, lastOverlaySignature: '',
   };
+  state.tracks.push({ id: 'main', kind: 'video', label: 'V1' }, { id: 'photo-1', kind: 'photo', label: 'PHOTO 1' }, { id: 'audio', kind: 'audio', label: 'AUDIO', editable: false });
   let boundVideoElement = null;
   let activePointer = null;
+  let scrubPointer = null;
   let clipSequence = 1;
   let mediaSequence = 1;
   let overlayLayer = null;
+  const sharedTimeline = window.filmLabTimeline || (window.filmLabTimeline = {});
+  Object.defineProperties(sharedTimeline, {
+    tracks: { configurable: true, enumerable: true, get: () => state.tracks.map((track) => ({ ...track })) },
+    playhead: { configurable: true, enumerable: true, get: () => state.timelineTime },
+    zoom: { configurable: true, enumerable: true, get: () => state.zoom },
+    playing: { configurable: true, enumerable: true, get: () => state.transportPlaying },
+    selectedClip: { configurable: true, enumerable: true, get: () => state.selected ? { ...state.selected } : null },
+  });
 
   const uid = (prefix) => `${prefix}-${Date.now().toString(36)}-${(clipSequence++).toString(36)}`;
   const mainClips = () => state.clips.filter((clip) => clip.track === 'main').sort((a, b) => a.start - b.start);
-  const overlayClips = () => state.clips.filter((clip) => clip.track === 'overlay').sort((a, b) => a.start - b.start);
+  const overlayClips = () => state.clips.filter((clip) => clip.track !== 'main').sort((a, b) => {
+    const aTrack = state.tracks.find((track) => track.id === a.track);
+    const bTrack = state.tracks.find((track) => track.id === b.track);
+    const layerA = aTrack?.kind === 'photo' ? 1 : 0;
+    const layerB = bTrack?.kind === 'photo' ? 1 : 0;
+    return layerA - layerB || state.tracks.indexOf(aTrack) - state.tracks.indexOf(bTrack) || a.start - b.start;
+  });
   const clipDuration = (clip) => Math.max(0.05, clip.trimEnd - clip.trimStart);
+  const trackRows = () => [...root.querySelectorAll('.mtl-track[data-track-id]')];
+  const trackContent = (id) => root.querySelector(`.mtl-track[data-track-id="${CSS.escape(id)}"] .mtl-track-content`);
+  const rememberTracks = () => state.tracks.map((track) => ({ ...track }));
+  function ensureTrack(kind, id = null) {
+    if (id && state.tracks.some((track) => track.id === id)) return state.tracks.find((track) => track.id === id);
+    if (kind === 'video' && (!id || id === 'main')) {
+      const track = { id: `video-${state.nextVideoTrack}`, kind: 'video', label: `V${state.nextVideoTrack}` };
+      state.nextVideoTrack++;
+      state.tracks.push(track);
+      appendTrackRow(track, extraVideoTracks);
+      return track;
+    }
+    if (kind === 'photo' && (!id || id === 'photo-1')) {
+      const track = { id: `photo-${state.nextPhotoTrack}`, kind: 'photo', label: `PHOTO ${state.nextPhotoTrack}` };
+      state.nextPhotoTrack++;
+      state.tracks.push(track);
+      appendTrackRow(track, extraPhotoTracks);
+      return track;
+    }
+    return state.tracks.find((track) => track.id === (id || 'main')) || null;
+  }
+  function appendTrackRow(track, container) {
+    if (!container || root.querySelector(`.mtl-track[data-track-id="${CSS.escape(track.id)}"]`)) return;
+    const row = document.createElement('div');
+    row.className = `mtl-track mtl-${track.kind}-row mtl-dynamic-track`;
+    row.dataset.trackId = track.id;
+    const label = document.createElement('span');
+    label.className = 'mtl-track-name'; label.textContent = track.label;
+    const content = document.createElement('div');
+    content.className = 'mtl-track-content'; content.dataset.track = track.id;
+    row.append(label, content); container.appendChild(row);
+    addDropHandlers(content, track.id);
+    content.addEventListener('click', snapPointerToTime);
+  }
+  function availableTrack(media, requested) {
+    if (requested === 'main' && media.type === 'video') return 'main';
+    const explicit = state.tracks.find((track) => track.id === requested);
+    if (explicit && explicit.kind === (media.type === 'image' ? 'photo' : 'video')) return requested;
+    if (media.type === 'image' || requested === 'photo' || requested === 'overlay') {
+      if (!state.clips.some((clip) => clip.track === 'photo-1')) return 'photo-1';
+      return ensureTrack('photo').id;
+    }
+    if (!state.firstMediaId && !mainClips().length && requested !== 'video') return 'main';
+    return ensureTrack('video').id;
+  }
+  function resolveTrackStart(trackName, desired, duration, excludedId = null) {
+    const others = state.clips.filter((clip) => clip.track === trackName && clip.id !== excludedId);
+    const candidates = [safeTime(desired), 0, ...others.flatMap((clip) => [Math.max(0, clip.start - duration), clipEnd(clip)])];
+    const valid = candidates.filter((candidate) => others.every((clip) => candidate + duration <= clip.start + 0.015 || candidate >= clipEnd(clip) - 0.015));
+    return valid.sort((a, b) => Math.abs(a - desired) - Math.abs(b - desired))[0] ?? Math.max(0, ...others.map(clipEnd));
+  }
   const clipEnd = (clip) => clip.start + clipDuration(clip);
   const safeTime = (time) => Math.max(0, Number.isFinite(time) ? time : 0);
   const makeSnapshot = () => ({ clips: state.clips.map((clip) => ({ ...clip })), selected: state.selected?.id || null, timelineTime: state.timelineTime });
@@ -52,7 +127,8 @@
   function restoreSnapshot(snapshot, destination) {
     if (!snapshot) return;
     destination.push(makeSnapshot());
-    state.clips = snapshot.clips.map((clip) => ({ ...clip }));
+    state.clips.splice(0, state.clips.length, ...snapshot.clips.map((clip) => ({ ...clip })));
+    filmLabState.clips = state.clips;
     state.selected = state.clips.find((clip) => clip.id === snapshot.selected) || null;
     state.timelineTime = snapshot.timelineTime;
     state.activeMain = null;
@@ -89,7 +165,8 @@
       frag.appendChild(tick);
     }
     ruler.replaceChildren(frag);
-    byId('mtl-zoom-label').textContent = `${state.zoom.toFixed(1)}×`;
+    byId('mtl-zoom-label').textContent = `${Math.round(state.zoom)}%`;
+    zoomSlider.value = String(state.zoom);
     byId('mtl-timecode').textContent = `${formatTime(state.timelineTime)} / ${formatTime(state.projectDuration)}`;
     updatePlayhead();
   }
@@ -101,10 +178,19 @@
     return `${mins}:${String(secs).padStart(2, '0')}.${tenths}`;
   }
   function updatePlayhead() {
-    playhead.style.left = `${58 + state.timelineTime * state.pixelsPerSecond}px`;
+    const pixel = state.timelineTime * state.pixelsPerSecond;
+    playhead.style.left = `${58 + pixel}px`;
+    globalPlayhead.style.left = `${58 + pixel}px`;
+    rulerPlayhead.style.left = `${pixel}px`;
+    for (const handle of [playhead, rulerPlayhead]) {
+      handle.setAttribute('aria-valuemax', String(state.projectDuration));
+      handle.setAttribute('aria-valuenow', String(state.timelineTime));
+    }
     byId('mtl-timecode').textContent = `${formatTime(state.timelineTime)} / ${formatTime(state.projectDuration)}`;
     const active = state.clips.find((clip) => state.timelineTime >= clip.start && state.timelineTime < clipEnd(clip));
-    byId('mtl-selection-status').textContent = state.selected ? `${state.selected.track.toUpperCase()} · ${formatTime(clipDuration(state.selected))}` : active ? `${active.track.toUpperCase()} PLAYING` : 'Select a clip';
+    const label = state.tracks.find((track) => track.id === state.selected?.track)?.label || state.selected?.track?.toUpperCase();
+    const activeLabel = state.tracks.find((track) => track.id === active?.track)?.label || active?.track?.toUpperCase();
+    byId('mtl-selection-status').textContent = state.selected ? `${label} · ${formatTime(clipDuration(state.selected))}` : active ? `${activeLabel} PLAYING` : 'Select a clip';
   }
   function renderGaps() {
     mainTrack.querySelectorAll('.mtl-gap,.mtl-transition').forEach((node) => node.remove());
@@ -208,11 +294,19 @@
   function render() {
     refreshLayout();
     renderTrackClips('main', mainTrack);
-    renderTrackClips('overlay', overlayTrack);
+    renderTrackClips('photo-1', overlayTrack);
+    const photoRow = overlayTrack.closest('.mtl-track');
+    photoRow.hidden = !state.clips.some((clip) => clip.track === 'photo-1');
+    for (const track of state.tracks) {
+      if (track.id === 'main' || track.id === 'photo-1') continue;
+      const content = trackContent(track.id);
+      if (content) renderTrackClips(track.id, content);
+    }
     renderGaps();
     renderAudio();
     emptyHint.hidden = state.clips.length > 0;
     updateHistoryButtons();
+    updateTransportButton();
     renderSelection();
     renderOverlayPreview();
   }
@@ -240,7 +334,7 @@
     card.addEventListener('click', () => {
       pool.querySelectorAll('.mtl-media-card').forEach((node) => node.setAttribute('aria-pressed', String(node === card)));
     });
-    card.addEventListener('dblclick', () => addClipFromMedia(media.id, media.type === 'image' ? 'overlay' : 'main'));
+    card.addEventListener('dblclick', () => addClipFromMedia(media.id));
     card.addEventListener('dragstart', (event) => {
       event.dataTransfer.setData('application/x-film-lab-media', media.id);
       event.dataTransfer.setData('text/plain', media.id);
@@ -262,6 +356,7 @@
     const end = Math.min(duration, Math.max(0.05, trim.end || duration));
     const firstClip = { id: uid('clip'), mediaId: media.id, track: 'main', start: 0, trimStart: Math.max(0, trim.start || 0), trimEnd: end, transition: 'none' };
     state.clips.unshift(firstClip);
+    filmLabState.clips = state.clips;
     state.selected = firstClip;
     root.hidden = false;
     state.initialized = true;
@@ -278,8 +373,13 @@
     }
     // A newly uploaded primary video starts a fresh project; release any additional media from the prior one.
     for (const media of state.media.values()) if (media.external) URL.revokeObjectURL(media.src);
-    state.clips = [];
+    state.clips.splice(0, state.clips.length);
+    filmLabState.clips = state.clips;
     state.firstMediaId = null;
+    state.tracks.splice(2);
+    state.tracks.push({ id: 'audio', kind: 'audio', label: 'AUDIO', editable: false });
+    state.nextVideoTrack = 2; state.nextPhotoTrack = 2;
+    extraVideoTracks.replaceChildren(); extraPhotoTracks.replaceChildren();
     state.undo.length = 0; state.redo.length = 0;
     pool.querySelectorAll('.mtl-media-card').forEach((card) => card.remove());
     state.media.clear();
@@ -346,13 +446,13 @@
     const valid = candidates.filter((candidate) => others.every((clip) => candidate + duration <= clip.start + 0.015 || candidate >= clipEnd(clip) - 0.015));
     return valid.sort((a, b) => Math.abs(a - desired) - Math.abs(b - desired))[0] ?? Math.max(0, ...others.map(clipEnd));
   }
-  function addClipFromMedia(mediaId, trackName, at = null) {
+  function addClipFromMedia(mediaId, requestedTrack = null, at = null) {
     const media = state.media.get(mediaId);
     if (!media) return null;
-    if (trackName === 'main' && media.type !== 'video') trackName = 'overlay';
+    const trackName = availableTrack(media, requestedTrack);
     const duration = media.type === 'image' ? 5 : Math.max(0.05, Math.min(media.duration, 60));
-    let start = at === null ? (trackName === 'main' ? Math.max(0, ...mainClips().map(clipEnd)) : 0) : safeTime(at);
-    if (trackName === 'main') start = resolveMainStart(start, duration);
+    const desired = at === null ? (trackName === 'main' ? Math.max(0, ...mainClips().map(clipEnd)) : state.timelineTime) : safeTime(at);
+    const start = resolveTrackStart(trackName, desired, duration);
     remember();
     const clip = { id: uid('clip'), mediaId, track: trackName, start, trimStart: 0, trimEnd: duration, transition: 'none' };
     state.clips.push(clip);
@@ -363,7 +463,9 @@
   async function addFilesToPool(files) {
     for (const file of Array.from(files || [])) {
       const media = await addExternalMedia(file);
-      if (media && media.type === 'video' && state.clips.length === 0) addClipFromMedia(media.id, 'main');
+      if (!media) continue;
+      const target = media.type === 'video' ? (mainClips().length ? 'video' : 'main') : 'photo';
+      addClipFromMedia(media.id, target, state.timelineTime);
     }
     render();
   }
@@ -389,7 +491,11 @@
     contextMenu.style.top = `${Math.max(4, event.clientY - canvas.getBoundingClientRect().top)}px`;
     renderSelection();
   }
-  function pointerTime(clientX) {
+  function pointerTime(clientX, inRuler = false) {
+    if (inRuler) {
+      const rect = byId('mtl-ruler-scroll').getBoundingClientRect();
+      return Math.max(0, (clientX - rect.left + byId('mtl-ruler-scroll').scrollLeft) / state.pixelsPerSecond);
+    }
     const rect = canvas.getBoundingClientRect();
     return Math.max(0, (clientX - rect.left - 58) / state.pixelsPerSecond);
   }
@@ -420,7 +526,8 @@
       drag.clip.start = safeTime(drag.initialStart + bounded);
       drag.clip.trimStart = drag.initialTrimStart + bounded;
     } else {
-      const maxDuration = Math.min(state.media.get(drag.clip.mediaId)?.duration || Infinity, drag.initialTrimStart + 60);
+      const media = state.media.get(drag.clip.mediaId);
+      const maxDuration = media?.type === 'image' ? drag.initialTrimStart + 60 : Math.min(media?.duration || Infinity, drag.initialTrimStart + 60);
       drag.clip.trimEnd = Math.max(drag.initialTrimStart + min, Math.min(maxDuration, drag.initialTrimEnd + delta));
     }
     const media = state.media.get(drag.clip.mediaId);
@@ -432,7 +539,11 @@
   function onClipPointerEnd(event) {
     if (!activePointer || event.pointerId !== activePointer.id) return;
     const drag = activePointer; activePointer = null;
-    if (drag.edge === 'move' && drag.clip.track === 'main') drag.clip.start = resolveMainStart(drag.clip.start, clipDuration(drag.clip), drag.clip.id);
+    drag.clip.start = resolveTrackStart(drag.clip.track, drag.clip.start, clipDuration(drag.clip), drag.clip.id);
+    if (drag.edge === 'right') {
+      const nextStart = Math.min(Infinity, ...state.clips.filter((clip) => clip.track === drag.clip.track && clip.id !== drag.clip.id && clip.start >= drag.clip.start).map((clip) => clip.start));
+      if (Number.isFinite(nextStart)) drag.clip.trimEnd = Math.min(drag.clip.trimEnd, drag.clip.trimStart + Math.max(0.05, nextStart - drag.clip.start));
+    }
     drag.clip.start = Math.round(drag.clip.start * 100) / 100;
     drag.clip.trimStart = Math.round(drag.clip.trimStart * 100) / 100;
     drag.clip.trimEnd = Math.round(drag.clip.trimEnd * 100) / 100;
@@ -459,7 +570,7 @@
     if (!state.selected) return;
     remember();
     const copy = { ...state.selected, id: uid('clip'), start: clipEnd(state.selected) };
-    if (copy.track === 'main') copy.start = resolveMainStart(copy.start, clipDuration(copy));
+    copy.start = resolveTrackStart(copy.track, copy.start, clipDuration(copy));
     state.clips.push(copy); state.selected = copy; render();
   }
   function splitClip(clip, at) {
@@ -510,30 +621,61 @@
   }
   addDropHandlers(mainTrack, 'main');
   addDropHandlers(overlayTrack, 'overlay');
-  let scrubPointer = null;
+  mainTrack.addEventListener('click', snapPointerToTime);
+  overlayTrack.addEventListener('click', snapPointerToTime);
   function beginScrub(event) {
-    if (bridge().exporting || event.button !== 0 || event.target.closest('.mtl-clip,.mtl-transition,[data-mtl-action]')) return;
-    if (!event.target.closest('.mtl-track-content') && !event.target.closest('#mtl-ruler-scroll')) return;
+    if (bridge().exporting || event.button !== 0 || event.target.closest('.mtl-clip,.mtl-transition,[data-mtl-action],.mtl-playhead')) return;
+    const inRuler = !!event.target.closest('#mtl-ruler-scroll');
+    if (!event.target.closest('.mtl-track-content') && !inRuler) return;
     event.preventDefault();
-    scrubPointer = event.pointerId;
-    try { view.setPointerCapture(event.pointerId); } catch (error) {}
+    scrubPointer = { id: event.pointerId, inRuler };
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch (error) {}
     state.transportPlaying = false;
     bridge().pause?.();
-    seekTo(pointerTime(event.clientX), false);
+    seekTo(pointerTime(event.clientX, inRuler), false);
+  }
+  function beginPlayheadDrag(event) {
+    if (bridge().exporting || event.button !== 0) return;
+    event.preventDefault(); event.stopPropagation();
+    scrubPointer = { id: event.pointerId, inRuler: event.currentTarget === rulerPlayhead };
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch (error) {}
+    state.transportPlaying = false; bridge().pause?.();
+    seekTo(pointerTime(event.clientX, scrubPointer.inRuler), false);
   }
   view.addEventListener('pointerdown', beginScrub);
   byId('mtl-ruler-scroll').addEventListener('pointerdown', beginScrub);
-  view.addEventListener('pointermove', (event) => { if (scrubPointer === event.pointerId) seekTo(pointerTime(event.clientX), false); });
-  view.addEventListener('pointerup', (event) => { if (scrubPointer === event.pointerId) scrubPointer = null; });
-  view.addEventListener('pointercancel', (event) => { if (scrubPointer === event.pointerId) scrubPointer = null; });
-  byId('mtl-ruler-scroll').addEventListener('pointermove', (event) => { if (scrubPointer === event.pointerId) seekTo(pointerTime(event.clientX), false); });
-  byId('mtl-ruler-scroll').addEventListener('pointerup', (event) => { if (scrubPointer === event.pointerId) scrubPointer = null; });
-  view.addEventListener('scroll', () => { byId('mtl-ruler-scroll').scrollLeft = view.scrollLeft; });
+  playhead.addEventListener('pointerdown', beginPlayheadDrag);
+  rulerPlayhead.addEventListener('pointerdown', beginPlayheadDrag);
+  function nudgePlayhead(event) {
+    const step = event.shiftKey ? 1 : 0.1;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Home' || event.key === 'End') {
+      event.preventDefault();
+      const time = event.key === 'Home' ? 0 : event.key === 'End' ? getProjectEnd() : state.timelineTime + (event.key === 'ArrowLeft' ? -step : step);
+      seekTo(time, false);
+    }
+  }
+  playhead.addEventListener('keydown', nudgePlayhead);
+  rulerPlayhead.addEventListener('keydown', nudgePlayhead);
+  document.addEventListener('pointermove', (event) => { if (scrubPointer?.id === event.pointerId) seekTo(pointerTime(event.clientX, scrubPointer.inRuler), false); });
+  document.addEventListener('pointerup', (event) => { if (scrubPointer?.id === event.pointerId) scrubPointer = null; });
+  document.addEventListener('pointercancel', (event) => { if (scrubPointer?.id === event.pointerId) scrubPointer = null; });
+  view.addEventListener('scroll', () => {
+    const rulerScroll = byId('mtl-ruler-scroll');
+    if (rulerScroll.scrollLeft !== view.scrollLeft) rulerScroll.scrollLeft = view.scrollLeft;
+  });
+  byId('mtl-ruler-scroll').addEventListener('scroll', () => {
+    if (view.scrollLeft !== byId('mtl-ruler-scroll').scrollLeft) view.scrollLeft = byId('mtl-ruler-scroll').scrollLeft;
+  });
   byId('mtl-ruler-scroll').addEventListener('wheel', (event) => { view.scrollLeft += event.deltaX || event.deltaY; }, { passive: true });
   view.addEventListener('click', (event) => { if (event.target === view || event.target === canvas) { state.timelineTime = Math.min(state.projectDuration, pointerTime(event.clientX)); seekTo(state.timelineTime, false); } });
 
   byId('mtl-add-clip').addEventListener('click', () => byId('mtl-file-input').click());
   byId('mtl-file-input').addEventListener('change', async (event) => { await addFilesToPool(event.target.files); event.target.value = ''; });
+  zoomSlider.addEventListener('input', () => {
+    state.zoom = Math.max(25, Math.min(400, Number(zoomSlider.value) || 100));
+    state.pixelsPerSecond = 18 * state.zoom / 100;
+    render();
+  });
   root.querySelector('.mtl-media-heading').addEventListener('dragover', (event) => { event.preventDefault(); });
   root.querySelector('.mtl-media-heading').addEventListener('drop', async (event) => { event.preventDefault(); event.stopPropagation(); await addFilesToPool(event.dataTransfer.files); });
   root.addEventListener('click', (event) => {
@@ -544,9 +686,12 @@
       else if (action === 'redo') redo();
       else if (action === 'delete') deleteSelected();
       else if (action === 'cut') splitClip(state.selected, state.timelineTime);
+      else if (action === 'play-pause') state.transportPlaying ? pause() : play();
+      else if (action === 'step-back') seekTo(Math.max(0, state.timelineTime - 5), false);
+      else if (action === 'step-forward') seekTo(Math.min(getProjectEnd(), state.timelineTime + 5), false);
       else if (action === 'zoom-in' || action === 'zoom-out') {
-        state.zoom = Math.max(0.5, Math.min(4, state.zoom + (action === 'zoom-in' ? 0.25 : -0.25)));
-        state.pixelsPerSecond = 18 * state.zoom; render();
+        state.zoom = Math.max(25, Math.min(400, state.zoom + (action === 'zoom-in' ? 25 : -25)));
+        state.pixelsPerSecond = 18 * state.zoom / 100; render();
       }
     }
     const transition = event.target.closest('[data-mtl-transition]');
@@ -642,19 +787,31 @@
       state.timelineTime += delta * (bridge().videoElement?.playbackRate || 1);
       if (state.pendingMain && state.timelineTime >= state.pendingMain.start) switchToMain(state.pendingMain, state.pendingMain.start, true);
       else if (!state.pendingMain || state.timelineTime >= state.projectDuration) state.transportPlaying = false;
-      updateTransportButton(); updatePlayhead(); renderOverlayPreview();
-    } else if (state.transportPlaying && state.activeMain && bridge().videoElement?.paused) {
-      // Sync a transport pause initiated by the existing video playback button.
-      state.transportPlaying = false;
-      updateTransportButton();
+    } else if (state.transportPlaying && state.activeMain) {
+      const video = bridge().videoElement;
+      if (!video || video.paused) state.transportPlaying = false;
+      else {
+        const clip = state.activeMain;
+        const sourceTime = clip.trimStart + (state.timelineTime - clip.start);
+        if (Math.abs(video.currentTime - sourceTime) > 0.14 && video.readyState >= 2) video.currentTime = Math.max(clip.trimStart, Math.min(clip.trimEnd - 0.001, sourceTime));
+        state.timelineTime = clip.start + (video.currentTime - clip.trimStart);
+        if (video.currentTime >= clip.trimEnd - 0.025) advanceFrom(clip);
+      }
     }
+    updateTransportButton(); updatePlayhead(); renderOverlayPreview();
     if (state.transportPlaying) ensureTick();
   }
   function updateTransportButton() {
     const button = byId('videoPlayBtn');
-    if (!button || document.body.dataset.mode !== 'video') return;
-    button.textContent = state.transportPlaying ? 'Ⅱ' : '▶';
-    button.setAttribute('aria-label', state.transportPlaying ? 'Pause video' : 'Play video');
+    const timelineButton = byId('mtl-play-pause');
+    if (button && document.body.dataset.mode === 'video') {
+      button.textContent = state.transportPlaying ? 'Ⅱ' : '▶';
+      button.setAttribute('aria-label', state.transportPlaying ? 'Pause video' : 'Play video');
+    }
+    if (timelineButton) {
+      timelineButton.textContent = state.transportPlaying ? 'Ⅱ' : '▶';
+      timelineButton.setAttribute('aria-label', state.transportPlaying ? 'Pause timeline' : 'Play timeline');
+    }
   }
   function handlePlay() { state.transportPlaying = true; state.inGap = false; state.lastTick = performance.now(); updateTransportButton(); ensureTick(); }
   function handlePause() {
@@ -699,24 +856,33 @@
     if (!overlayLayer) return;
     const active = getOverlaysAt(state.timelineTime);
     const inGap = state.initialized && !getMainAt(state.timelineTime) && state.timelineTime < state.projectDuration;
-    const overlaySignature = active.map((item) => item.type === 'video' ? `${item.clipId}:${Math.floor(item.time * 10)}` : item.clipId).join('|');
+    const overlaySignature = active.map((item) => item.clipId).join('|');
     const signature = `${inGap ? 'gap:' : ''}${overlaySignature}`;
-    if (signature === state.lastOverlaySignature) return;
-    state.lastOverlaySignature = signature;
-    overlayLayer.querySelectorAll('video').forEach((video) => { video.pause(); video.hidden = true; });
-    overlayLayer.replaceChildren();
-    overlayLayer.hidden = active.length === 0 && !inGap;
-    overlayLayer.style.backgroundColor = inGap ? '#000' : 'transparent';
-    for (const item of active) {
-      const media = state.media.get(state.clips.find((clip) => clip.id === item.clipId)?.mediaId);
-      if (item.type === 'image' && media?.imageElement) {
-        const img = document.createElement('img'); img.src = item.src; img.alt = media.name; overlayLayer.appendChild(img);
-      } else if (item.type === 'video' && media?.videoElement) {
-        const vid = media.videoElement; vid.classList.add('mtl-preview-media'); vid.muted = true; vid.playsInline = true; vid.hidden = false;
-        if (Math.abs(vid.currentTime - item.time) > 0.12) { try { vid.currentTime = item.time; } catch (error) {} }
-        vid.play().catch(() => {}); overlayLayer.appendChild(vid);
+    if (signature !== state.lastOverlaySignature) {
+      state.lastOverlaySignature = signature;
+      overlayLayer.querySelectorAll('video').forEach((video) => video.pause());
+      overlayLayer.replaceChildren();
+      for (const item of active) {
+        const media = state.media.get(state.clips.find((clip) => clip.id === item.clipId)?.mediaId);
+        if (item.type === 'image' && media?.imageElement) {
+          const img = document.createElement('img'); img.src = item.src; img.alt = media.name; overlayLayer.appendChild(img);
+        } else if (item.type === 'video' && media?.videoElement) {
+          const vid = media.videoElement; vid.classList.add('mtl-preview-media'); vid.muted = true; vid.playsInline = true; vid.hidden = false;
+          overlayLayer.appendChild(vid);
+        }
       }
     }
+    overlayLayer.hidden = active.length === 0 && !inGap;
+    overlayLayer.style.backgroundColor = inGap ? '#000' : 'transparent';
+    active.forEach((item) => {
+      if (item.type !== 'video') return;
+      const media = state.media.get(state.clips.find((clip) => clip.id === item.clipId)?.mediaId);
+      const vid = media?.videoElement;
+      if (!vid) return;
+      if (Math.abs(vid.currentTime - item.time) > 0.14) { try { vid.currentTime = item.time; } catch (error) {} }
+      if (state.transportPlaying && vid.paused) vid.play().catch(() => {});
+      else if (!state.transportPlaying && !vid.paused) vid.pause();
+    });
   }
   async function renderOverlays(outputCanvas, time, plan = null) {
     const overlayTime = plan?.toOriginalTime ? plan.toOriginalTime(time) : time;
@@ -775,10 +941,22 @@
     if (current.blackFrame || current.gap) blackAlpha = 1;
     return { sourceTime: current.trimStart + local, source: current.source, clipIndex: current.index, blackAlpha: Math.max(0, Math.min(1, blackAlpha)), gap: false };
   }
+  function getExportManifest(clips = state.clips) {
+    return {
+      schemaVersion: 1,
+      baseTrack: 'main',
+      tracks: state.tracks.map((track) => ({ ...track })),
+      clips: clips.map((clip) => {
+        const media = state.media.get(clip.mediaId);
+        return { id: clip.id, mediaId: clip.mediaId, track: clip.track, start: clip.start, trimStart: clip.trimStart, trimEnd: clip.trimEnd, duration: clipDuration(clip), transition: clip.transition || 'none', type: media?.type || 'video', source: media?.src || null };
+      }),
+      composite: { base: 'main', overlays: state.tracks.filter((track) => track.id !== 'main' && track.id !== 'audio').map((track) => track.id) },
+    };
+  }
   function getExportPlan(clips = state.clips) {
     const ordered = clips.filter((clip) => clip.track === 'main').slice().sort((a, b) => a.start - b.start);
     if (!ordered.length) return null;
-    const originalEnd = Math.max(...clips.map(clipEnd));
+    const originalEnd = Math.max(...ordered.map(clipEnd));
     const segments = [];
     let cumulativeDissolve = 0, previousClip = null, previousSegment = null;
     for (const clip of ordered) {
@@ -811,7 +989,7 @@
       const segment = segments.find((item) => time >= item.start && time < item.end) || segments[segments.length - 1];
       return segment ? segment.originalStart + Math.max(0, time - segment.start) : time;
     };
-    return { multiClip: true, duration, transitionSeconds: 0.5, segments, toOriginalTime, overlaysAt: (time) => getOverlaysAt(toOriginalTime(time)) };
+    return { multiClip: true, duration, transitionSeconds: 0.5, segments, manifest: getExportManifest(clips), toOriginalTime, overlaysAt: (time) => getOverlaysAt(toOriginalTime(time)) };
   }
 
   function onVideoEnded() {
@@ -833,6 +1011,7 @@
     addClip: addClipFromMedia,
     get clips() { return state.clips.map((clip) => ({ ...clip })); },
     getExportPlan,
+    getExportManifest,
     buildExportFrames,
     mapOutputTime,
     renderOverlays,
