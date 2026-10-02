@@ -95,3 +95,13 @@ test('theme still works when localStorage is unavailable', () => {
 test('keyboard shortcuts let Space activate a focused theme button', () => {
   assert.match(mainScript, /if\(\['INPUT','BUTTON','TEXTAREA','SELECT'\]\.includes\(e\.target\.tagName\) \|\| e\.target\.isContentEditable\) return;/);
 });
+
+
+test('mobile video controls keep the timeline above the phone safe area and the editing sheet clear of tracks', () => {
+  assert.match(styles, /#app \{ padding-bottom: env\(safe-area-inset-bottom\); \}/);
+  assert.match(styles, /#app\[data-workspace="video"\] #mainArea \{ inset: 0 0 220px;/);
+  assert.match(styles, /#app\[data-workspace="video"\] #holdCompareBtn \{ bottom: 12px; \}/);
+  assert.match(styles, /#app\[data-workspace="video"\] #sidebar \{ bottom: 220px; max-height: calc\(100% - 238px\); \}/);
+  assert.match(styles, /@media \(min-width: 768px\) and \(max-width: 900px\)[\s\S]*?grid-template-columns: minmax\(0,1fr\) minmax\(300px,42vw\)/);
+  assert.match(styles, /@media \(pointer: coarse\)[\s\S]*?\.mtl-trim-handle \{ width: 18px;/);
+});

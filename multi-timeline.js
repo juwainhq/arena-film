@@ -1027,9 +1027,12 @@
       if (Math.abs(incoming.start - clipEnd(outgoing)) > 0.025) continue;
       const info = transitionInfo(outgoing);
       if (info.type === 'none') continue;
-      const cut = incoming.start, half = info.duration / 2;
-      if (time < cut - half || time > cut + half) continue;
-      return { outgoing, incoming, type: info.type, duration: info.duration, cut, progress: Math.max(0, Math.min(1, (time - (cut - half)) / info.duration)) };
+      const duration = Math.min(info.duration, clipDuration(outgoing), clipDuration(incoming));
+      const cut = incoming.start, dissolveStart = cut - duration, centeredStart = cut - duration / 2;
+      const start = info.type === 'dissolve' ? dissolveStart : centeredStart;
+      const end = info.type === 'dissolve' ? cut : cut + duration / 2;
+      if (time < start || time > end) continue;
+      return { outgoing, incoming, type: info.type, duration, cut, progress: Math.max(0, Math.min(1, (time - start) / duration)) };
     }
     return null;
   }
@@ -1076,8 +1079,10 @@
     if (layer.width !== base.width || layer.height !== base.height) { layer.width = base.width; layer.height = base.height; }
     const time = state.timelineTime, beforeCut = time < transition.cut;
     const outTime = Math.max(transition.outgoing.trimStart, Math.min(transition.outgoing.trimEnd - 0.001, transition.outgoing.trimStart + time - transition.outgoing.start));
-    const inTime = beforeCut ? transition.incoming.trimStart : Math.max(transition.incoming.trimStart, Math.min(transition.incoming.trimEnd - 0.001, transition.incoming.trimStart + time - transition.cut));
-    for (const [element, sourceTime, sourceIsMoving] of [[outgoing, beforeCut ? outTime : transition.outgoing.trimEnd - 0.001, beforeCut], [incoming, inTime, !beforeCut]]) {
+    const inTime = transition.type === 'dissolve'
+      ? Math.max(transition.incoming.trimStart, Math.min(transition.incoming.trimEnd - 0.001, transition.incoming.trimStart + transition.progress * transition.duration))
+      : beforeCut ? transition.incoming.trimStart : Math.max(transition.incoming.trimStart, Math.min(transition.incoming.trimEnd - 0.001, transition.incoming.trimStart + time - transition.cut));
+    for (const [element, sourceTime, sourceIsMoving] of [[outgoing, beforeCut ? outTime : transition.outgoing.trimEnd - 0.001, beforeCut], [incoming, inTime, transition.type === 'dissolve' ? true : !beforeCut]]) {
       if (!(element instanceof HTMLVideoElement)) continue;
       element.playbackRate = bridge().videoElement?.playbackRate || 1;
       if (Math.abs(element.currentTime - sourceTime) > 0.14) { try { element.currentTime = sourceTime; } catch (error) {} }
@@ -1221,34 +1226,101 @@
     });
     renderTransitionPreview();
   }
+  let exportTransitionCanvas = null;
   async function renderOverlays(outputCanvas, time, plan = null) {
     const overlayTime = plan?.toOriginalTime ? plan.toOriginalTime(time) : time;
     const active = getOverlaysAt(overlayTime);
-    if (!active.length) return outputCanvas;
+    if (!active.length && !state.tracks.some((track) => track.id !== 'main' && track.id !== 'audio' && transitionAt(overlayTime, track.id))) return outputCanvas;
     const ctx = outputCanvas.getContext('2d');
-    for (const item of active) {
-      const media = state.media.get(state.clips.find((clip) => clip.id === item.clipId)?.mediaId);
-      if (!media) continue;
-      let element = media.imageElement;
-      const overlayVideo = media.overlayVideoElement || media.videoElement;
-      if (media.type === 'video' && overlayVideo) {
-        element = overlayVideo;
-        try {
-          if (Math.abs(element.currentTime - item.time) > 0.02) await seekMediaElement(element, item.time);
-        } catch (error) { continue; }
+    if (!ctx) return outputCanvas;
+    const trackOrder = state.tracks.filter((track) => track.id !== 'main' && (track.kind === 'video' || track.kind === 'photo')).sort((a, b) => {
+      const layerA = a.kind === 'photo' ? 1 : 0, layerB = b.kind === 'photo' ? 1 : 0;
+      return layerA - layerB || state.tracks.indexOf(a) - state.tracks.indexOf(b);
+    });
+    const drawFit = (element, x = 0, alpha = 1) => {
+      const sourceWidth = element?.videoWidth || element?.naturalWidth || outputCanvas.width;
+      const sourceHeight = element?.videoHeight || element?.naturalHeight || outputCanvas.height;
+      if (!(sourceWidth > 0 && sourceHeight > 0)) return;
+      const scale = Math.min(outputCanvas.width / sourceWidth, outputCanvas.height / sourceHeight);
+      const width = sourceWidth * scale, height = sourceHeight * scale;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(element, x + (outputCanvas.width - width) / 2, (outputCanvas.height - height) / 2, width, height);
+      ctx.globalAlpha = 1;
+    };
+    for (const track of trackOrder) {
+      const transition = transitionAt(overlayTime, track.id);
+      if (transition) {
+        if (!exportTransitionCanvas) exportTransitionCanvas = document.createElement('canvas');
+        if (exportTransitionCanvas.width !== outputCanvas.width || exportTransitionCanvas.height !== outputCanvas.height) {
+          exportTransitionCanvas.width = outputCanvas.width; exportTransitionCanvas.height = outputCanvas.height;
+        }
+        const layerContext = exportTransitionCanvas.getContext('2d');
+        layerContext.clearRect(0, 0, exportTransitionCanvas.width, exportTransitionCanvas.height);
+        const getElement = (clip) => {
+          const media = state.media.get(clip.mediaId);
+          if (!media) return null;
+          const overlayVideo = media.overlayVideoElement || media.videoElement;
+          return media.imageElement || overlayVideo || null;
+        };
+        const outgoing = getElement(transition.outgoing), incoming = getElement(transition.incoming);
+        if (!outgoing || !incoming) continue;
+        const beforeCut = overlayTime < transition.cut;
+        const outTime = Math.max(transition.outgoing.trimStart, Math.min(transition.outgoing.trimEnd - 0.001, transition.outgoing.trimStart + overlayTime - transition.outgoing.start));
+        const inTime = beforeCut ? transition.incoming.trimStart : Math.max(transition.incoming.trimStart, Math.min(transition.incoming.trimEnd - 0.001, transition.incoming.trimStart + overlayTime - transition.cut));
+        for (const [element, sourceTime] of [[outgoing, beforeCut ? outTime : transition.outgoing.trimEnd - 0.001], [incoming, inTime]]) {
+          if (element instanceof HTMLVideoElement && Math.abs(element.currentTime - sourceTime) > 0.02) await seekMediaElement(element, sourceTime);
+        }
+        const width = exportTransitionCanvas.width, height = exportTransitionCanvas.height, progress = transition.progress;
+        layerContext.globalAlpha = 1; layerContext.globalCompositeOperation = 'source-over';
+        if (transition.type === 'dissolve') {
+          drawTransitionFrame(layerContext, outgoing, 0, width, height, 1);
+          drawTransitionFrame(layerContext, incoming, 0, width, height, progress);
+        } else if (transition.type === 'slide-left') {
+          if (beforeCut) {
+            const phase = Math.max(0, Math.min(1, (overlayTime - (transition.cut - transition.duration / 2)) / (transition.duration / 2)));
+            drawTransitionFrame(layerContext, outgoing, -phase * width, width, height, 1);
+            drawTransitionFrame(layerContext, incoming, (1 - phase) * width, width, height, 1);
+          } else {
+            const fade = Math.max(0, 1 - (overlayTime - transition.cut) / (transition.duration / 2));
+            drawTransitionFrame(layerContext, incoming, 0, width, height, fade);
+          }
+        } else if (transition.type === 'wipe') {
+          if (beforeCut) {
+            drawTransitionFrame(layerContext, outgoing, 0, width, height, 1);
+            layerContext.save(); layerContext.beginPath(); layerContext.rect(0, 0, width * Math.min(1, progress * 2), height); layerContext.clip();
+            drawTransitionFrame(layerContext, incoming, 0, width, height, 1); layerContext.restore();
+          } else {
+            const fade = Math.max(0, 1 - (overlayTime - transition.cut) / (transition.duration / 2));
+            drawTransitionFrame(layerContext, incoming, 0, width, height, fade);
+          }
+        } else {
+          drawTransitionFrame(layerContext, beforeCut ? outgoing : incoming, 0, width, height, 1);
+          const phase = beforeCut ? Math.min(1, (overlayTime - (transition.cut - transition.duration / 2)) / (transition.duration / 2)) : Math.max(0, 1 - (overlayTime - transition.cut) / (transition.duration / 2));
+          if (transition.type === 'fade-to-black' || transition.type === 'fade-from-white') {
+            layerContext.fillStyle = transition.type === 'fade-from-white' ? '#fff' : '#000';
+            layerContext.globalAlpha = Math.max(0, Math.min(1, phase)); layerContext.fillRect(0, 0, width, height); layerContext.globalAlpha = 1;
+          }
+        }
+        ctx.drawImage(exportTransitionCanvas, 0, 0);
+        continue;
       }
-      if (element?.readyState >= 2 || element instanceof HTMLImageElement && element.complete) {
-        try {
-          const sourceWidth = element.videoWidth || element.naturalWidth || outputCanvas.width;
-          const sourceHeight = element.videoHeight || element.naturalHeight || outputCanvas.height;
-          const scale = Math.min(outputCanvas.width / sourceWidth, outputCanvas.height / sourceHeight);
-          const width = sourceWidth * scale, height = sourceHeight * scale;
-          ctx.drawImage(element, (outputCanvas.width - width) / 2, (outputCanvas.height - height) / 2, width, height);
-        } catch (error) {}
+      for (const item of active.filter((entry) => state.clips.find((clip) => clip.id === entry.clipId)?.track === track.id)) {
+        const clip = state.clips.find((entry) => entry.id === item.clipId);
+        const media = state.media.get(clip?.mediaId);
+        if (!media) continue;
+        const element = media.imageElement || media.overlayVideoElement || media.videoElement;
+        if (media.type === 'video' && element) {
+          try { if (Math.abs(element.currentTime - item.time) > 0.02) await seekMediaElement(element, item.time); }
+          catch (error) { continue; }
+        }
+        if (element?.readyState >= 2 || element instanceof HTMLImageElement && element.complete) {
+          try { drawFit(element); } catch (error) {}
+        }
       }
     }
     return outputCanvas;
   }
+
   function seekMediaElement(element, time) {
     return new Promise((resolve, reject) => {
       if (Math.abs(element.currentTime - time) < 0.01 && element.readyState >= 2) return resolve();
@@ -1267,17 +1339,41 @@
     if (!current) return { sourceTime: 0, blackAlpha: 1, clipIndex: -1, gap: true };
     if (current.gap || current.blackFrame) return { sourceTime: 0, blackAlpha: 1, clipIndex: current.index, gap: true, blackFrame: true };
     const local = Math.max(0, Math.min(current.end - current.start, t - current.start));
-    let blackAlpha = 0;
-    const transitionSeconds = Math.min(0.5, Math.max(0.05, current.end - current.start), current.next ? Math.max(0.05, current.next.end - current.next.start) : 0.5);
+    const clipLength = Math.max(0.05, current.end - current.start);
+    const transitionSeconds = Math.min(Math.max(0.1, Number(current.transitionDuration ?? plan.transitionSeconds) || 0.5), clipLength, current.next ? Math.max(0.05, current.next.end - current.next.start) : clipLength);
+    const index = segments.indexOf(current);
+    const previousCandidate = segments[index - 1];
+    const previous = previousCandidate && !previousCandidate.gap && !previousCandidate.blackFrame ? previousCandidate : null;
+    const incomingTransitionSeconds = previous
+      ? Math.min(Math.max(0.1, Number(previous.transitionDuration ?? plan.transitionSeconds) || 0.5), clipLength, Math.max(0.05, previous.end - previous.start))
+      : transitionSeconds;
+    const sourceTime = current.trimStart + local;
+    let blackAlpha = 0, overlayAlpha = 0, overlayColor = '#000';
     if (current.transition === 'dissolve' && current.next && t >= current.end - transitionSeconds) {
       const amount = Math.max(0, Math.min(1, (t - (current.end - transitionSeconds)) / transitionSeconds));
-      return { sourceTime: current.trimStart + local, source: current.source, blendTime: current.next.trimStart + amount * Math.min(transitionSeconds, current.next.end - current.next.start), blendSource: current.next.source, blend: amount, clipIndex: current.index, blackAlpha: 0 };
+      return { sourceTime, source: current.source, blendTime: current.next.trimStart + amount * Math.min(transitionSeconds, current.next.end - current.next.start), blendSource: current.next.source, blend: amount, clipIndex: current.index, blackAlpha: 0 };
     }
-    if (current.transition === 'fade-to-black' && t >= current.end - transitionSeconds) blackAlpha = (t - (current.end - transitionSeconds)) / transitionSeconds;
-    const previous = segments[current.index - 1];
-    if (previous?.transition === 'fade-from-black' && t < current.start + transitionSeconds) blackAlpha = Math.max(blackAlpha, 1 - (t - current.start) / transitionSeconds);
+    if ((current.transition === 'slide-left' || current.transition === 'wipe') && current.next && t >= current.end - transitionSeconds / 2) {
+      const amount = Math.max(0, Math.min(1, (t - (current.end - transitionSeconds / 2)) / (transitionSeconds / 2)));
+      return { sourceTime, source: current.source, blendTime: current.next.trimStart + amount * Math.min(transitionSeconds / 2, current.next.end - current.next.start), blendSource: current.next.source, blend: amount, transitionType: current.transition, clipIndex: current.index, blackAlpha: 0 };
+    }
+    if (current.transition === 'fade-to-black' && current.next && t >= current.end - transitionSeconds / 2) {
+      overlayAlpha = (t - (current.end - transitionSeconds / 2)) / (transitionSeconds / 2);
+    }
+    if (current.transition === 'fade-from-white' && current.next && t >= current.end - transitionSeconds / 2) {
+      overlayAlpha = (t - (current.end - transitionSeconds / 2)) / (transitionSeconds / 2); overlayColor = '#fff';
+    }
+    if (previous?.next === current && previous.transition === 'fade-to-black' && t < current.start + incomingTransitionSeconds / 2) {
+      overlayAlpha = Math.max(overlayAlpha, 1 - (t - current.start) / (incomingTransitionSeconds / 2));
+    }
+    if (previous?.next === current && previous.transition === 'fade-from-white' && t < current.start + incomingTransitionSeconds / 2) {
+      overlayAlpha = Math.max(overlayAlpha, 1 - (t - current.start) / (incomingTransitionSeconds / 2)); overlayColor = '#fff';
+    }
+    if (previous?.next === current && previous.transition === 'fade-from-black' && t < current.start + incomingTransitionSeconds) {
+      blackAlpha = 1 - (t - current.start) / incomingTransitionSeconds;
+    }
     if (current.blackFrame || current.gap) blackAlpha = 1;
-    return { sourceTime: current.trimStart + local, source: current.source, clipIndex: current.index, blackAlpha: Math.max(0, Math.min(1, blackAlpha)), gap: false };
+    return { sourceTime, source: current.source, clipIndex: current.index, blackAlpha: Math.max(0, Math.min(1, blackAlpha)), overlayAlpha: Math.max(0, Math.min(1, overlayAlpha)), overlayColor, gap: false };
   }
   function getExportManifest(clips = state.clips) {
     return {
@@ -1286,7 +1382,7 @@
       tracks: state.tracks.map((track) => ({ ...track })),
       clips: clips.map((clip) => {
         const media = state.media.get(clip.mediaId);
-        return { id: clip.id, mediaId: clip.mediaId, track: clip.track, start: clip.start, trimStart: clip.trimStart, trimEnd: clip.trimEnd, duration: clipDuration(clip), transition: clip.transition || 'none', type: media?.type || 'video', source: media?.src || null };
+        return { id: clip.id, mediaId: clip.mediaId, track: clip.track, start: clip.start, trimStart: clip.trimStart, trimEnd: clip.trimEnd, duration: clipDuration(clip), transition: clip.transition || 'none', transitionDuration: transitionInfo(clip).duration, type: media?.type || 'video', source: media?.src || null };
       }),
       composite: { base: 'main', overlays: state.tracks.filter((track) => track.id !== 'main' && track.id !== 'audio').map((track) => track.id) },
     };
@@ -1303,8 +1399,9 @@
       const duration = clipDuration(clip);
       const originalGap = previousClip ? clip.start - clipEnd(previousClip) : clip.start;
       const adjacent = previousClip && originalGap <= 0.025;
-      const dissolve = adjacent && previousClip.transition === 'dissolve'
-        ? Math.min(0.5, clipDuration(previousClip), duration)
+      const transition = transitionInfo(previousClip);
+      const dissolve = adjacent && transition.type === 'dissolve'
+        ? Math.min(transition.duration, clipDuration(previousClip), duration)
         : 0;
       if (dissolve) cumulativeDissolve += dissolve;
       const start = Math.max(0, clip.start - cumulativeDissolve);
@@ -1312,8 +1409,8 @@
         const gapStart = previousSegment?.end || 0;
         segments.push({ start: gapStart, end: start, originalStart: previousClip ? clipEnd(previousClip) : 0, gap: true, blackFrame: true, transition: 'none', index: segments.length });
       }
-      const segment = { id: clip.id, clipId: clip.id, mediaId: clip.mediaId, source: media.src, start, end: start + duration, originalStart: clip.start, trimStart: clip.trimStart, trimEnd: clip.trimEnd, transition: clip.transition || 'none', index: segments.length };
-      if (dissolve && previousSegment) previousSegment.next = segment;
+      const segment = { id: clip.id, clipId: clip.id, mediaId: clip.mediaId, source: media.src, start, end: start + duration, originalStart: clip.start, trimStart: clip.trimStart, trimEnd: clip.trimEnd, transition: clip.transition || 'none', transitionDuration: transitionInfo(clip).duration, index: segments.length };
+      if (adjacent && previousSegment) previousSegment.next = segment;
       segments.push(segment);
       previousClip = clip; previousSegment = segment;
     }
@@ -1334,10 +1431,27 @@
     if (state.activeMain) advanceFrom(state.activeMain);
   }
   document.addEventListener('keydown', (event) => {
-    if (event.code !== 'Space' || event.repeat || !state.initialized || bridge().exporting) return;
+    if (!state.initialized || bridge().exporting || document.body.dataset.mode !== 'video') return;
     const target = event.target;
     if (target?.closest('input,textarea,select,[contenteditable="true"],[role="dialog"]')) return;
-    if (document.body.dataset.mode !== 'video') return;
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+      event.preventDefault(); event.stopImmediatePropagation();
+      if (event.shiftKey) redo(); else undo();
+      return;
+    }
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if ((event.key === 'Delete' || event.key === 'Backspace') && state.selected) {
+      event.preventDefault(); event.stopImmediatePropagation(); deleteSelected();
+      return;
+    }
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault(); event.stopImmediatePropagation();
+      const direction = event.key === 'ArrowLeft' ? -1 : 1;
+      const step = event.shiftKey ? 1 : 1 / FRAME_RATE;
+      seekTo(Math.max(0, Math.min(getProjectEnd(), state.timelineTime + direction * step)), false);
+      return;
+    }
+    if (event.code !== 'Space' || event.repeat) return;
     event.preventDefault(); event.stopImmediatePropagation();
     if (state.transportPlaying) pause(); else play();
   }, { capture: true });

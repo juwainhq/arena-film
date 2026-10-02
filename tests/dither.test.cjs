@@ -171,6 +171,7 @@ test('presets and resets return new sliders to neutral and remember scope for sa
   assert.match(script, /setDitherScope\(values\.DitherScope==='background'\?'background':'full'\)/);
   assert.match(script, /const values=\{\.\.\.getCurrentValues\(\),DitherScope:ditherScope,Effects:\{\.\.\.effectEnabled\}\}/);
   assert.match(script, /if\(btn\.dataset\.reset==='dither'\) setDitherScope\('full'\)/);
-  assert.match(script, /ids\.forEach\(k=>\{ sliders\[k\]\.value=0; \}\);\n    setDitherScope\('full'\)/);
+  assert.match(script, /\$\('resetOriginalBtn'\)\.click\(\)/);
+  assert.match(script, /\$\('resetOriginalBtn'\)\.addEventListener\('click',[\s\S]*?setDitherScope\('full'\)[\s\S]*?updateSocialUI\(\)/);
   assert.match(script, /const dur=340/);
 });

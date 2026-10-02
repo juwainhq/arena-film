@@ -949,9 +949,12 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
 .mtl-preview-overlay img,.mtl-preview-overlay video,.mtl-preview-overlay canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .mtl-preview-overlay[hidden] { display: none !important; }
 @media (max-width: 767px) {
-  #app[data-workspace="video"] #mainArea { inset: 0 0 272px; padding: 8px 12px 4px; }
+  #app { padding-bottom: env(safe-area-inset-bottom); }
+  #app[data-workspace="video"] #mainArea { inset: 0 0 220px; padding: 8px 12px 4px; }
   #app[data-workspace="video"] #videoPlaybackControls { bottom: 0; }
+  #app[data-workspace="video"] #holdCompareBtn { bottom: 12px; }
   #app[data-workspace="video"] #content > .mtl-shell { position: absolute; z-index: 13; right: 0; bottom: 0; left: 0; display: flex; width: 100%; height: 220px; padding: 5px 8px 7px; }
+  #app[data-workspace="video"] #sidebar { bottom: 220px; max-height: calc(100% - 238px); }
   .mtl-media-heading { width: 96px; gap: 4px; font-size: 7px; }
   .mtl-media-card { width: 102px; }
   .mtl-toolbar { gap: 3px; }
@@ -960,6 +963,22 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
   .mtl-video-row { min-height: 35px; }
   .mtl-overlay-row { min-height: 29px; }
   .mtl-audio-row { min-height: 22px; }
+}
+@media (min-width: 768px) and (max-width: 900px) {
+  #app[data-workspace="video"] #content { grid-template-columns: minmax(0,1fr) minmax(300px,42vw); grid-template-rows: minmax(0,1fr) 220px; }
+  #app[data-workspace="video"] #mainArea { padding: 12px 16px 8px; }
+  #app[data-workspace="video"] #sidebar { width: 100%; min-width: 0; padding: 14px 16px 20px; }
+}
+@media (max-width: 767px) and (orientation: landscape) {
+  #app[data-workspace="video"] #content > .mtl-shell { height: 188px; }
+  #app[data-workspace="video"] #mainArea { inset: 0 0 240px; }
+  #app[data-workspace="video"] #sidebar { bottom: 188px; max-height: calc(100% - 206px); }
+}
+@media (pointer: coarse) {
+  .mtl-trim-handle { width: 18px; background: transparent !important; }
+  .mtl-trim-in { border-right: 2px solid var(--accent) !important; }
+  .mtl-trim-out { border-left: 2px solid var(--accent) !important; }
+  .mtl-playhead { width: 4px; }
 }
 
 </style>
@@ -1410,7 +1429,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
       </div>
     </section>
   </div>
-  <div id="shortcut-footer" class="shortcuts-bar" aria-label="Keyboard shortcuts"><span>SPACE <b>PLAY / PAUSE</b></span><span>R <b>RESET</b></span><span>D <b>EXPORT</b></span><span>E <b>EXPAND</b></span><span>C <b>CROP</b></span></div>
+  <div id="shortcut-footer" class="shortcuts-bar" aria-label="Keyboard shortcuts"><span>SPACE <b>PLAY / PAUSE</b></span><span>← / → <b>FRAME STEP</b></span><span>DEL <b>DELETE CLIP</b></span><span>⌘/CTRL Z <b>UNDO</b></span><span>⌘/CTRL SHIFT Z <b>REDO</b></span><span>R <b>RESET</b></span><span>D <b>EXPORT</b></span><span>E <b>EXPAND</b></span><span>C <b>CROP</b></span></div>
 </div>
 <div id="shortcutsOverlay" class="modalOverlay" hidden>
   <section class="modalCard shortcutsDialog" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
@@ -4294,11 +4313,10 @@ window.addEventListener('keydown',e=>{
   if(['INPUT','BUTTON','TEXTAREA','SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
   if(e.code==='Space'){ e.preventDefault(); isVideo?toggleVideoPlayback():toggleBeforeAfter(); }
   else if(e.key.toLowerCase()==='r'){
-    ids.forEach(k=>{ sliders[k].value=0; });
-    setDitherScope('full');
-    userChangedSliders();
-    showToast('All controls reset to 0');
-  } else if(e.key.toLowerCase()==='d'){ downloadImage(); }
+    $('resetOriginalBtn').click();
+  } else if(e.key.toLowerCase()==='d'){
+    if(isVideo) processVideo(); else downloadImage();
+  }
   else if(e.key.toLowerCase()==='e'){
     const anyClosed=document.querySelector('.effectGroup:not(.open)');
     document.querySelectorAll('.effectGroup').forEach(g=>setGroupOpen(g,!!anyClosed));
@@ -4451,12 +4469,20 @@ async function processVideo(multiClipPlan=null){
     }else uploadVideoTexture();
   };
   let timelineBlendCanvas=null;
-  const composeTimelineFrame=(first,second,amount,blackAlpha)=>{
-    if(!second && !(blackAlpha>0))return first;
+  const composeTimelineFrame=(first,second,amount,overlayAlpha=0,transitionType='dissolve',overlayColor='#000')=>{
+    if(!second && !(overlayAlpha>0))return first;
     if(!timelineBlendCanvas){ timelineBlendCanvas=document.createElement('canvas'); timelineBlendCanvas.width=outputSize.width; timelineBlendCanvas.height=outputSize.height; }
-    const ctx=timelineBlendCanvas.getContext('2d'); ctx.clearRect(0,0,timelineBlendCanvas.width,timelineBlendCanvas.height); ctx.globalAlpha=1; ctx.drawImage(first,0,0);
-    if(second){ ctx.globalAlpha=social.clamp(amount,0,1); ctx.drawImage(second,0,0); ctx.globalAlpha=1; }
-    if(blackAlpha>0){ ctx.fillStyle=`rgba(0,0,0,${social.clamp(blackAlpha,0,1)})`; ctx.fillRect(0,0,timelineBlendCanvas.width,timelineBlendCanvas.height); }
+    const ctx=timelineBlendCanvas.getContext('2d'), width=timelineBlendCanvas.width, height=timelineBlendCanvas.height, progress=social.clamp(amount,0,1);
+    ctx.clearRect(0,0,width,height); ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
+    if(second && transitionType==='slide-left'){
+      ctx.drawImage(first,-progress*width,0,width,height); ctx.drawImage(second,(1-progress)*width,0,width,height);
+    }else{
+      ctx.drawImage(first,0,0);
+      if(second && transitionType==='wipe'){
+        ctx.save(); ctx.beginPath(); ctx.rect(0,0,width*progress,height); ctx.clip(); ctx.drawImage(second,0,0); ctx.restore();
+      }else if(second){ ctx.globalAlpha=progress; ctx.drawImage(second,0,0); ctx.globalAlpha=1; }
+    }
+    if(overlayAlpha>0){ ctx.fillStyle=overlayColor; ctx.globalAlpha=social.clamp(overlayAlpha,0,1); ctx.fillRect(0,0,width,height); ctx.globalAlpha=1; }
     return timelineBlendCanvas;
   };
   try{
@@ -4500,10 +4526,11 @@ async function processVideo(multiClipPlan=null){
             const blendLower=editPlan.multiClip?(blendClip?.trimStart??0):(blendClip?.start??0);
             const blendUpper=editPlan.multiClip?(blendClip?.trimEnd??mapped.blendTime+.001):(blendClip?.end??mapped.blendTime+.001);
             await uploadFrame(Math.min(blendUpper-0.0001,Math.max(blendLower,mapped.blendTime)),blendSource);
-            const incoming=makeExportCanvas(options,position,true,outputSize); output=composeTimelineFrame(output,incoming,mapped.blend||0,0);
+            const incoming=makeExportCanvas(options,position,true,outputSize); output=composeTimelineFrame(output,incoming,mapped.blend||0,0,mapped.transitionType||'dissolve');
           }
         }
-        if(mapped.blackAlpha>0) output=composeTimelineFrame(output,null,0,mapped.blackAlpha);
+        const transitionOverlayAlpha=mapped.overlayAlpha??mapped.blackAlpha??0;
+        if(transitionOverlayAlpha>0) output=composeTimelineFrame(output,null,0,transitionOverlayAlpha,'dissolve',mapped.overlayColor||'#000');
         if(editPlan.multiClip && window.multiTimeline?.renderOverlays) output=await window.multiTimeline.renderOverlays(output,outputTime,editPlan);
         const blob=await canvasBlob(output,'image/jpeg',0.98);
         checkExportCancelled(); await writeFile(`frame_${String(j).padStart(4,'0')}.jpg`,new Uint8Array(await blob.arrayBuffer()));

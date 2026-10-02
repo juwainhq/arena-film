@@ -233,11 +233,14 @@ test('transitions expose six preview choices and render frame-synced preview eff
   assert.match(multiTimeline, /function transitionAt\(time, trackName = 'main'\)/);
   const transitionSource = multiTimeline.match(/function transitionAt\(time, trackName = 'main'\) \{[\s\S]*?\n  \}/)[0];
   const transitionState = vm.createContext({});
-  vm.runInContext(`const state={clips:[]}; const mainClips=()=>state.clips.filter(c=>c.track==='main').sort((a,b)=>a.start-b.start); const clipEnd=c=>c.start+c.trimEnd-c.trimStart; const transitionInfo=c=>({type:c.transitionOut?.type||'none',duration:c.transitionOut?.duration||0.5}); ${transitionSource}; this.setClips=clips=>state.clips=clips; this.at=transitionAt;`, transitionState);
+  vm.runInContext(`const state={clips:[]}; const mainClips=()=>state.clips.filter(c=>c.track==='main').sort((a,b)=>a.start-b.start); const clipDuration=c=>c.trimEnd-c.trimStart; const clipEnd=c=>c.start+clipDuration(c); const transitionInfo=c=>({type:c.transitionOut?.type||'none',duration:c.transitionOut?.duration||0.5}); ${transitionSource}; this.setClips=clips=>state.clips=clips; this.at=transitionAt;`, transitionState);
   transitionState.setClips([{id:'a',track:'main',start:0,trimStart:0,trimEnd:2,transitionOut:{type:'dissolve',duration:0.5}},{id:'b',track:'main',start:2,trimStart:0,trimEnd:2,transitionOut:{type:'none',duration:0.5}}]);
-  assert.equal(transitionState.at(1.75).progress, 0);
-  assert.equal(transitionState.at(2).progress, 0.5);
+  assert.equal(transitionState.at(1.5).progress, 0);
+  assert.equal(transitionState.at(1.75).progress, 0.5);
+  assert.equal(transitionState.at(2).progress, 1);
   assert.equal(transitionState.at(2.251), null);
+  transitionState.setClips([{id:'short-a',track:'main',start:0,trimStart:0,trimEnd:0.2,transitionOut:{type:'dissolve',duration:0.5}},{id:'short-b',track:'main',start:0.2,trimStart:0,trimEnd:0.2,transitionOut:{type:'none',duration:0.5}}]);
+  assert.equal(transitionState.at(0.1).duration,0.2, 'a transition cannot outlast either short clip');
   transitionState.setClips([{id:'o1',track:'video-2',start:0,trimStart:0,trimEnd:2,transitionOut:{type:'wipe',duration:0.5}},{id:'o2',track:'video-2',start:2,trimStart:0,trimEnd:2,transitionOut:{type:'none',duration:0.5}}]);
   assert.equal(transitionState.at(2, 'video-2').type, 'wipe');
   assert.match(multiTimeline, /transitionAt\(time, track\.id\)/);
@@ -268,6 +271,15 @@ test('lane changes keep playback on the edited timeline and do not jump over ove
   assert.match(multiTimeline, /key: `clip:\$\{track\.id\}:\$\{item\.clipId\}`/);
 });
 
+test('video editing shortcuts provide frame stepping, clip deletion, and reversible history without hijacking fields', () => {
+  assert.match(multiTimeline,/target\?\.closest\('input,textarea,select,\[contenteditable="true"\],\[role="dialog"\]'\)/);
+  assert.match(multiTimeline,/event\.shiftKey\) redo\(\); else undo\(\)/);
+  assert.match(multiTimeline,/event\.key === 'Delete' \|\| event\.key === 'Backspace'[\s\S]*?deleteSelected\(\)/);
+  assert.match(multiTimeline,/const step = event\.shiftKey \? 1 : 1 \/ FRAME_RATE/);
+  assert.match(script,/if\(isVideo\) processVideo\(\); else downloadImage\(\)/);
+  assert.match(html,/← \/ → <b>FRAME STEP<\/b>[\s\S]*?DEL <b>DELETE CLIP<\/b>[\s\S]*?⌘\/CTRL Z <b>UNDO<\/b>[\s\S]*?⌘\/CTRL SHIFT Z <b>REDO<\/b>/);
+});
+
 test('V2+ composite against the actual preview frame and keep playback running for overlay-only tails', () => {
   assert.match(multiTimeline, /overlayVideoElement\.src = src/);
   assert.match(multiTimeline, /media\.imageElement \|\| media\.overlayVideoElement \|\| media\.videoElement/);
@@ -279,7 +291,7 @@ test('V2+ composite against the actual preview frame and keep playback running f
   assert.match(styles, /\.mtl-preview-overlay \{ position: absolute; z-index: 9; display: block;/);
 });
 
-test('multi-timeline export mapping preserves clip trims, gap black frames, and dissolve/fade timing', () => {
+test('multi-timeline export mapping preserves trims, gap frames, transition choices, and configured duration', () => {
   const mapper=multiTimeline.match(/function mapOutputTime\(outputTime, plan\) \{[\s\S]*?\n  \}/)[0];
   const state=vm.createContext({});
   vm.runInContext(`${mapper}\nthis.map=mapOutputTime;`,state);
@@ -289,8 +301,49 @@ test('multi-timeline export mapping preserves clip trims, gap black frames, and 
   assert.deepEqual(JSON.parse(JSON.stringify(state.map(1.75,{duration:4,segments:[a,b]}))),{sourceTime:2.75,source:'a.mp4',blendTime:4.25,blendSource:'b.mp4',blend:0.5,clipIndex:0,blackAlpha:0});
   const gap={index:1,start:2,end:3,gap:true,blackFrame:true};
   assert.equal(state.map(2.5,{duration:3,segments:[{index:0,start:0,end:2,trimStart:0,trimEnd:2,source:'a.mp4'},gap]}).gap,true);
-  const fade={index:0,start:0,end:2,trimStart:0,trimEnd:2,source:'a.mp4',transition:'fade-to-black'};
-  assert.equal(state.map(1.75,{duration:2,segments:[fade]}).blackAlpha,0.5);
+  const slide={index:0,start:0,end:2,trimStart:0,trimEnd:2,source:'a.mp4',transition:'slide-left',transitionDuration:1};
+  const incoming={index:1,start:2,end:4,trimStart:4,trimEnd:6,source:'b.mp4',transition:'none'};
+  slide.next=incoming;
+  assert.deepEqual(JSON.parse(JSON.stringify(state.map(1.75,{duration:4,segments:[slide,incoming]}))),{sourceTime:1.75,source:'a.mp4',blendTime:4.25,blendSource:'b.mp4',blend:0.5,transitionType:'slide-left',clipIndex:0,blackAlpha:0});
+  slide.transition='wipe';
+  assert.equal(state.map(1.75,{duration:4,segments:[slide,incoming]}).transitionType,'wipe');
+  const fade={index:0,start:0,end:2,trimStart:0,trimEnd:2,source:'a.mp4',transition:'fade-to-black',transitionDuration:0.5};
+  const fadeIn={index:1,start:2,end:4,trimStart:0,trimEnd:2,source:'b.mp4',transition:'none'};
+  fade.next=fadeIn;
+  assert.equal(state.map(1.875,{duration:4,segments:[fade,fadeIn]}).overlayAlpha,0.5);
+  assert.equal(state.map(2.125,{duration:4,segments:[fade,fadeIn]}).overlayAlpha,0.5);
+  fade.transitionDuration=0.8; fadeIn.transitionDuration=0.2;
+  assert.ok(Math.abs(state.map(2.2,{duration:4,segments:[fade,fadeIn]}).overlayAlpha-0.5)<1e-9, 'the outgoing clip controls both halves of its transition duration');
+  const fadeGap={index:1,start:2,end:3,gap:true,blackFrame:true};
+  const afterGap={index:2,start:3,end:4,trimStart:0,trimEnd:1,source:'c.mp4',transition:'none'};
+  assert.equal(state.map(3.1,{duration:4,segments:[fade,fadeGap,afterGap]}).overlayAlpha,0, 'transitions never leak across a timeline gap');
+  fade.transition='fade-from-white';
+  assert.equal(state.map(1.875,{duration:4,segments:[fade,fadeIn]}).overlayColor,'#fff');
+  assert.match(multiTimeline,/Math\.min\(transition\.duration, clipDuration\(previousClip\), duration\)/);
+  assert.match(script,/mapped\.transitionType\|\|'dissolve'/);
+  assert.match(script,/mapped\.overlayColor\|\|'#000'/);
+  assert.match(multiTimeline,/transitionAt\(overlayTime, track\.id\)/);
+});
+
+test('multi-timeline export plan honors transition duration and only overlaps adjacent dissolves', () => {
+  const source=multiTimeline.match(/function getExportPlan\(clips = state\.clips\) \{[\s\S]*?\n  \}/)[0];
+  const context=vm.createContext({});
+  vm.runInContext(`const state={media:new Map()}; const clipDuration=c=>Math.max(0.1,c.trimEnd-c.trimStart); const clipEnd=c=>c.start+clipDuration(c); const transitionInfo=c=>({type:c?.transitionOut?.type||c?.transition||'none',duration:c?.transitionOut?.duration||0.5}); const getExportManifest=()=>({}); const getOverlaysAt=()=>[]; ${source}; this.setMedia=items=>state.media=new Map(items); this.plan=getExportPlan;`,context);
+  const a={id:'a',mediaId:'ma',track:'main',start:0,trimStart:0,trimEnd:2,transition:'dissolve',transitionOut:{type:'dissolve',duration:1.2}};
+  const b={id:'b',mediaId:'mb',track:'main',start:2,trimStart:0,trimEnd:2,transition:'none',transitionOut:{type:'none',duration:0.5}};
+  context.setMedia([['ma',{type:'video',src:'a.mp4'}],['mb',{type:'video',src:'b.mp4'}]]);
+  let plan=context.plan([a,b]);
+  assert.equal(plan.duration,2.8);
+  assert.equal(plan.segments[0].transitionDuration,1.2);
+  assert.equal(plan.segments[0].next,plan.segments[1]);
+  const wipe={...a,transition:'wipe',transitionOut:{type:'wipe',duration:1.2}};
+  plan=context.plan([wipe,b]);
+  assert.equal(plan.duration,4);
+  assert.equal(plan.segments[0].next,plan.segments[1]);
+  const separated={...b,start:3};
+  plan=context.plan([wipe,separated]);
+  assert.ok(plan.segments.some(segment=>segment.gap));
+  assert.equal(plan.segments.find(segment=>!segment.gap).next,undefined);
 });
 
 test('FFmpeg stays dormant until video upload and export progress opens only on export', () => {
