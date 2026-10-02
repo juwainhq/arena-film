@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FILM LAB — Cinematic Effects</title>
 <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=3">
 <link rel="icon" type="image/png" sizes="64x64" href="./favicon.png?v=3">
@@ -112,7 +112,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 #canvasWrap { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 #canvasWrap::before { content: '01 / LIVE CANVAS'; position: absolute; top: 0; left: 0; z-index: 2; font-size: 10px; font-weight: 600; letter-spacing: .27em; color: var(--text-dim2); pointer-events: none; }
 #canvasWrap::after { content: 'FILM LAB / WEBGL 2'; position: absolute; bottom: 0; left: 0; z-index: 2; font-size: 10px; letter-spacing: .24em; color: var(--text-dim2); pointer-events: none; }
-#glCanvas { display: block; max-width: 100%; max-height: calc(100% - 52px); background: var(--bg); border-radius: 0; box-shadow: 0 0 0 1px var(--panel-border); cursor: zoom-in; }
+#glCanvas { display: block; max-width: 100%; max-height: calc(100% - 52px); background: var(--bg); border-radius: 0; box-shadow: 0 0 0 1px var(--panel-border); cursor: zoom-in; touch-action: none; }
 #canvasWrap.zoomed #glCanvas { cursor: grab; touch-action: none; }
 #canvasWrap.dragging #glCanvas { cursor: grabbing; }
 #beforeLabel { position: absolute; top: 0; left: 50%; transform: translateX(-50%); display: none; z-index: 5; padding: 4px 10px; background: var(--bg); border: 1px solid var(--panel-border); color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
@@ -540,8 +540,8 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 .chip .presetColorSwatch { width: 34px; margin-left: 9px; }
 #presetSelectSwatch { position: absolute; z-index: 1; top: 50%; left: 13px; width: 32px; height: 7px; transform: translateY(-50%); pointer-events: none; }
 #presetSelect { padding-left: 55px; }
-.effectGroup.sectionDirty { border-top-color: var(--border-hover); }
-.effectGroup.sectionDirty .effectTitle::after { content: ''; width: 4px; height: 4px; margin-left: 2px; border-radius: 50%; background: var(--accent); }
+.effectGroup.sectionDirty,.effectGroup.section--active { border-top-color: var(--border-hover); }
+.effectGroup.sectionDirty .effectTitle::after,.effectGroup.section--active .effectTitle::after { content: ''; width: 4px; height: 4px; margin-left: 2px; border-radius: 50%; background: var(--accent); }
 .infoTip { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 16px; height: 16px; padding: 0; border: 1px solid var(--panel-border); border-radius: 50%; background: transparent; color: var(--text-dim2); font: 500 9px 'JetBrains Mono',monospace; cursor: help; }
 .infoTip::after { content: attr(data-tip); position: absolute; z-index: 40; left: 50%; bottom: calc(100% + 8px); width: min(230px,70vw); padding: 9px 11px; border: 1px solid var(--panel-border); background: var(--bg); color: var(--text); font: 10px/1.5 Inter,system-ui,sans-serif; letter-spacing: 0; text-align: left; text-transform: none; box-shadow: 0 10px 30px var(--shadow); opacity: 0; visibility: hidden; transform: translate(-50%,4px); transition: opacity .16s,transform .16s,visibility .16s; pointer-events: none; }
 .infoTip:hover::after,.infoTip:focus-visible::after,.infoTip[aria-expanded="true"]::after { opacity: 1; visibility: visible; transform: translate(-50%,0); }
@@ -550,8 +550,11 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 .modalCard { position: relative; width: min(430px,100%); padding: 26px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); box-shadow: 0 24px 90px rgba(0,0,0,.35); }
 .modalClose { position: absolute; top: 12px; right: 14px; width: 34px; height: 34px; border: 0; background: transparent; color: var(--text-dim); font-size: 22px; cursor: pointer; }
 .modalCard .sectionLabel { padding-right: 26px; }
-.shortcutList { display: flex; flex-direction: column; gap: 11px; margin-top: 20px; }
-.shortcutsDialog { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; }
+.shortcutList { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px 18px; margin-top: 20px; }
+.shortcutsDialog { width: min(760px,100%); max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; }
+.shortcutList > div { justify-content: flex-start; min-width: 0; }
+.shortcutList > div span { min-width: 0; line-height: 1.45; }
+@media (max-width: 600px) { .shortcutList { grid-template-columns: minmax(0,1fr); } }
 .shortcutList > div,.downloadDetails > div { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding-bottom: 9px; border-bottom: 1px solid var(--panel-border); color: var(--text-dim); font-size: 10px; }
 .shortcutList kbd { flex: none; min-width: 42px; padding: 4px 6px; border: 1px solid var(--panel-border); color: var(--text); font: 10px 'JetBrains Mono',monospace; text-align: center; }
 .downloadDetails { display: flex; flex-direction: column; gap: 11px; margin: 21px 0 4px; }
@@ -651,6 +654,8 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 .clusterContents .subControls { gap: 12px; }
 .clusterContents .subRow { gap: 6px; }
 .creativeVignette { display: flex; flex-direction: column; gap: 12px; padding-top: 10px; border-top: 1px solid var(--panel-border); }
+.vignetteHeader { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.creativeVignette.section--active .adjustSectionHeading::after { content: ''; display: inline-block; width: 4px; height: 4px; margin-left: 7px; vertical-align: middle; border-radius: 50%; background: var(--accent); }
 .creativeVignette .subRow { display: flex; flex-direction: column; gap: 6px; }
 .creativeVignette .subHead { display: flex; justify-content: space-between; align-items: center; }
 .creativeVignette .subLabel { color: var(--text-dim); font-size: 10px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
@@ -868,6 +873,7 @@ body[data-mode="empty"] #app #timeline-module { flex: none; width: 100%; height:
 
 /* Keep the legacy sidebar shortcut area hidden; the bottom bar is the only visible shortcut reference. */
 #shortcuts { display: none !important; }
+#shortcuts-bar { display: contents; }
 #shortcut-footer.shortcuts-bar { position: relative; z-index: 0; display: flex; flex: none; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 16px; width: 100%; min-height: 26px; padding: 5px 9px; overflow: hidden; border-top: 1px solid var(--panel-border); background: var(--bg); color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .08em; white-space: nowrap; pointer-events: none; }
 #shortcut-footer span { display: flex; gap: 5px; }
 #shortcut-footer b { color: var(--text-dim); font-weight: 500; }
@@ -913,7 +919,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
 .mtl-track[hidden] { display: none !important; }
 .mtl-track-name { position: sticky; z-index: 6; left: 0; display: flex; align-items: center; width: 58px; padding-left: 6px; border-right: 1px solid var(--panel-border); background: var(--bg); color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; letter-spacing: .09em; }
 .mtl-track-content { position: relative; min-width: 0; height: 100%; min-height: 30px; overflow: hidden; background: var(--soft-bg); border-left: 1px solid var(--panel-border); }
-.mtl-clip { position: absolute; top: 2px; bottom: 2px; overflow: hidden; border: 1px solid rgba(255,255,255,.45); background: #222; color: #fff; cursor: grab; }
+.mtl-clip { position: absolute; top: 2px; bottom: 2px; overflow: hidden; border: 1px solid rgba(255,255,255,.45); background: #222; color: #fff; cursor: grab; touch-action: none; }
 .mtl-clip.mtl-selected { border: 2px solid var(--accent); box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
 .mtl-clip.mtl-dragging { z-index: 12; opacity: .92; cursor: grabbing; box-shadow: 0 8px 28px rgba(0,0,0,.7); }
 .mtl-clip.mtl-drag-ghost { z-index: 1; border-style: dashed; border-color: var(--accent); opacity: .28; pointer-events: none; }
@@ -980,6 +986,41 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
   .mtl-trim-in { border-right: 2px solid var(--accent) !important; }
   .mtl-trim-out { border-left: 2px solid var(--accent) !important; }
   .mtl-playhead { width: 4px; }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  #app[data-workspace="video"] #content { grid-template-columns: minmax(0,3fr) minmax(0,2fr); grid-template-rows: minmax(0,1fr) 160px; }
+  #app[data-workspace="video"] #sidebar { width: 100%; min-width: 0; }
+  #app[data-workspace="video"] #content > .mtl-shell { height: 160px; }
+  .mtl-media-row { min-height: 29px; }
+  .mtl-media-heading { width: 96px; }
+  .mtl-media-card { height: 27px; }
+  .mtl-toolbar { min-height: 23px; }
+  .mtl-ruler-scroll,.mtl-ruler { height: 14px; }
+  .mtl-scroll { min-height: 58px; }
+  .mtl-video-row,.mtl-photo-row { min-height: 28px; }
+  .mtl-audio-row { min-height: 21px; }
+}
+@media (max-width: 767px) {
+  #app[data-workspace="video"] #mainArea { inset: 0 0 108px; }
+  #app[data-workspace="video"] #content > .mtl-shell { height: 108px; padding: 4px 8px 5px; gap: 3px; }
+  #app[data-workspace="video"] #sidebar { bottom: 108px; height: min(60dvh,760px); max-height: calc(100% - 126px); }
+  .mtl-media-row { display: contents; }
+  #mtl-media-pool,.mtl-media-heading > span { display: none !important; }
+  #mtl-add-clip { position: fixed; z-index: 30; right: 14px; bottom: 116px; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; min-height: 48px; padding: 0; border: 1px solid var(--accent); border-radius: 50%; background: var(--accent); color: var(--inverse); font-size: 0; box-shadow: 0 4px 18px var(--shadow); }
+  #mtl-add-clip::before { content: '+'; font: 24px/1 Inter,system-ui,sans-serif; }
+  .mtl-toolbar { min-height: 28px; flex-wrap: nowrap; justify-content: flex-start; }
+  .mtl-toolbar > :not(#mtl-play-pause):not(#mtl-timecode) { display: none !important; }
+  #mtl-play-pause { width: 44px; min-height: 28px; font-size: 13px; }
+  #mtl-timecode { margin-left: 8px; font-size: 8px; }
+  .mtl-ruler-scroll { width: 100%; height: 14px; margin-left: 0; }
+  .mtl-ruler { height: 14px; }
+  #mtl-scroll { flex: 1 1 auto; min-height: 34px; height: 34px; overflow: hidden; }
+  #mtl-canvas { min-height: 34px; }
+  #mtl-extra-video-tracks,#mtl-extra-photo-tracks,#mtl-empty,
+  .mtl-track[data-track-id="audio"],.mtl-track[data-track-id^="photo-"] { display: none !important; }
+  .mtl-track[data-track-id="main"] { min-height: 32px; }
+  .mtl-track[data-track-id="main"] .mtl-track-content { min-height: 30px; }
+  .mtl-track-name { font-size: 7px; }
 }
 
 </style>
@@ -1112,7 +1153,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
             <div class="subRow"><div class="subHead"><div class="subLabel">Contrast</div><div class="subVal" id="valContrast">0</div></div><input class="subSlider" type="range" id="sliderContrast" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Saturation</div><div class="subVal" id="valSaturation">0</div></div><input class="subSlider" type="range" id="sliderSaturation" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Temperature <span>cool → warm</span></div><div class="subVal" id="valTemperature">0</div></div><input class="subSlider" type="range" id="sliderTemperature" min="-100" max="100" value="0"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Vibrance <button type="button" class="infoTip" aria-label="About Vibrance" aria-expanded="false" data-tip="Boosts muted colors while protecting already-vivid tones.">i</button><span>muted → vivid</span></div><div class="subVal" id="valVibrance">0</div></div><input class="subSlider" type="range" id="sliderVibrance" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Vibrance <button type="button" class="infoTip" aria-label="About Vibrance" aria-expanded="false" data-tip="Boosts muted colors while protecting already-vivid tones." data-tooltip="Boosts muted colors while protecting already-vivid tones.">i</button><span>muted → vivid</span></div><div class="subVal" id="valVibrance">0</div></div><input class="subSlider" type="range" id="sliderVibrance" min="-100" max="100" value="0"></div>
             <details class="advancedColor">
               <summary><span>More color controls</span><small>Shadows, highlights & vignette</small></summary>
               <div class="advancedColorRows">
@@ -1134,22 +1175,21 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="bloomControls"><i style="background:var(--accent)"></i> Bloom <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="bloom" role="switch" aria-checked="true" aria-label="Bloom effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="bloom" hidden aria-label="Reset Bloom section" title="Reset Bloom">↺</button></div>
           </div>
-          <div class="mainSlider"><div class="subHead"><div class="subLabel">Intensity</div><div class="subVal sliderVal" id="valBloom">0</div></div><input type="range" id="sliderBloom" min="-100" max="100" value="0"></div>
+          <div class="mainSlider"><div class="subHead"><div class="subLabel">Intensity <button type="button" class="infoTip" aria-label="About Bloom" aria-expanded="false" data-tip="Adds or subtracts soft light around bright image details." data-tooltip="Adds or subtracts soft light around bright image details.">i</button></div><div class="subVal sliderVal" id="valBloom">0</div></div><input type="range" id="sliderBloom" min="-100" max="100" value="0"></div>
           <div class="subControls" id="bloomControls">
             <div class="subRow"><div class="subHead"><div class="subLabel">Threshold <span>bright cutoff</span></div><div class="subVal" id="valBloomThresh">0</div></div><input class="subSlider" type="range" id="sliderBloomThresh" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Spread <span>blur radius</span></div><div class="subVal" id="valBloomSpread">0</div></div><input class="subSlider" type="range" id="sliderBloomSpread" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>falloff</span></div><div class="subVal" id="valBloomSoft">0</div></div><input class="subSlider" type="range" id="sliderBloomSoft" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Tint <span>cool → amber</span></div><div class="subVal" id="valBloomTint">0</div></div><input class="subSlider" type="range" id="sliderBloomTint" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Blend <span>strong add → screen</span></div><div class="subVal" id="valBloomBlend">0</div></div><input class="subSlider" type="range" id="sliderBloomBlend" min="-100" max="100" value="0"></div>
-            <div class="subRow photo-only"><div class="subHead"><div class="subLabel">Anamorphic <button type="button" class="infoTip" aria-label="About Anamorphic" aria-expanded="false" data-tip="Stretches lens glow into wider horizontal streaks.">i</button><span>vertical → horizontal</span></div><div class="subVal" id="valBloomAnam">0</div></div><input class="subSlider" type="range" id="sliderBloomAnam" min="-100" max="100" value="0"></div>
+            <div class="subRow photo-only"><div class="subHead"><div class="subLabel">Anamorphic <button type="button" class="infoTip" aria-label="About Anamorphic" aria-expanded="false" data-tip="Stretches lens glow into wider horizontal streaks." data-tooltip="Stretches lens glow into wider horizontal streaks.">i</button><span>vertical → horizontal</span></div><div class="subVal" id="valBloomAnam">0</div></div><input class="subSlider" type="range" id="sliderBloomAnam" min="-100" max="100" value="0"></div>
           </div>
         </div><div class="effectGroup photo-only" data-group="hallation">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="hallationControls"><i style="background:var(--accent2)"></i> Hallation <span class="expand" aria-hidden="true"></span></button>
-            <button type="button" class="infoTip" aria-label="About Hallation" aria-expanded="false" data-tip="A warm red-orange glow that gathers around bright edges.">i</button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="hallation" role="switch" aria-checked="true" aria-label="Hallation effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="hallation" hidden aria-label="Reset Hallation section" title="Reset Hallation">↺</button></div>
           </div>
-          <div class="mainSlider"><div class="subHead"><div class="subLabel">Intensity</div><div class="subVal sliderVal" id="valHall">0</div></div><input type="range" id="sliderHall" min="-100" max="100" value="0"></div>
+          <div class="mainSlider"><div class="subHead"><div class="subLabel">Intensity <button type="button" class="infoTip" aria-label="About Hallation" aria-expanded="false" data-tip="A warm red-orange glow that gathers around bright edges." data-tooltip="A warm red-orange glow that gathers around bright edges.">i</button></div><div class="subVal sliderVal" id="valHall">0</div></div><input type="range" id="sliderHall" min="-100" max="100" value="0"></div>
           <div class="subControls" id="hallationControls">
             <div class="subRow"><div class="subHead"><div class="subLabel">Threshold</div><div class="subVal" id="valHallThresh">0</div></div><input class="subSlider" type="range" id="sliderHallThresh" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Bleed <span>anamorphic stretch</span></div><div class="subVal" id="valHallSpread">0</div></div><input class="subSlider" type="range" id="sliderHallSpread" min="-100" max="100" value="0"></div>
@@ -1169,11 +1209,11 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
             <div class="subRow"><div class="subHead"><div class="subLabel">Roughness <span>uniform → irregular</span></div><div class="subVal" id="valGrainRough">0</div></div><input class="subSlider" type="range" id="sliderGrainRough" min="-100" max="100" value="0"></div>
             <div class="subRow video-only" id="grainSpeedRow" hidden><div class="subHead"><div class="subLabel">Speed</div><div class="subVal" id="valGrainSpeed">0</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Color <span>mono → chroma</span></div><div class="subVal" id="valGrainColor">0</div></div><input class="subSlider" type="range" id="sliderGrainColor" min="-100" max="100" value="0"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Luma Influence <button type="button" class="infoTip" aria-label="About Luma Influence" aria-expanded="false" data-tip="Controls how strongly grain follows the image's brightness.">i</button><span>midtones</span></div><div class="subVal" id="valGrainLuma">0</div></div><input class="subSlider" type="range" id="sliderGrainLuma" min="-100" max="100" value="0"></div>
+            <div class="subRow"><div class="subHead"><div class="subLabel">Luma Influence <button type="button" class="infoTip" aria-label="About Luma Influence" aria-expanded="false" data-tip="Controls how strongly grain follows the image's brightness." data-tooltip="Controls how strongly grain follows the image's brightness.">i</button><span>midtones</span></div><div class="subVal" id="valGrainLuma">0</div></div><input class="subSlider" type="range" id="sliderGrainLuma" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>blur grain</span></div><div class="subVal" id="valGrainSoft">0</div></div><input class="subSlider" type="range" id="sliderGrainSoft" min="-100" max="100" value="0"></div>
             <div id="grainSeedRow" class="photo-only"><span>Static grain pattern<br>per photo</span><button type="button" id="randomizeGrainBtn">↻ Randomize</button></div>
           </div>
-        </div><div class="creativeVignette photo-only"><div class="adjustSectionHeading">Vignette</div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div></div></div>
+        </div><div class="creativeVignette photo-only" data-group="vignette"><div class="vignetteHeader"><div class="adjustSectionHeading">Vignette</div><button type="button" class="groupReset" data-reset="vignette" hidden aria-label="Reset Vignette section" title="Reset Vignette">↺</button></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div></div></div>
               </details>
               <details class="adjustCluster" data-cluster="technical">
                 <summary><span>Technical</span><span class="clusterSummary" data-summary="technical">Dither / Halftone · Sharpening</span></summary>
@@ -1182,7 +1222,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="ditherControls"><i style="background:var(--text-dim)"></i> Dither <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="dither" role="switch" aria-checked="true" aria-label="Dither effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="dither" hidden aria-label="Reset Dither section" title="Reset Dither">↺</button></div>
           </div>
-          <div class="mainSlider"><div class="subHead"><div class="subLabel">Intensity</div><div class="subVal sliderVal" id="valDither">0</div></div><input type="range" id="sliderDither" min="-100" max="100" value="0"></div>
+          <div class="mainSlider"><div class="subHead"><div class="subLabel">Intensity <button type="button" class="infoTip" aria-label="About Dither" aria-expanded="false" data-tip="Reduces tones into an ordered or diffused print-like pattern." data-tooltip="Reduces tones into an ordered or diffused print-like pattern.">i</button></div><div class="subVal sliderVal" id="valDither">0</div></div><input type="range" id="sliderDither" min="-100" max="100" value="0"></div>
           <div class="subControls" id="ditherControls">
             <p class="ditherHint">Negative: monochrome print · Positive: color print · 0: original</p>
             <div class="ditherMode" role="radiogroup" aria-label="Dither area">
@@ -1256,7 +1296,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
                 <button type="button" id="eraseSubjectBtn" aria-pressed="false">Erase brush</button>
               </div>
               <div class="subRow"><div class="subHead"><div class="subLabel">Brush size <span>small → large</span></div><div class="subVal" id="valDitherBrush">0</div></div><input class="subSlider" type="range" id="sliderDitherBrush" min="-100" max="100" value="0"></div>
-              <p class="maskHint">Background dithering begins when a subject is protected. People are selected automatically; brush over anything else you want to keep clear. Tap Done painting on the preview to pan again.</p>
+              <p class="maskHint">Background dithering begins when a subject is protected. People are selected automatically; brush over anything else you want to keep clear. Tap Finish mask on the preview to resume panning.</p>
             </div>
           </div>
         </div><div class="effectGroup" data-group="sharpen">
@@ -1411,10 +1451,10 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
       <div id="mtl-ruler-scroll" class="mtl-ruler-scroll"><div id="mtl-ruler" class="mtl-ruler"><div id="mtl-ruler-playhead" class="mtl-ruler-playhead" role="slider" tabindex="0" aria-label="Timeline playhead" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></div></div></div>
       <div id="mtl-scroll" class="mtl-scroll" tabindex="0" aria-label="Multi-track timeline. Drag clips to arrange, resize their edges, or right-click for clip actions.">
         <div id="mtl-canvas" class="mtl-canvas">
-          <div id="mtl-extra-video-tracks" class="mtl-track-stack" aria-label="Additional video tracks"></div>
+          <div id="mtl-extra-video-tracks" class="mtl-track-stack" aria-label="Additional video tracks"><div class="mtl-track mtl-video-row" data-track-id="video-2"><span class="mtl-track-name">V2</span><div class="mtl-track-content" data-track="video-2"></div></div></div>
           <div class="mtl-track mtl-video-row" data-track-id="main"><span class="mtl-track-name">V1</span><div id="mtl-main-track" class="mtl-track-content" data-track="main"></div></div>
           <div class="mtl-track mtl-photo-row" data-track-id="photo-1" hidden><span class="mtl-track-name">PHOTO 1</span><div id="mtl-overlay-track" class="mtl-track-content" data-track="photo-1"></div></div>
-          <div id="mtl-extra-photo-tracks" class="mtl-track-stack" aria-label="Additional photo overlay tracks"></div>
+          <div id="mtl-extra-photo-tracks" class="mtl-track-stack" aria-label="Additional photo overlay tracks"><div class="mtl-track mtl-photo-row" data-track-id="photo-2"><span class="mtl-track-name">PHOTO 2</span><div class="mtl-track-content" data-track="photo-2"></div></div></div>
           <div class="mtl-track mtl-audio-row" data-track-id="audio"><span class="mtl-track-name">AUDIO</span><div id="mtl-audio-track" class="mtl-track-content" role="img" aria-label="Non-editable audio waveform"></div></div>
           <div id="mtl-playhead" class="mtl-playhead" role="slider" tabindex="0" aria-label="Timeline playhead" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></div>
           <div id="mtl-empty" class="mtl-empty">Add media to create clips at the playhead. Secondary video and photos composite over V1.</div>
@@ -1424,7 +1464,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
       </div>
     </section>
   </div>
-  <div id="shortcut-footer" class="shortcuts-bar" aria-label="Keyboard shortcuts"><span>SPACE <b>PLAY / PAUSE</b></span><span>← / → <b>FRAME STEP</b></span><span>DEL <b>DELETE CLIP</b></span><span>⌘/CTRL Z <b>UNDO</b></span><span>⌘/CTRL SHIFT Z <b>REDO</b></span><span>R <b>RESET</b></span><span>D <b>EXPORT</b></span><span>E <b>EXPAND</b></span><span>C <b>CROP</b></span></div>
+  <div id="shortcuts-bar"><div id="shortcut-footer" class="shortcuts-bar" aria-label="Keyboard shortcuts"><span>SPACE <b>PLAY / PAUSE</b></span><span>← / → <b>FRAME STEP</b></span><span>SHIFT ← / → <b>5S STEP</b></span><span>DEL <b>DELETE CLIP</b></span><span>⌘/CTRL Z <b>UNDO</b></span><span>⌘/CTRL SHIFT Z <b>REDO</b></span><span>R <b>RESET</b></span><span>D <b>EXPORT</b></span><span>E <b>EXPAND</b></span><span>C <b>CROP</b></span><span>S <b>SPLIT</b></span><span>CTRL Y <b>REDO</b></span><span>? <b>HELP</b></span></div></div>
 </div>
 <div id="shortcutsOverlay" class="modalOverlay" hidden>
   <section class="modalCard shortcutsDialog" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
@@ -1433,16 +1473,19 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
     <div class="shortcutList">
       <div><kbd>Space</kbd><span>Video: play / pause · Photo: compare before / after</span></div>
       <div><kbd>← / →</kbd><span>Video: one frame · focused playhead: 0.1s · focused trim handle: 1/120 of clip duration</span></div>
-      <div><kbd>Shift + ← / →</kbd><span>Video / focused playhead: one second · crop moves 5× · trim handle: 1/30 of clip duration</span></div>
+      <div><kbd>Shift + ← / →</kbd><span>Video: five seconds · focused playhead: one second · crop moves 5× · trim handle: 1/30 of clip duration</span></div>
       <div><kbd>↑ / ↓</kbd><span>Move the focused crop frame up or down</span></div>
       <div><kbd>Home / End</kbd><span>Move a focused timeline playhead or trim handle to its start / end</span></div>
       <div><kbd>Delete / Backspace</kbd><span>Delete the selected video clip</span></div>
       <div><kbd>Ctrl / ⌘ + Z</kbd><span>Undo the last video timeline edit</span></div>
+      <div><kbd>Ctrl / ⌘ + Y</kbd><span>Redo the last video timeline edit</span></div>
       <div><kbd>Ctrl / ⌘ + Shift + Z</kbd><span>Redo the last video timeline edit</span></div>
+      <div><kbd>S</kbd><span>Split the selected video clip at the playhead</span></div>
       <div><kbd>R</kbd><span>Reset adjustments</span></div>
       <div><kbd>D</kbd><span>Export: video reel or photo PNG</span></div>
       <div><kbd>E</kbd><span>Expand / collapse adjustment sections</span></div>
       <div><kbd>C</kbd><span>Open / close the crop panel</span></div>
+      <div><kbd>?</kbd><span>Open this shortcuts help</span></div>
       <div><kbd>Esc</kbd><span>Close this dialog, download confirmation, or timeline menu</span></div>
     </div>
   </section>
@@ -1564,7 +1607,9 @@ let floydTexture=null, floydLastKey=null, subjectMaskRevision=0;
 const appState={mode:'empty'};
 let isVideo=false, showOriginal=false, hasContent=false, animId=null;
 const MIN_PREVIEW_ZOOM=0.5, MAX_PREVIEW_ZOOM=5;
-let previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null;
+let previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null, pinchZoom=null;
+let lastCanvasTouchTap=0, suppressTouchPickerUntil=0;
+const touchZoomPointers=new Map();
 const effectEnabled={color:true,bloom:true,hallation:true,grain:true,dither:true,sharpen:true};
 let ditherScope='full';
 function effectValue(group,value,neutral=0){ return effectEnabled[group]?value:neutral; }
@@ -1703,7 +1748,7 @@ function updateFromSliders(){
   params.sharpenLuma=advancedValue('SharpLuma');
 }
 function updateSectionIndicators(){
-  document.querySelectorAll('.effectGroup').forEach(group=>{
+  document.querySelectorAll('.effectGroup,.creativeVignette[data-group]').forEach(group=>{
     const name=group.dataset.group;
     let dirty=[...group.querySelectorAll('input[type="range"]')].some(input=>Number(input.value)!==0) || effectEnabled[name]===false;
     if(name==='dither'){
@@ -1711,6 +1756,7 @@ function updateSectionIndicators(){
       dirty=dirty || ditherScope!=='full' || Object.keys(defaults).some(key=>current[key]!==defaults[key]);
     }
     group.classList.toggle('sectionDirty',dirty);
+    group.classList.toggle('section--active',dirty);
     const reset=group.querySelector('.groupReset'); if(reset) reset.hidden=!dirty;
   });
 }
@@ -1727,7 +1773,7 @@ function setupSliderNumberEditing(){
     else slider=$('slider'+readout.id.replace(/^val/,''));
     if(!slider) continue;
     readout.classList.add('numericReadout'); readout.dataset.rangeFor=slider.id; readout.tabIndex=0;
-    readout.title='Double-click to type a value'; readout.setAttribute('aria-label',`Value ${slider.getAttribute('aria-label')||slider.id}. Double-click to edit.`);
+    readout.title='Click to type a value'; readout.setAttribute('aria-label',`Value ${slider.getAttribute('aria-label')||slider.id}. Click to edit.`);
     const format=()=>{
       const value=Number(slider.value);
       if(slider.min==='-100' && slider.max==='100') return value>0?`+${value}`:String(value);
@@ -1738,7 +1784,7 @@ function setupSliderNumberEditing(){
       return String(value);
     };
     slider.addEventListener('input',()=>{ if(readout.id!=='videoTime') readout.textContent=format(); });
-    readout.addEventListener('dblclick',e=>{
+    const openNumericEditor=e=>{
       e.preventDefault(); if(readout.querySelector('input')) return;
       const editor=document.createElement('input'); editor.type='number'; editor.className='numericEditor';
       editor.min=slider.min; editor.max=slider.max; editor.step=slider.step||'1'; editor.value=slider.value;
@@ -1754,7 +1800,9 @@ function setupSliderNumberEditing(){
       };
       editor.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();finish(true);}else if(event.key==='Escape'){event.preventDefault();finish(false);}});
       editor.addEventListener('blur',()=>finish(true));
-    });
+    };
+    readout.addEventListener('click',openNumericEditor);
+    readout.addEventListener('dblclick',openNumericEditor);
     readout.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!readout.querySelector('input')){e.preventDefault();readout.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));}});
   }
 }
@@ -3026,7 +3074,22 @@ function zoomPreviewTo(next,clientX,clientY){
   if(previewZoom<=1) previewPanX=previewPanY=0;
   updatePreviewZoom();
 }
+function updatePinchZoom(){
+  if(!pinchZoom) return;
+  const first=touchZoomPointers.get(pinchZoom.ids[0]), second=touchZoomPointers.get(pinchZoom.ids[1]);
+  if(!first||!second) return;
+  const distance=Math.max(1,Math.hypot(second.x-first.x,second.y-first.y));
+  const next=Math.max(MIN_PREVIEW_ZOOM,Math.min(MAX_PREVIEW_ZOOM,pinchZoom.zoom*distance/pinchZoom.distance));
+  const centerX=(first.x+second.x)/2, centerY=(first.y+second.y)/2;
+  const wrap=canvasWrap.getBoundingClientRect(), width=canvas.clientWidth||canvas.width, height=canvas.clientHeight||canvas.height;
+  previewZoom=next;
+  previewPanX=centerX-(wrap.left+wrap.width/2)-(pinchZoom.focalX-.5)*width*next;
+  previewPanY=centerY-(wrap.top+wrap.height/2)-(pinchZoom.focalY-.5)*height*next;
+  if(previewZoom<=1) previewPanX=previewPanY=0;
+  updatePreviewZoom();
+}
 function resetPreviewZoom(){
+  pinchZoom=null; touchZoomPointers.clear();
   previewZoom=1; previewPanX=previewPanY=0; previewDrag=null;
   canvasWrap.classList.remove('dragging');
   updatePreviewZoom();
@@ -3039,6 +3102,12 @@ zoomOutBtn.addEventListener('click',()=>zoomAtCenter(1/1.25));
 zoomInBtn.addEventListener('click',()=>zoomAtCenter(1.25));
 zoomResetBtn.addEventListener('click',resetPreviewZoom);
 zoomControls.addEventListener('dblclick',e=>e.stopPropagation()); // retain double-click-to-upload on the picture
+canvasWrap.addEventListener('pointerup',e=>{
+  if(e.pointerType!=='touch') return;
+  const now=performance.now();
+  if(now-lastCanvasTouchTap<550) suppressTouchPickerUntil=now+750;
+  lastCanvasTouchTap=now;
+},true);
 canvas.addEventListener('wheel',e=>{
   if(!hasContent) return;
   const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?canvasWrap.clientHeight:1);
@@ -3058,6 +3127,17 @@ canvas.addEventListener('pointerdown',e=>{
     uploadSubjectMask();
     return;
   }
+  if(e.pointerType==='touch' && !maskPaintMode){
+    touchZoomPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    try{canvas.setPointerCapture(e.pointerId);}catch(error){}
+    if(touchZoomPointers.size===2){
+      const points=[...touchZoomPointers.entries()], first=points[0][1], second=points[1][1], centerX=(first.x+second.x)/2, centerY=(first.y+second.y)/2;
+      const rect=canvas.getBoundingClientRect();
+      pinchZoom={ids:points.map(([id])=>id),distance:Math.max(1,Math.hypot(second.x-first.x,second.y-first.y)),zoom:previewZoom,
+        focalX:(centerX-rect.left)/Math.max(1,rect.width),focalY:(centerY-rect.top)/Math.max(1,rect.height)};
+      previewDrag=null; canvasWrap.classList.remove('dragging'); e.preventDefault(); return;
+    }
+  }
   if(previewZoom<=1 || (e.pointerType==='mouse' && e.button!==0)) return;
   previewDrag={id:e.pointerId,x:e.clientX,y:e.clientY,panX:previewPanX,panY:previewPanY};
   canvas.setPointerCapture(e.pointerId);
@@ -3065,6 +3145,9 @@ canvas.addEventListener('pointerdown',e=>{
   if(e.pointerType!=='mouse') e.preventDefault();
 });
 canvas.addEventListener('pointermove',e=>{
+  const touchPoint=touchZoomPointers.get(e.pointerId);
+  if(touchPoint){ touchPoint.x=e.clientX; touchPoint.y=e.clientY; }
+  if(pinchZoom && pinchZoom.ids.includes(e.pointerId)){ e.preventDefault(); updatePinchZoom(); return; }
   if(maskStroke){ paintSubject(e); return; }
   if(!previewDrag || previewDrag.id!==e.pointerId) return;
   previewPanX=previewDrag.panX+e.clientX-previewDrag.x;
@@ -3072,6 +3155,14 @@ canvas.addEventListener('pointermove',e=>{
   updatePreviewZoom();
 });
 function finishPreviewDrag(e){
+  const wasPinching=pinchZoom?.ids.includes(e.pointerId);
+  touchZoomPointers.delete(e.pointerId);
+  if(wasPinching){
+    pinchZoom=null; previewDrag=null;
+    const remaining=[...touchZoomPointers.entries()][0];
+    if(remaining && previewZoom>1){ const [id,point]=remaining; previewDrag={id,x:point.x,y:point.y,panX:previewPanX,panY:previewPanY}; }
+    return;
+  }
   if(maskStroke && maskStroke.id===e.pointerId){
     maskStroke=null;
     if(maskUploadFrame) uploadSubjectMask(); // export must see the final brush stroke immediately
@@ -3084,7 +3175,7 @@ function finishPreviewDrag(e){
 }
 canvas.addEventListener('pointerup',finishPreviewDrag);
 canvas.addEventListener('pointercancel',finishPreviewDrag);
-canvas.addEventListener('lostpointercapture',()=>{previewDrag=null;maskStroke=null;canvasWrap.classList.remove('dragging');});
+canvas.addEventListener('lostpointercapture',e=>{touchZoomPointers.delete(e.pointerId);if(pinchZoom?.ids.includes(e.pointerId))pinchZoom=null;if(previewDrag?.id===e.pointerId)previewDrag=null;if(maskStroke?.id===e.pointerId)maskStroke=null;if(!previewDrag)canvasWrap.classList.remove('dragging');});
 window.addEventListener('resize',()=>{if(hasContent) updatePreviewZoom();});
 updatePreviewZoom();
 
@@ -3153,20 +3244,22 @@ function ditherOptionsChanged(){
 [ditherAlgorithmSelect,ditherDownscaleSelect,ditherColorModeSelect,ditherPaletteSizeSelect].forEach(control=>control.addEventListener('change',ditherOptionsChanged));
 [ditherPaletteShadow,ditherPaletteHighlight].forEach(control=>control.addEventListener('input',ditherOptionsChanged));
 updateDitherControlVisibility();
-document.querySelectorAll('.groupReset').forEach(btn=>{
-  btn.addEventListener('click',e=>{
-    e.stopPropagation();
-    const group=btn.closest('.effectGroup'), name=group.dataset.group;
-    group.querySelectorAll('input[type=range]').forEach(s=>s.value=0);
-    if(name==='dither') setDitherSettings(social.DEFAULT_DITHER);
-    if(btn.dataset.reset==='dither') setDitherScope('full');
-    if(effectEnabled[name]===false){
-      effectEnabled[name]=true; group.classList.remove('effectOff');
-      const toggle=group.querySelector('.effectToggle'); toggle.setAttribute('aria-checked','true'); toggle.querySelector('.toggleText').textContent='ON';
-    }
-    userChangedSliders(); showToast(`${group.querySelector('.effectTitle').textContent.trim()} reset`);
-  });
-});
+function resetSection(sectionId){
+  const group=document.querySelector(`.effectGroup[data-group="${CSS.escape(sectionId)}"],.creativeVignette[data-group="${CSS.escape(sectionId)}"]`);
+  if(!group)return false;
+  group.querySelectorAll('input[type=range]').forEach(slider=>slider.value=0);
+  if(sectionId==='dither'){setDitherSettings(social.DEFAULT_DITHER);setDitherScope('full');}
+  if(effectEnabled[sectionId]===false){
+    effectEnabled[sectionId]=true;group.classList.remove('effectOff');
+    const toggle=group.querySelector('.effectToggle');
+    toggle.setAttribute('aria-checked','true');toggle.querySelector('.toggleText').textContent='ON';
+  }
+  userChangedSliders();showToast(`${group.querySelector('.effectTitle,.adjustSectionHeading')?.textContent.trim()||sectionId} reset`);
+  return true;
+}
+document.querySelectorAll('.groupReset').forEach(btn=>btn.addEventListener('click',e=>{
+  e.stopPropagation();resetSection(btn.dataset.reset);
+}));
 
 function toggleBeforeAfter(){
   if(!hasContent) return;
@@ -3178,7 +3271,7 @@ function toggleBeforeAfter(){
 $('beforeAfterBtn').addEventListener('click',toggleBeforeAfter);
 $('hdrBeforeBtn').addEventListener('click',toggleBeforeAfter);
 $('hdrUploadBtn').addEventListener('click',()=>fileInput.click());
-canvasWrap.addEventListener('dblclick',e=>{ if(!maskPaintMode && !e.target.closest('#cropOverlay,#captionOverlay')) fileInput.click(); });
+canvasWrap.addEventListener('dblclick',e=>{ if(performance.now()>=suppressTouchPickerUntil && !maskPaintMode && !e.target.closest('#cropOverlay,#captionOverlay')) fileInput.click(); });
 
 async function downloadImage(){
   if(!hasContent || exportBusy || mediaBusy){ showToast('Upload first'); return; }
@@ -3903,6 +3996,8 @@ window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(!$('shortcutsOverlay').hidden){ e.preventDefault(); closeShortcuts(); }
     else if(!$('downloadConfirmOverlay').hidden){ e.preventDefault(); closeDownloadConfirmation(); }
+    else if(!$('timeline-transition-menu').hidden){ e.preventDefault(); $('timeline-transition-menu').hidden=true; }
+    else if(headerMenu.classList.contains('open')){ e.preventDefault(); closeHeaderMenu(); }
     else document.querySelectorAll('.infoTip[aria-expanded="true"]').forEach(tip=>tip.setAttribute('aria-expanded','false'));
   }
 });
@@ -4308,6 +4403,8 @@ wireVideoEvents();
 window.addEventListener('keydown',e=>{
   if(!$('shortcutsOverlay').hidden || !$('downloadConfirmOverlay').hidden) return;
   if(exportBusy || e.ctrlKey || e.metaKey || e.altKey) return;
+  if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
+  if(e.key==='?'){e.preventDefault();$('shortcutsHelpBtn').click();return;}
   // C is safe on focused buttons; text fields and native selects retain their typing keys.
   if(e.key.toLowerCase()==='c' && !['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName) && !e.target.isContentEditable){ e.preventDefault(); setCropPanelOpen($('cropPanelBody').hidden); return; }
   // Space on a focused button must activate that button, not the Before shortcut.
@@ -4431,6 +4528,8 @@ async function exportMultiClip(clips){
   finally{ if(originalSource && bridge?.restorePreviewState) try{ await bridge.restorePreviewState(originalSource,originalTime,wasPlaying,originalTrim); }catch(error){ console.warn('Could not restore the original preview',error); } }
 }
 window.exportMultiClip=exportMultiClip;
+// === MULTI-CLIP EXPORT WRAPPER ===
+window.exportProject=()=>window.multiTimeline?.isReady?.()?exportMultiClip(window.multiTimeline.clips):processVideo();
 async function processVideo(multiClipPlan=null){
   if(!isVideo || !hasContent || exportBusy || mediaBusy){ showToast('Upload video first'); return; }
   if(!multiClipPlan && window.multiTimeline?.isReady?.()) return exportMultiClip(window.multiTimeline.clips);

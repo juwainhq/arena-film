@@ -42,7 +42,7 @@ There are **32 built-in looks** plus saved custom presets. The original six rema
 
 **IG Looks (14):** Moody Dark, Golden Hour, Clean Minimal, Dreamy Pastel, Punchy Vibrant, Film Fade, B&W Editorial, Neon Night, Soft Skin, Café Cream, Coastal Blue, Direct Flash, Terracotta, and Sage Green. Neon Night uses a new signed **Highlight Tint** control for genuine magenta highlights; negative tint adds green. At 0, this addition leaves the original looks unchanged.
 
-All **41 effect sliders** run from −100 to +100 with neutral 0. Red adds an effect; white reduces or reverses it (charcoal in light mode). Negative Bloom and Hallation subtract glow, negative Grain inverts its noise, negative Sharpen softens, and negative Vignette Strength brightens edges. Color & Light includes exposure, contrast, saturation, temperature, selective vibrance, lifted/crushed blacks, teal/plum shadows, icy/amber highlights, and green/magenta highlight tint. Double-click any effect slider to reset it to 0; `R` resets all effect values and returns dithering to Full photo.
+All **44 effect sliders** run from −100 to +100 with neutral 0. Red adds an effect; white reduces or reverses it (charcoal in light mode). Numeric readouts show the exact value; click one to open a bounded field for precise entry. Negative Bloom and Hallation subtract glow, negative Grain inverts its noise, negative Sharpen softens, and negative Vignette Strength brightens edges. Color & Light includes exposure, contrast, saturation, temperature, selective vibrance, lifted/crushed blacks, teal/plum shadows, icy/amber highlights, and green/magenta highlight tint. Double-click any effect slider to reset it to 0; `R` resets all effect values and returns dithering to Full photo.
 
 Each effect has an ON/OFF switch that bypasses rendering without erasing values. Its chevron expands the advanced controls. All built-in looks leave **sharpening and dithering at 0**; manual settings and custom presets remain available. Preset transitions retain **340 ms**. Saved looks remember effect switches and Dither scope, persist in `film_lab_presets_v4`, and can be selected or deleted from their Saved cards or the More presets selector. Older presets load newer controls at 0, preserving legacy translations and migrations.
 
@@ -56,7 +56,9 @@ Photo grain is **still**, regardless of Grain Speed, including old presets and e
 
 ## Reels trim and video export
 
-Upload one video at a time to enter **Video Mode**. The workspace places the WebGL preview and playback controls above a 160px editing timeline, with the editor sidebar on the right. It includes sampled thumbnails, a decoded audio waveform when the browser supports the source codec, a ruler, zoomable scrubbing, draggable trim handles, cut/delete with undo/redo, and hard-cut, dissolve, fade-to-black, and fade-from-black transitions. Playback supports Space, current/total time, volume/mute, and **0.5× / 1× / 1.5× / 2×** speeds. Quick 15s / 30s / 60s trims remain available. Clips longer than 60 seconds show a performance warning; the initial selected region is limited to 60 seconds. Cut segments and transitions are reflected in exported video.
+Upload a video to enter **Video Mode**. The workspace places the WebGL preview and playback controls above the editing timeline, with the editor sidebar on the right. The original trim, sampled thumbnails, decoded audio waveform (when the browser supports the codec), ruler, zoomable scrubbing, quick 15s / 30s / 60s trims, and playback controls remain available. Clips longer than 60 seconds show a performance warning; the initial selected region is limited to 60 seconds.
+
+The additive multi-track editor starts with **V1 / V2**, **PHOTO 1 / PHOTO 2**, and a locked audio lane. The media pool's **+ Add** action appends media without replacing the first-upload preview video. Drag clips across tracks, frame-snap edits, trim or split at the playhead, and use undo / redo history. Visual tracks support **None / hard cut, Dissolve, Fade to black, Fade from white, Slide left, and Wipe**, with adjustable duration; audio cannot receive visual transitions. Preview playback follows the edited timeline, and multi-clip / multi-track transitions are mapped into export. Playback supports Space, current/total time, volume/mute, and **0.5× / 1× / 1.5× / 2×** speeds.
 
 A single **Text & Captions** layer can be styled with font, size, and color, dragged on the preview, shown or hidden for the clip, and positioned with simple timeline keyframes. Captions are composited into video output. Dropping another video onto the canvas replaces the current clip.
 
@@ -74,19 +76,28 @@ After a video upload succeeds, the app initializes one shared instance of the lo
 
 Photos support JPG, PNG, HEIC, and HEIF, including uppercase extensions and empty MIME types. When native HEIC/HEIF decoding is unavailable, the locally bundled [heic2any 0.0.4](vendor/LICENSE.heic2any.md) decoder converts the first photo frame to PNG in the browser, with a CDN decoder fallback. Conversion is cached within the carousel, and stale imports cannot replace a newer upload. Other browser-decodable image types can also be opened.
 
-Hover and scroll to zoom from **50% to 500%**, or use the − / + buttons on desktop or touch. Drag to pan when zoomed; click the percentage to reset to fit. Double-click the picture to open the picker when no mask brush is active (crop-frame gestures do not reopen the picker). Zoom changes the preview only, never the export pixels.
+Hover and scroll to zoom from **50% to 500%**, or use the − / + buttons on desktop or touch. Pinch with two fingers to zoom around the gesture midpoint; drag to pan when zoomed, and click the percentage to reset to fit. Desktop double-click opens the picker when no mask brush is active; touch double-taps never trigger the picker, and crop-frame gestures do not reopen it. Zoom changes the preview only, never the export pixels.
 
 The Juwain Haque header keeps the portfolio's **24px / 40px / 64px** gutters. On phones, header actions move behind one **···** menu, while the editor controls become a draggable bottom sheet with Looks, Adjust, and Export tabs; swipe up to expand it and down to minimize it. The **Looks** view opens first, **Adjust** groups controls into Basic, Creative, and Technical clusters, and **Export** focuses on the relevant photo or video settings. Hold the canvas pill to compare with the original. The icon-only sun/moon control switches dark/light UI without changing media pixels, saves `film_lab_theme`, and defaults to dark. The portfolio-style dot-and-ring cursor leaves the native cursor available and is disabled for touch and reduced motion. New panels retain the flat black/white/red aesthetic.
 
 | Shortcut | Action |
 | --- | --- |
-| Space | Before / After |
-| R | Reset effect values |
-| D | Original-size PNG |
-| E | Expand/collapse all effects |
-| C | Toggle crop/export panel |
+| Space | Video: play / pause · Photo: compare before / after |
+| ← / → | Video: one frame · focused playhead: 0.1s · focused trim handle: 1/120 of clip duration |
+| Shift + ← / → | Video: five seconds · focused playhead: one second · crop moves 5× · trim handle: 1/30 of clip duration |
+| ↑ / ↓ | Move a focused crop frame vertically |
+| Home / End | Move a focused timeline playhead or trim handle to its start / end |
+| Delete / Backspace | Delete the selected video clip |
+| Ctrl / ⌘ + Z | Undo the last video timeline edit |
+| Ctrl / ⌘ + Y or Shift + Ctrl / ⌘ + Z | Redo the last video timeline edit |
+| S | Split the selected video clip at the playhead |
+| R | Reset adjustments |
+| D | Export the active media: video Reel or photo PNG |
+| E | Expand / collapse adjustment sections |
+| C | Open / close the crop panel |
+| ? | Open this shortcuts help · Esc closes dialogs and menus |
 
-Shortcuts do not hijack text fields or native selects; Space still activates a focused button.
+Shortcuts do not hijack text fields or native selects; Space still activates a focused button. They are listed in the question-mark dialog and the bottom shortcut bar.
 
 ## Tests
 

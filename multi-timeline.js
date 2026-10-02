@@ -33,9 +33,14 @@
     projectDuration: 0, pixelsPerSecond: 18, zoom: 100, timelineTime: 0,
     activeMain: null, transportPlaying: false, inGap: false, pendingMain: null, switchToken: 0, switchingSource: false,
     lastTick: 0, raf: 0, undo: [], redo: [], initialized: false,
-    firstMediaId: null, nextVideoTrack: 2, nextPhotoTrack: 2, lastOverlaySignature: '',
+    firstMediaId: null, nextVideoTrack: 3, nextPhotoTrack: 3, lastOverlaySignature: '',
   };
-  state.tracks.push({ id: 'main', kind: 'video', label: 'V1' }, { id: 'photo-1', kind: 'photo', label: 'PHOTO 1' }, { id: 'audio', kind: 'audio', label: 'AUDIO', editable: false });
+  // Start with two video lanes, two photo lanes, and the locked source-audio lane.
+  state.tracks.push(
+    { id: 'main', kind: 'video', label: 'V1' }, { id: 'video-2', kind: 'video', label: 'V2' },
+    { id: 'photo-1', kind: 'photo', label: 'PHOTO 1' }, { id: 'photo-2', kind: 'photo', label: 'PHOTO 2' },
+    { id: 'audio', kind: 'audio', label: 'AUDIO', editable: false },
+  );
   let boundVideoElement = null;
   let activePointer = null;
   let scrubPointer = null;
@@ -74,6 +79,8 @@
   function ensureTrack(kind, id = null) {
     if (id && state.tracks.some((track) => track.id === id)) return state.tracks.find((track) => track.id === id);
     if (kind === 'video' && (!id || id === 'main')) {
+      const empty = state.tracks.find((track) => track.kind === 'video' && track.id !== 'main' && !state.clips.some((clip) => clip.track === track.id));
+      if (empty) return empty;
       const track = { id: `video-${state.nextVideoTrack}`, kind: 'video', label: `V${state.nextVideoTrack}` };
       state.nextVideoTrack++;
       state.tracks.push(track);
@@ -81,6 +88,8 @@
       return track;
     }
     if (kind === 'photo' && (!id || id === 'photo-1')) {
+      const empty = state.tracks.find((track) => track.kind === 'photo' && !state.clips.some((clip) => clip.track === track.id));
+      if (empty) return empty;
       const track = { id: `photo-${state.nextPhotoTrack}`, kind: 'photo', label: `PHOTO ${state.nextPhotoTrack}` };
       state.nextPhotoTrack++;
       state.tracks.push(track);
@@ -103,7 +112,8 @@
     content.addEventListener('click', snapPointerToTime);
   }
   function availableTrack(media, requested) {
-    if (media.type === 'video' && (!requested || requested === 'main')) return 'main';
+    if (media.type === 'video' && requested === 'main') return 'main';
+    if (media.type === 'video' && !requested) return state.firstMediaId || mainClips().length ? ensureTrack('video').id : 'main';
     const explicit = state.tracks.find((track) => track.id === requested);
     if (explicit && explicit.kind === (media.type === 'image' ? 'photo' : 'video')) return requested;
     if (media.type === 'image' || requested === 'photo' || requested === 'overlay') {
@@ -353,7 +363,7 @@
     renderTrackClips('main', mainTrack);
     renderTrackClips('photo-1', overlayTrack);
     const photoRow = overlayTrack.closest('.mtl-track');
-    photoRow.hidden = !state.clips.some((clip) => clip.track === 'photo-1');
+    photoRow.hidden = false;
     for (const track of state.tracks) {
       if (track.id === 'main' || track.id === 'photo-1') continue;
       const content = trackContent(track.id);
@@ -439,10 +449,14 @@
     state.clips.splice(0, state.clips.length);
     filmLabState.clips = state.clips;
     state.firstMediaId = null;
-    state.tracks.splice(2);
-    state.tracks.push({ id: 'audio', kind: 'audio', label: 'AUDIO', editable: false });
-    state.nextVideoTrack = 2; state.nextPhotoTrack = 2;
-    extraVideoTracks.replaceChildren(); extraPhotoTracks.replaceChildren();
+    state.tracks.splice(0, state.tracks.length,
+      { id: 'main', kind: 'video', label: 'V1' }, { id: 'video-2', kind: 'video', label: 'V2' },
+      { id: 'photo-1', kind: 'photo', label: 'PHOTO 1' }, { id: 'photo-2', kind: 'photo', label: 'PHOTO 2' },
+      { id: 'audio', kind: 'audio', label: 'AUDIO', editable: false },
+    );
+    state.nextVideoTrack = 3; state.nextPhotoTrack = 3;
+    extraVideoTracks.querySelectorAll('.mtl-dynamic-track').forEach((row) => row.remove());
+    extraPhotoTracks.querySelectorAll('.mtl-dynamic-track').forEach((row) => row.remove());
     state.undo.length = 0; state.redo.length = 0;
     pool.querySelectorAll('.mtl-media-card').forEach((card) => card.remove());
     state.media.clear();
@@ -527,8 +541,8 @@
     for (const file of Array.from(files || [])) {
       const media = await addExternalMedia(file);
       if (!media) continue;
-      const target = media.type === 'video' ? 'main' : 'photo';
-      const at = media.type === 'video' ? Math.max(0, ...mainClips().map(clipEnd)) : state.timelineTime;
+      const target = media.type === 'video' ? (state.firstMediaId || mainClips().length ? 'video' : 'main') : 'photo';
+      const at = media.type === 'video' && target === 'main' ? Math.max(0, ...mainClips().map(clipEnd)) : state.timelineTime;
       addClipFromMedia(media.id, target, at);
     }
     render();
@@ -783,8 +797,14 @@
   }
   addDropHandlers(mainTrack, 'main');
   addDropHandlers(overlayTrack, 'overlay');
+  const initialSecondaryVideoTrack = trackContent('video-2');
+  const initialSecondaryPhotoTrack = trackContent('photo-2');
+  addDropHandlers(initialSecondaryVideoTrack, 'video-2');
+  addDropHandlers(initialSecondaryPhotoTrack, 'photo-2');
   mainTrack.addEventListener('click', snapPointerToTime);
   overlayTrack.addEventListener('click', snapPointerToTime);
+  initialSecondaryVideoTrack.addEventListener('click', snapPointerToTime);
+  initialSecondaryPhotoTrack.addEventListener('click', snapPointerToTime);
   function beginScrub(event) {
     if (bridge().exporting || event.button !== 0 || event.target.closest('.mtl-clip,.mtl-transition,[data-mtl-action],.mtl-playhead')) return;
     const inRuler = !!event.target.closest('#mtl-ruler-scroll');
@@ -1435,12 +1455,16 @@
     }
     if (target?.closest('input,textarea,select,[contenteditable="true"],[role="dialog"]')) return;
     if (target?.closest('#mtl-playhead,#mtl-ruler-playhead,#cropFrame,#trimStartHandle,#trimEndHandle') && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)) return;
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+    if ((event.ctrlKey || event.metaKey) && ['z','y'].includes(event.key.toLowerCase())) {
       event.preventDefault(); event.stopImmediatePropagation();
-      if (event.shiftKey) redo(); else undo();
+      if (event.key.toLowerCase() === 'y' || event.shiftKey) redo(); else undo();
       return;
     }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.key.toLowerCase() === 's' && state.selected) {
+      event.preventDefault(); event.stopImmediatePropagation(); splitClip(state.selected, state.timelineTime);
+      return;
+    }
     if ((event.key === 'Delete' || event.key === 'Backspace') && state.selected) {
       event.preventDefault(); event.stopImmediatePropagation(); deleteSelected();
       return;
@@ -1448,7 +1472,7 @@
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
       event.preventDefault(); event.stopImmediatePropagation();
       const direction = event.key === 'ArrowLeft' ? -1 : 1;
-      const step = event.shiftKey ? 1 : 1 / FRAME_RATE;
+      const step = event.shiftKey ? 5 : 1 / FRAME_RATE;
       seekTo(Math.max(0, Math.min(getProjectEnd(), state.timelineTime + direction * step)), false);
       return;
     }
@@ -1474,6 +1498,26 @@
     isReady: () => state.initialized,
     hasEdits: () => state.clips.length > 1 || overlayClips().length > 0 || state.clips.some((clip) => clip.start !== 0 || (canTransition(clip) && transitionInfo(clip).type !== 'none')),
   };
+  // === ADDITIVE TL COMPATIBILITY FACADE ===
+  const timelineFacade = window.TL || {};
+  Object.defineProperties(timelineFacade, {
+    tracks: { configurable: true, enumerable: true, get: () => state.tracks.map((track) => ({
+      id: track.id, type: track.kind,
+      clips: state.clips.filter((clip) => clip.track === track.id).map((clip) => ({
+        id: clip.id, src: state.media.get(clip.mediaId)?.src || null, startTime: clip.start,
+        duration: clipDuration(clip), trimIn: clip.trimStart, trimOut: clip.trimEnd,
+        transitionOut: { ...transitionInfo(clip) },
+      })),
+    })) },
+    playhead: { configurable: true, enumerable: true, get: () => state.timelineTime, set: (time) => { if (Number.isFinite(Number(time))) seekTo(Number(time), false); } },
+    zoom: { configurable: true, enumerable: true, get: () => state.zoom, set: (value) => { state.zoom = Math.max(25, Math.min(400, Number(value) || 100)); state.pixelsPerSecond = 18 * state.zoom / 100; render(); } },
+    duration: { configurable: true, enumerable: true, get: getProjectEnd },
+    playing: { configurable: true, enumerable: true, get: () => state.transportPlaying, set: (playing) => playing ? play() : pause() },
+    selectedClip: { configurable: true, enumerable: true, get: () => state.selected ? { ...state.selected } : null },
+    history: { configurable: true, enumerable: true, get: () => state.undo.map((snapshot) => ({ ...snapshot, clips: snapshot.clips.map((clip) => ({ ...clip })) })) },
+    historyIndex: { configurable: true, enumerable: true, get: () => state.undo.length - 1 },
+  });
+  window.TL = timelineFacade;
   window.addEventListener('beforeunload', () => {
     for (const media of state.media.values()) if (media.external) URL.revokeObjectURL(media.src);
   });

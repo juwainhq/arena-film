@@ -172,11 +172,12 @@ test('multi-clip editor is additive, multi-track, and keeps the first-upload vid
   assert.doesNotMatch(multiTimeline, /videoElement\.replaceWith|videoEl\.replaceWith/);
   assert.match(script, /window\.multiTimeline\?\.adoptFirstVideo\(file,videoEl,videoObjectUrl,dur,videoTrim\)/);
   assert.match(script, /async function exportMultiClip\(clips\)/);
+  assert.match(script, /window\.exportProject=\(\)=>window\.multiTimeline\?\.isReady\?\.\(\)\?exportMultiClip/);
   assert.match(script, /window\.multiTimeline\?\.isReady\?\.\(\)/);
   assert.match(script, /multiFramePlan=editPlan\.multiClip\?window\.multiTimeline\?\.mapOutputTime/);
   assert.match(script, /window\.multiTimeline\.renderOverlays\(output,outputTime,editPlan\)/);
   assert.match(script, /Segment \$\{segmentIndex\}\/\$\{segmentCount\}/);
-  assert.match(html, /id="shortcut-footer"/);
+  assert.match(html, /id="shortcuts-bar"[\s\S]*?id="shortcut-footer"/);
   assert.match(styles, /#shortcuts \{ display: none !important; \}/);
   const sidebar = html.match(/<aside id="sidebar">([\s\S]*?)<\/aside>/)?.[1] || '';
   assert.doesNotMatch(sidebar, /<kbd|class="shortcut"/, 'sidebar controls and section headers do not render keybind labels');
@@ -189,11 +190,17 @@ test('multi-clip editor is additive, multi-track, and keeps the first-upload vid
   assert.match(html, /id="mtl-zoom-slider"/);
   assert.match(html, /id="mtl-extra-video-tracks"/);
   assert.match(html, /id="mtl-extra-photo-tracks"/);
+  assert.match(html, /data-track-id="video-2"[\s\S]*?V2/);
+  assert.match(html, /data-track-id="photo-2"[\s\S]*?PHOTO 2/);
+  assert.match(multiTimeline, /state\.tracks\.push\([\s\S]*?id: 'video-2'[\s\S]*?id: 'photo-2'/);
   assert.match(multiTimeline, /const filmLabState = window\.filmLabState/);
   assert.match(multiTimeline, /clips: filmLabState\.clips/);
   assert.match(multiTimeline, /function ensureTrack\(kind, id = null\)/);
   assert.match(multiTimeline, /function getExportManifest\(clips = state\.clips\)/);
   assert.match(multiTimeline, /playing: \{ configurable: true, enumerable: true, get: \(\) => state\.transportPlaying \}/);
+  assert.match(multiTimeline, /const timelineFacade = window\.TL \|\| \{\}/);
+  assert.match(multiTimeline, /window\.TL = timelineFacade/);
+  assert.match(multiTimeline, /get: \(\) => state\.tracks\.map\(\(track\) => \(\{/);
   assert.match(timeline, /Object\.assign\(window\.filmLabTimeline \|\| \{\}, api\)/);
   assert.match(styles, /\.mtl-clip\.mtl-selected/);
   assert.match(styles, /#app\[data-workspace="video"\] #timeline-module,#app\[data-workspace="video"\] #editorTimeline \{ display: none !important; \}/);
@@ -207,29 +214,60 @@ test('timeline drag moves clips across tracks, frame-snaps, pushes collisions, a
   assert.match(multiTimeline, /function trackAtPointerY\(clientY, clip, drag\)/);
   assert.match(multiTimeline, /drop outside an existing compatible row is a request for a new lane/);
   assert.doesNotMatch(multiTimeline, /clientY < first\.top && kind === 'video'\) return 'main'/);
-  assert.ok(html.indexOf('id="mtl-extra-video-tracks"') < html.indexOf('data-track-id="main"'), 'new V2+ lanes appear above V1');
+  const mtlMarkup=html.slice(html.indexOf('<section id="multi-timeline"'));
+  assert.ok(mtlMarkup.indexOf('id="mtl-extra-video-tracks"') < mtlMarkup.indexOf('data-track-id="main"'), 'new V2+ lanes appear above V1');
   assert.match(multiTimeline, /function pushTrackCollisions\(clip, direction\)/);
   assert.match(multiTimeline, /function onClipHoverMove\(event\)/);
   assert.match(multiTimeline, /const ghost = node\.cloneNode\(true\)/);
   assert.match(multiTimeline, /node\.setPointerCapture\(event\.pointerId\)/);
   assert.match(multiTimeline, /drag\.ghost\.parentElement !== destination\) destination\.appendChild\(drag\.ghost\)/);
-  assert.match(multiTimeline, /if \(media\.type === 'video' && \(!requested \|\| requested === 'main'\)\) return 'main'/);
-  assert.match(multiTimeline, /const target = media\.type === 'video' \? 'main' : 'photo'/);
+  assert.match(multiTimeline, /if \(media\.type === 'video' && requested === 'main'\) return 'main'/);
+  assert.match(multiTimeline, /state\.firstMediaId \|\| mainClips\(\)\.length \? ensureTrack\('video'\)\.id : 'main'/);
+  assert.match(multiTimeline, /const target = media\.type === 'video' \? \(state\.firstMediaId \|\| mainClips\(\)\.length \? 'video' : 'main'\) : 'photo'/);
+  const availableTrackFn=multiTimeline.match(/function availableTrack\(media, requested\) \{[\s\S]*?\n  \}/)[0];
+  const availableContext=vm.createContext({});
+  vm.runInContext(`const state={firstMediaId:'first',tracks:[],clips:[]}; const mainClips=()=>[]; const ensureTrack=kind=>({id:kind+'-2'}); ${availableTrackFn}; this.available=availableTrack;`,availableContext);
+  assert.equal(availableContext.available({type:'video'},null),'video-2','a secondary video defaults to the pre-created V2 overlay track');
+  assert.equal(availableContext.available({type:'video'},'main'),'main','explicit drops onto V1 still remain on V1');
   assert.match(multiTimeline, /Math\.max\(0, \.\.\.mainClips\(\)\.map\(clipEnd\)\)/);
   assert.match(multiTimeline, /pushTrackCollisions\(drag\.clip, Math\.sign\(drag\.clip\.start - drag\.initialStart\)\)/);
   assert.match(multiTimeline, /if \(state\.initialized\) seekTo\(state\.timelineTime, wasPlaying\)/);
   assert.match(multiTimeline, /key: `clip:\$\{track\.id\}:\$\{item\.clipId\}`/);
   assert.match(styles, /\.mtl-clip\.mtl-drag-ghost/);
   assert.match(styles, /\.mtl-trim-handle[^}]*cursor: ew-resize/);
+  assert.match(styles, /\.mtl-clip \{[^}]*touch-action: none/);
 });
 
 test('the question-mark dialog lists keyboard shortcuts without moving labels into the sidebar', () => {
   const dialog=html.match(/<section class="modalCard shortcutsDialog"[\s\S]*?<\/section>/)?.[0]||'';
-  for(const key of ['Space','← / →','Shift + ← / →','↑ / ↓','Home / End','Delete / Backspace','Ctrl / ⌘ + Z','Ctrl / ⌘ + Shift + Z','R','D','E','C','Esc']) assert.match(dialog,new RegExp(`<kbd>${key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}<\/kbd>`));
-  assert.match(html,/id="shortcut-footer" class="shortcuts-bar"/);
+  for(const key of ['Space','← / →','Shift + ← / →','↑ / ↓','Home / End','Delete / Backspace','Ctrl / ⌘ + Z','Ctrl / ⌘ + Y','Ctrl / ⌘ + Shift + Z','S','R','D','E','C','?','Esc']) assert.match(dialog,new RegExp(`<kbd>${key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}<\/kbd>`));
+  assert.match(html,/id="shortcuts-bar"[\s\S]*?id="shortcut-footer" class="shortcuts-bar"/);
+  assert.match(styles,/\.shortcutList \{ display: grid; grid-template-columns: repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(styles,/@media \(max-width: 600px\) \{ \.shortcutList \{ grid-template-columns: minmax\(0,1fr\)/);
+  assert.match(script,/e\.key==='\?'[\s\S]*?shortcutsHelpBtn/);
   const sidebar=html.match(/<aside id="sidebar">([\s\S]*?)<\/aside>/)?.[1]||'';
   assert.doesNotMatch(sidebar,/<kbd>|keyboard shortcut/i);
   assert.match(dialog,/download confirmation, or timeline menu/);
+});
+
+test('the responsive UI keeps the accessible viewport and collapses timeline controls by device width', () => {
+  assert.match(html, /name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/);
+  assert.match(styles, /@media \(min-width: 768px\) and \(max-width: 1100px\)[\s\S]*?grid-template-columns: minmax\(0,3fr\) minmax\(0,2fr\)[\s\S]*?grid-template-rows: minmax\(0,1fr\) 160px/);
+  assert.match(styles, /@media \(max-width: 767px\)[\s\S]*?mainArea \{ inset: 0 0 108px/);
+  assert.match(styles, /#mtl-add-clip \{ position: fixed;[^}]*width: 48px/);
+  assert.match(styles, /#mtl-scroll \{ flex: 1 1 auto; min-height: 34px; height: 34px/);
+  assert.match(multiTimeline, /node\.setPointerCapture\(event\.pointerId\)/);
+});
+
+test('jargon tooltips, section resets, active indicators, and mask wording remain accessible', () => {
+  for(const label of ['Bloom','Dither','Hallation','Anamorphic','Luma Influence','Vibrance']) assert.match(html,new RegExp(`aria-label="About ${label}"[^>]*data-tooltip=`));
+  assert.match(styles,/\.infoTip::after \{ content: attr\(data-tip\);[^}]*bottom: calc\(100% \+ 8px\)/);
+  assert.match(script,/function resetSection\(sectionId\)/);
+  assert.match(script,/document\.querySelectorAll\('\.effectGroup,\.creativeVignette\[data-group\]'\)/);
+  assert.match(script,/group\.classList\.toggle\('section--active',dirty\)/);
+  assert.match(html,/class="creativeVignette photo-only" data-group="vignette"[\s\S]*?data-reset="vignette"/);
+  assert.match(html,/Finish mask on the preview to resume panning/);
+  assert.match(html,/id="maskStateLabel"[^>]*>NO MASK/);
 });
 
 test('transitions expose six preview choices and render frame-synced preview effects', () => {
@@ -327,7 +365,9 @@ test('video editing shortcuts provide frame stepping, clip deletion, and reversi
   assert.match(multiTimeline,/target\?\.closest\('input,textarea,select,\[contenteditable="true"\],\[role="dialog"\]'\)/);
   assert.match(multiTimeline,/event\.shiftKey\) redo\(\); else undo\(\)/);
   assert.match(multiTimeline,/event\.key === 'Delete' \|\| event\.key === 'Backspace'[\s\S]*?deleteSelected\(\)/);
-  assert.match(multiTimeline,/const step = event\.shiftKey \? 1 : 1 \/ FRAME_RATE/);
+  assert.match(multiTimeline,/const step = event\.shiftKey \? 5 : 1 \/ FRAME_RATE/);
+  assert.match(multiTimeline,/event\.key\.toLowerCase\(\) === 'y' \|\| event\.shiftKey/);
+  assert.match(multiTimeline,/event\.key\.toLowerCase\(\) === 's'[\s\S]*?splitClip\(state\.selected, state\.timelineTime\)/);
   assert.match(multiTimeline,/target\?\.closest\('#mtl-playhead,#mtl-ruler-playhead,#cropFrame,#trimStartHandle,#trimEndHandle'\)/);
   assert.match(multiTimeline,/event\.key === 'Escape' && !target\?\.closest\('\[role=\"dialog\"\]'\)[\s\S]*?hideMenus\(\)/);
   assert.match(script,/if\(isVideo\) processVideo\(\); else downloadImage\(\)/);

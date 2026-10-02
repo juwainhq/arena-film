@@ -84,6 +84,15 @@ test('effect switches bypass rendering at neutral without changing slider values
   }
 });
 
+test('every numeric readout opens a bounded mini editor on click and applies the exact value', () => {
+  assert.match(script,/readout\.addEventListener\('click',openNumericEditor\)/);
+  assert.match(script,/readout\.addEventListener\('dblclick',openNumericEditor\)/);
+  assert.match(script,/editor\.type='number'; editor\.className='numericEditor'/);
+  assert.match(script,/editor\.min=slider\.min; editor\.max=slider\.max; editor\.step=slider\.step\|\|'1'; editor\.value=slider\.value/);
+  assert.match(script,/slider\.dispatchEvent\(new Event\('input',\{bubbles:true\}\)\); slider\.dispatchEvent\(new Event\('change',\{bubbles:true\}\)\)/);
+  assert.match(styles,/\.numericReadout \{ cursor: text; \}/);
+});
+
 test('all 44 controls start at 0 with centered -100 to +100 scales', () => {
   assert.equal(advancedInputs.length, 39);
   assert.equal(intensityInputs.length, 5);

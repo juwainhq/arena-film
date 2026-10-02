@@ -146,7 +146,7 @@ test('protect and erase brushes track image coordinates through zoom, including 
   assert.match(script, /function scheduleSubjectMaskUpload\(\)\{[\s\S]*?requestAnimationFrame\(\(\)=>\{ maskUploadFrame=0; uploadSubjectMask\(\); \}\)/);
   assert.match(script, /if\(maskUploadFrame\) uploadSubjectMask\(\); \/\/ export must see the final brush stroke immediately/);
   assert.match(styles, /#canvasWrap\.maskPainting #glCanvas \{ cursor: crosshair; touch-action: none; \}/);
-  assert.match(script, /if\(!maskPaintMode && !e\.target\.closest\('#cropOverlay,#captionOverlay'\)\) fileInput\.click\(\)/);
+  assert.match(script, /performance\.now\(\)>=suppressTouchPickerUntil && !maskPaintMode && !e\.target\.closest\('#cropOverlay,#captionOverlay'\)\) fileInput\.click\(\)/);
   assert.match(html, /id="protectSubjectBtn" aria-pressed="false"/);
   assert.match(html, /id="eraseSubjectBtn" aria-pressed="false"/);
   assert.match(html, /id="maskStatus" role="status" aria-live="polite"/);
@@ -170,7 +170,8 @@ test('presets and resets return new sliders to neutral and remember scope for sa
   assert.match(script, /Bloom:0,Hall:0,Grain:0,Dither:0,Sharp:0/);
   assert.match(script, /setDitherScope\(values\.DitherScope==='background'\?'background':'full'\)/);
   assert.match(script, /const values=\{\.\.\.getCurrentValues\(\),DitherScope:ditherScope,Effects:\{\.\.\.effectEnabled\}\}/);
-  assert.match(script, /if\(btn\.dataset\.reset==='dither'\) setDitherScope\('full'\)/);
+  assert.match(script, /if\(sectionId==='dither'\)\{setDitherSettings\(social\.DEFAULT_DITHER\);setDitherScope\('full'\);\}/);
+  assert.match(script, /document\.querySelectorAll\('\.groupReset'\)\.forEach\(btn=>btn\.addEventListener\('click',[\s\S]*?resetSection\(btn\.dataset\.reset\)/);
   assert.match(script, /\$\('resetOriginalBtn'\)\.click\(\)/);
   assert.match(script, /\$\('resetOriginalBtn'\)\.addEventListener\('click',[\s\S]*?setDitherScope\('full'\)[\s\S]*?updateSocialUI\(\)/);
   assert.match(script, /const dur=340/);

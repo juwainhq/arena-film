@@ -17,11 +17,43 @@ test('loaded previews expose zoom controls and keep zoom separate from export pi
   assert.match(script, /canvas\.style\.transform=`translate3d\(/);
   assert.match(script, /canvas\.addEventListener\('wheel',[\s\S]*?\{passive:false\}\)/);
   assert.match(script, /canvas\.addEventListener\('pointermove'/);
+  assert.match(script, /const touchZoomPointers=new Map\(\)/);
+  assert.match(script, /function updatePinchZoom\(\)/);
+  assert.match(script, /pinchZoom\.zoom\*distance\/pinchZoom\.distance/);
+  assert.match(styles, /#glCanvas \{[^}]*touch-action: none/);
   assert.match(script, /zoomControls\.addEventListener\('dblclick',e=>e\.stopPropagation\(\)\)/);
-  assert.match(script, /canvasWrap\.addEventListener\('dblclick',e=>\{ if\(!maskPaintMode && !e\.target\.closest\('#cropOverlay,#captionOverlay'\)\) fileInput\.click\(\); \}\)/);
+  assert.match(script, /canvasWrap\.addEventListener\('pointerup'[\s\S]*?suppressTouchPickerUntil=now\+750/);
+  assert.match(script, /canvasWrap\.addEventListener\('dblclick',e=>\{ if\(performance\.now\(\)>=suppressTouchPickerUntil && !maskPaintMode && !e\.target\.closest\('#cropOverlay,#captionOverlay'\)\) fileInput\.click\(\); \}\)/);
   assert.match(script, /if\(resetView\) resetPreviewZoom\(\)/); // photo imports and carousel switching
   assert.match(script, /canvasWrap\.style\.display='flex'; resetPreviewZoom\(\)/); // video imports
   assert.match(script, /a\.href=canvas\.toDataURL\('image\/png'\)/); // export source is unchanged
+});
+
+test('touch pinch zoom uses two captured pointers, anchors at the gesture midpoint, and clamps to the preview range', () => {
+  const canvas = {
+    width:1280, height:800, clientWidth:800, clientHeight:500, style: {},
+    getBoundingClientRect: () => ({left:100, top:100, width:800, height:500}),
+  };
+  const classes = new Set();
+  const canvasWrap = {
+    clientWidth:800, clientHeight:600,
+    getBoundingClientRect: () => ({left:100, top:50, width:800, height:600}),
+    classList: {
+      toggle: (name, on) => on ? classes.add(name) : classes.delete(name),
+      remove: name => classes.delete(name),
+    },
+  };
+  const zoomOutBtn = {}, zoomInBtn = {};
+  const zoomResetBtn = {setAttribute(name, value) { this[name] = value; }};
+  const context = vm.createContext({canvas, canvasWrap, zoomOutBtn, zoomInBtn, zoomResetBtn, updateCropOverlay(){},updateSplitDivider(){}});
+  const state = script.match(/const MIN_PREVIEW_ZOOM=0\.5, MAX_PREVIEW_ZOOM=5;\nlet previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null, pinchZoom=null;\nlet lastCanvasTouchTap=0, suppressTouchPickerUntil=0;\nconst touchZoomPointers=new Map\(\);/)[0];
+  const functions = script.slice(script.indexOf('function clampPreviewPan(){'), script.indexOf("zoomOutBtn.addEventListener('click'"));
+  vm.runInContext(`${state}\n${functions}\nthis.pinch=(distance)=>{touchZoomPointers.set(1,{x:300,y:300});touchZoomPointers.set(2,{x:500,y:300});pinchZoom={ids:[1,2],distance:200,zoom:1,focalX:.5,focalY:.5};touchZoomPointers.get(1).x=400-distance/2;touchZoomPointers.get(2).x=400+distance/2;updatePinchZoom();return {zoom:previewZoom,x:previewPanX,y:previewPanY};};`, context);
+  const doubled = context.pinch(400);
+  assert.equal(doubled.zoom, 2);
+  assert.equal(doubled.x, -100);
+  assert.equal(doubled.y, -50);
+  assert.equal(context.pinch(2000).zoom, 5);
 });
 
 test('preview zoom clamps to 50–500%, pans within the frame, and resets without resizing pixels', () => {
@@ -42,7 +74,7 @@ test('preview zoom clamps to 50–500%, pans within the frame, and resets withou
   const zoomOutBtn = {}, zoomInBtn = {};
   const zoomResetBtn = {setAttribute(name, value) { this[name] = value; }};
   const context = vm.createContext({canvas, canvasWrap, zoomOutBtn, zoomInBtn, zoomResetBtn, updateCropOverlay(){},updateSplitDivider(){}});
-  const state = script.match(/const MIN_PREVIEW_ZOOM=0\.5, MAX_PREVIEW_ZOOM=5;\nlet previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null;/)[0];
+  const state = script.match(/const MIN_PREVIEW_ZOOM=0\.5, MAX_PREVIEW_ZOOM=5;\nlet previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null, pinchZoom=null;\nlet lastCanvasTouchTap=0, suppressTouchPickerUntil=0;\nconst touchZoomPointers=new Map\(\);/)[0];
   const functions = script.slice(script.indexOf('function clampPreviewPan(){'), script.indexOf("zoomOutBtn.addEventListener('click'"));
   vm.runInContext(`${state}\n${functions}\nthis.zoom=zoomPreviewTo;this.reset=resetPreviewZoom;this.snapshot=()=>({zoom:previewZoom,x:previewPanX,y:previewPanY});`, context);
   context.zoom(2, 850, 550);
