@@ -4077,7 +4077,7 @@ window.addEventListener('keydown',e=>{
 });
 
 // WebGL-rendered frames keep the entire effect pipeline; ffmpeg encodes only the selected clip.
-let ffmpegInstance=null, ffmpegLoading=false, ffmpegFetchController=null, lastFFmpegLog='';
+let ffmpegInstance=null, ffmpegLoading=false, ffmpegFetchController=null, ffmpegLoadPromise=null, lastFFmpegLog='';
 let encoderProgressBase=90, encoderProgressSpan=8, exportStartedAt=0, exportEtaTimer=null;
 function updateExportEta(){
   if(!exportStartedAt) return;
@@ -4100,9 +4100,13 @@ function loadExportScript(src,signal=ffmpegFetchController?.signal){
     script.src=src; script.onload=()=>finish(); script.onerror=()=>finish(new Error('Video encoder script unavailable')); document.head.appendChild(script);
   });
 }
-async function loadFFmpeg(){
-  if(ffmpegInstance) return ffmpegInstance;
-  if(ffmpegLoading) throw new Error('Video encoder is already loading');
+function loadFFmpeg(){
+  if(ffmpegLoadPromise)return ffmpegLoadPromise;
+  if(ffmpegInstance)return Promise.resolve(ffmpegInstance);
+  ffmpegLoadPromise=initializeFFmpeg().finally(()=>{ffmpegLoadPromise=null;});
+  return ffmpegLoadPromise;
+}
+async function initializeFFmpeg(){
   ffmpegLoading=true; const urls=[]; let ff=null; ffmpegFetchController=new AbortController();
   try{
     progressText.textContent='Loading video engine…';
@@ -4333,6 +4337,8 @@ function initializeWorkspaceModes(){ setWorkspaceMode('empty'); }
 setupSliderNumberEditing(); updateFromSliders(); updateSliderUI(); updateSocialUI(); restoreSharedLook(); render(performance.now()); initializeWorkspaceModes();
 window.addEventListener('dragover',e=> e.preventDefault());
 window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ e.preventDefault(); handleFiles(e.dataTransfer.files); } });
+// Preload one shared encoder instance at boot; video export awaits this same promise.
+loadFFmpeg().catch(error=>console.warn('Video encoder preload failed; it will retry on export.',error));
 console.log('Film Lab — Instagram tools · 44 signed controls — WebGL2', gl.getParameter(gl.VERSION));
 })();
 };
