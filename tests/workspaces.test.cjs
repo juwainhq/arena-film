@@ -223,17 +223,26 @@ test('timeline drag moves clips across tracks, frame-snaps, pushes collisions, a
   assert.match(styles, /\.mtl-trim-handle[^}]*cursor: ew-resize/);
 });
 
+test('the question-mark dialog lists keyboard shortcuts without moving labels into the sidebar', () => {
+  const dialog=html.match(/<section class="modalCard shortcutsDialog"[\s\S]*?<\/section>/)?.[0]||'';
+  for(const key of ['Space','← / →','Shift + ← / →','↑ / ↓','Home / End','Delete / Backspace','Ctrl / ⌘ + Z','Ctrl / ⌘ + Shift + Z','R','D','E','C','Esc']) assert.match(dialog,new RegExp(`<kbd>${key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}<\/kbd>`));
+  assert.match(html,/id="shortcut-footer" class="shortcuts-bar"/);
+  const sidebar=html.match(/<aside id="sidebar">([\s\S]*?)<\/aside>/)?.[1]||'';
+  assert.doesNotMatch(sidebar,/<kbd>|keyboard shortcut/i);
+  assert.match(dialog,/download confirmation, or timeline menu/);
+});
+
 test('transitions expose six preview choices and render frame-synced preview effects', () => {
   for (const type of ['none', 'dissolve', 'fade-to-black', 'fade-from-white', 'slide-left', 'wipe']) {
     assert.match(html, new RegExp(`data-mtl-transition="${type}"`));
   }
   assert.match(html, /id="mtl-transition-duration" min="0\.1" max="2" step="0\.1" value="0\.5"/);
-  assert.match(multiTimeline, /clip\.transitionOut = \{ type, duration:/);
-  assert.match(multiTimeline, /if \(type !== 'none'\)[\s\S]*?getTransitionSource\(state\.media\.get\(clip\.mediaId\), clip\.id, clip\.track\)[\s\S]*?getTransitionSource\(state\.media\.get\(incoming\.mediaId\), incoming\.id, clip\.track\)/);
+  assert.match(multiTimeline, /if \(!canTransition\(clip\)\) return false;[\s\S]*?clip\.transitionOut = \{ type: normalizedType, duration:/);
+  assert.match(multiTimeline, /if \(normalizedType !== 'none'\)[\s\S]*?getTransitionSource\(state\.media\.get\(clip\.mediaId\), clip\.id, clip\.track\)[\s\S]*?getTransitionSource\(state\.media\.get\(incoming\.mediaId\), incoming\.id, clip\.track\)/);
   assert.match(multiTimeline, /function transitionAt\(time, trackName = 'main'\)/);
   const transitionSource = multiTimeline.match(/function transitionAt\(time, trackName = 'main'\) \{[\s\S]*?\n  \}/)[0];
   const transitionState = vm.createContext({});
-  vm.runInContext(`const state={clips:[]}; const mainClips=()=>state.clips.filter(c=>c.track==='main').sort((a,b)=>a.start-b.start); const clipDuration=c=>c.trimEnd-c.trimStart; const clipEnd=c=>c.start+clipDuration(c); const transitionInfo=c=>({type:c.transitionOut?.type||'none',duration:c.transitionOut?.duration||0.5}); ${transitionSource}; this.setClips=clips=>state.clips=clips; this.at=transitionAt;`, transitionState);
+  vm.runInContext(`const state={clips:[],tracks:[]}; const canTransition=()=>true; const mainClips=()=>state.clips.filter(c=>c.track==='main').sort((a,b)=>a.start-b.start); const clipDuration=c=>c.trimEnd-c.trimStart; const clipEnd=c=>c.start+clipDuration(c); const transitionInfo=c=>({type:c.transitionOut?.type||c.transition||'none',duration:c.transitionOut?.duration||0.5}); ${transitionSource}; this.setClips=clips=>state.clips=clips; this.at=transitionAt;`, transitionState);
   transitionState.setClips([{id:'a',track:'main',start:0,trimStart:0,trimEnd:2,transitionOut:{type:'dissolve',duration:0.5}},{id:'b',track:'main',start:2,trimStart:0,trimEnd:2,transitionOut:{type:'none',duration:0.5}}]);
   assert.equal(transitionState.at(1.5).progress, 0);
   assert.equal(transitionState.at(1.75).progress, 0.5);
@@ -259,6 +268,49 @@ test('transitions expose six preview choices and render frame-synced preview eff
   assert.match(multiTimeline, /renderTransitionPreview\(\);/);
 });
 
+test('preview and overlay export share transition compositing and hold slide / wipe frames after the cut', () => {
+  const drawFrame=multiTimeline.match(/function drawTransitionFrame\(ctx, element, x, width, height, alpha = 1\) \{[\s\S]*?\n  \}/)[0];
+  const compose=multiTimeline.match(/function drawTransitionComposition\(ctx, transition, time, outgoing, incoming, width, height\) \{[\s\S]*?\n  \}/)[0];
+  const context=vm.createContext({HTMLVideoElement:class HTMLVideoElement{}});
+  vm.runInContext(`${drawFrame}; ${compose}; this.compose=drawTransitionComposition;`,context);
+  const frame=(name)=>({name,naturalWidth:100,naturalHeight:50});
+  const composeAt=(type,time,progress=0.5)=>{
+    const ctx={globalAlpha:1,fillStyle:'',calls:[],drawImage(element,x){this.calls.push({name:element.name,x,alpha:this.globalAlpha});},fillRect(){this.calls.push({fill:this.fillStyle,alpha:this.globalAlpha});},clearRect(){},save(){},beginPath(){},rect(){},clip(){},restore(){}};
+    context.compose(ctx,{type,cut:2,duration:0.5,progress},time,frame('outgoing'),frame('incoming'),100,50);
+    return ctx.calls;
+  };
+  for(const type of ['slide-left','wipe']) {
+    const calls=composeAt(type,2.1);
+    assert.deepEqual(JSON.parse(JSON.stringify(calls)),[{name:'incoming',x:0,alpha:1}],`${type} remains fully visible after the cut`);
+  }
+  assert.equal(composeAt('dissolve',1.875,0.25)[1].alpha,0.25);
+  assert.deepEqual(JSON.parse(JSON.stringify(composeAt('fade-to-black',1.875).at(-1))),{fill:'#000',alpha:0.5});
+  assert.deepEqual(JSON.parse(JSON.stringify(composeAt('fade-from-white',2.125).at(-1))),{fill:'#fff',alpha:0.5});
+  assert.equal((multiTimeline.match(/drawTransitionComposition\(/g)||[]).length,3,'preview and overlay export call the same compositing routine');
+});
+
+test('dissolve frames advance the incoming overlay and audio tracks cannot receive visual transitions', () => {
+  const sourceTimeFn=multiTimeline.match(/function transitionSourceTime\(transition, clip, side, time\) \{[\s\S]*?\n  \}/)[0];
+  const timeContext=vm.createContext({});
+  vm.runInContext(`${sourceTimeFn}; this.map=transitionSourceTime;`,timeContext);
+  const dissolve={type:'dissolve',cut:2,duration:0.5,progress:0.5};
+  const outgoing={start:0,trimStart:0,trimEnd:2};
+  const incoming={start:2,trimStart:4,trimEnd:6};
+  assert.equal(timeContext.map(dissolve,incoming,'incoming',1.75),4.25, 'incoming dissolve frames advance during the blend in preview and overlay export');
+  assert.equal(timeContext.map(dissolve,outgoing,'outgoing',1.75),1.75);
+  const canTransitionFn=multiTimeline.match(/function canTransition\(clip\) \{[\s\S]*?\n  \}/)[0];
+  const mediaContext=vm.createContext({});
+  vm.runInContext(`const state={tracks:[{id:'main',kind:'video'},{id:'photo-1',kind:'photo'},{id:'audio',kind:'audio'}],media:new Map([['v',{type:'video'}],['p',{type:'image'}],['a',{type:'audio'}]])}; ${canTransitionFn}; this.can=canTransition;`,mediaContext);
+  assert.equal(mediaContext.can({track:'main',mediaId:'v'}),true);
+  assert.equal(mediaContext.can({track:'photo-1',mediaId:'p'}),true);
+  assert.equal(mediaContext.can({track:'audio',mediaId:'a'}),false);
+  assert.match(multiTimeline,/state\.tracks\.filter\(\(item\) => item\.kind === 'video' \|\| item\.kind === 'photo'\)/);
+  assert.match(multiTimeline,/state\.tracks\.find\(\(track\) => track\.id === trackName\)\?\.kind === 'audio'/);
+  assert.match(multiTimeline,/if \(!canTransition\(clip\)\) return false;/);
+  assert.match(multiTimeline,/transition: transition\.type, transitionDuration: transition\.duration/);
+  assert.match(multiTimeline,/transitionSourceTime\(transition, transition\.incoming, 'incoming', overlayTime\)/);
+});
+
 test('lane changes keep playback on the edited timeline and do not jump over overlay gaps', () => {
   const playSource = multiTimeline.match(/function play\(\) \{[\s\S]*?\n  \}/)[0];
   const playback = vm.createContext({});
@@ -276,6 +328,8 @@ test('video editing shortcuts provide frame stepping, clip deletion, and reversi
   assert.match(multiTimeline,/event\.shiftKey\) redo\(\); else undo\(\)/);
   assert.match(multiTimeline,/event\.key === 'Delete' \|\| event\.key === 'Backspace'[\s\S]*?deleteSelected\(\)/);
   assert.match(multiTimeline,/const step = event\.shiftKey \? 1 : 1 \/ FRAME_RATE/);
+  assert.match(multiTimeline,/target\?\.closest\('#mtl-playhead,#mtl-ruler-playhead,#cropFrame,#trimStartHandle,#trimEndHandle'\)/);
+  assert.match(multiTimeline,/event\.key === 'Escape' && !target\?\.closest\('\[role=\"dialog\"\]'\)[\s\S]*?hideMenus\(\)/);
   assert.match(script,/if\(isVideo\) processVideo\(\); else downloadImage\(\)/);
   assert.match(html,/← \/ → <b>FRAME STEP<\/b>[\s\S]*?DEL <b>DELETE CLIP<\/b>[\s\S]*?⌘\/CTRL Z <b>UNDO<\/b>[\s\S]*?⌘\/CTRL SHIFT Z <b>REDO<\/b>/);
 });

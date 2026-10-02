@@ -121,20 +121,42 @@
   }
   const clipEnd = (clip) => clip.start + clipDuration(clip);
   const safeTime = (time) => Math.max(0, Number.isFinite(time) ? time : 0);
+  const TRANSITION_TYPES = new Set(['none', 'dissolve', 'fade-to-black', 'fade-from-white', 'slide-left', 'wipe']);
+  function canTransition(clip) {
+    if (!clip || clip.track === 'audio') return false;
+    const track = state.tracks.find((item) => item.id === clip.track);
+    const media = state.media.get(clip.mediaId);
+    return !!track && ['video', 'photo'].includes(track.kind) && !!media && ['video', 'image'].includes(media.type);
+  }
   function transitionInfo(clip) {
     const transition = clip?.transitionOut || {};
-    return { type: transition.type || clip?.transition || 'none', duration: Math.max(0.1, Math.min(2, Number(transition.duration) || 0.5)) };
+    const duration = Math.max(0.1, Math.min(2, Number(transition.duration) || 0.5));
+    if (!canTransition(clip)) return { type: 'none', duration };
+    const requestedType = transition.type || clip?.transition || 'none';
+    return { type: TRANSITION_TYPES.has(requestedType) ? requestedType : 'none', duration };
+  }
+  function transitionSourceTime(transition, clip, side, time) {
+    const start = Math.max(0, Number(clip.trimStart) || 0);
+    const end = Math.max(start, (Number(clip.trimEnd) || start + 0.001) - 0.001);
+    let sourceTime;
+    if (side === 'outgoing') sourceTime = time < transition.cut ? start + time - clip.start : end;
+    else if (transition.type === 'dissolve') sourceTime = start + transition.progress * transition.duration;
+    else sourceTime = time < transition.cut ? start : start + time - transition.cut;
+    return Math.max(start, Math.min(end, sourceTime));
   }
   function setTransition(clip, type, duration = transitionInfo(clip).duration) {
-    clip.transitionOut = { type, duration: Math.max(0.1, Math.min(2, Number(duration) || 0.5)) };
-    clip.transition = type;
-    if (type !== 'none') {
+    if (!canTransition(clip)) return false;
+    const normalizedType = TRANSITION_TYPES.has(type) ? type : 'none';
+    clip.transitionOut = { type: normalizedType, duration: Math.max(0.1, Math.min(2, Number(duration) || 0.5)) };
+    clip.transition = normalizedType;
+    if (normalizedType !== 'none') {
       const incoming = state.clips.filter((item) => item.track === clip.track && item.id !== clip.id && Math.abs(item.start - clipEnd(clip)) <= 0.025).sort((a, b) => a.start - b.start)[0];
-      if (incoming) {
+      if (incoming && canTransition(incoming)) {
         getTransitionSource(state.media.get(clip.mediaId), clip.id, clip.track);
         getTransitionSource(state.media.get(incoming.mediaId), incoming.id, clip.track);
       }
     }
+    return true;
   }
   const makeSnapshot = () => ({ clips: state.clips.map((clip) => ({ ...clip })), selected: state.selected?.id || null, timelineTime: state.timelineTime });
 
@@ -513,6 +535,7 @@
   }
 
   function showTransitionMenu(event, clip) {
+    if (!canTransition(clip)) return;
     transitionMenu.hidden = false;
     transitionMenu.dataset.clipId = clip.id;
     const info = transitionInfo(clip);
@@ -1021,7 +1044,8 @@
   }
   // === TIMELINE TRANSITION PREVIEW MODULE ===
   function transitionAt(time, trackName = 'main') {
-    const clips = state.clips.filter((clip) => clip.track === trackName).sort((a, b) => a.start - b.start);
+    if (state.tracks.find((track) => track.id === trackName)?.kind === 'audio') return null;
+    const clips = state.clips.filter((clip) => clip.track === trackName && canTransition(clip)).sort((a, b) => a.start - b.start);
     for (let index = 0; index < clips.length - 1; index++) {
       const outgoing = clips[index], incoming = clips[index + 1];
       if (Math.abs(incoming.start - clipEnd(outgoing)) > 0.025) continue;
@@ -1071,6 +1095,34 @@
     ctx.drawImage(element, x + (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
     ctx.globalAlpha = 1;
   }
+  function drawTransitionComposition(ctx, transition, time, outgoing, incoming, width, height) {
+    const beforeCut = time < transition.cut, progress = transition.progress;
+    if (transition.type === 'dissolve') {
+      drawTransitionFrame(ctx, outgoing, 0, width, height, 1);
+      drawTransitionFrame(ctx, incoming, 0, width, height, progress);
+    } else if (transition.type === 'slide-left') {
+      if (beforeCut) {
+        const phase = Math.max(0, Math.min(1, (time - (transition.cut - transition.duration / 2)) / (transition.duration / 2)));
+        drawTransitionFrame(ctx, outgoing, -phase * width, width, height, 1);
+        drawTransitionFrame(ctx, incoming, (1 - phase) * width, width, height, 1);
+      } else drawTransitionFrame(ctx, incoming, 0, width, height, 1);
+    } else if (transition.type === 'wipe') {
+      if (beforeCut) {
+        drawTransitionFrame(ctx, outgoing, 0, width, height, 1);
+        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, width * Math.min(1, progress * 2), height); ctx.clip();
+        drawTransitionFrame(ctx, incoming, 0, width, height, 1); ctx.restore();
+      } else drawTransitionFrame(ctx, incoming, 0, width, height, 1);
+    } else {
+      drawTransitionFrame(ctx, beforeCut ? outgoing : incoming, 0, width, height, 1);
+      const phase = beforeCut
+        ? Math.min(1, (time - (transition.cut - transition.duration / 2)) / (transition.duration / 2))
+        : Math.max(0, 1 - (time - transition.cut) / (transition.duration / 2));
+      if (transition.type === 'fade-to-black' || transition.type === 'fade-from-white') {
+        ctx.fillStyle = transition.type === 'fade-from-white' ? '#fff' : '#000';
+        ctx.globalAlpha = Math.max(0, Math.min(1, phase)); ctx.fillRect(0, 0, width, height); ctx.globalAlpha = 1;
+      }
+    }
+  }
   function drawTransitionEffect(layer, transition, trackName = 'main') {
     const outgoing = getTransitionSource(state.media.get(transition.outgoing.mediaId), transition.outgoing.id, trackName);
     const incoming = getTransitionSource(state.media.get(transition.incoming.mediaId), transition.incoming.id, trackName);
@@ -1078,10 +1130,8 @@
     const base = byId('glCanvas');
     if (layer.width !== base.width || layer.height !== base.height) { layer.width = base.width; layer.height = base.height; }
     const time = state.timelineTime, beforeCut = time < transition.cut;
-    const outTime = Math.max(transition.outgoing.trimStart, Math.min(transition.outgoing.trimEnd - 0.001, transition.outgoing.trimStart + time - transition.outgoing.start));
-    const inTime = transition.type === 'dissolve'
-      ? Math.max(transition.incoming.trimStart, Math.min(transition.incoming.trimEnd - 0.001, transition.incoming.trimStart + transition.progress * transition.duration))
-      : beforeCut ? transition.incoming.trimStart : Math.max(transition.incoming.trimStart, Math.min(transition.incoming.trimEnd - 0.001, transition.incoming.trimStart + time - transition.cut));
+    const outTime = transitionSourceTime(transition, transition.outgoing, 'outgoing', time);
+    const inTime = transitionSourceTime(transition, transition.incoming, 'incoming', time);
     for (const [element, sourceTime, sourceIsMoving] of [[outgoing, beforeCut ? outTime : transition.outgoing.trimEnd - 0.001, beforeCut], [incoming, inTime, transition.type === 'dissolve' ? true : !beforeCut]]) {
       if (!(element instanceof HTMLVideoElement)) continue;
       element.playbackRate = bridge().videoElement?.playbackRate || 1;
@@ -1092,37 +1142,9 @@
     }
     const ctx = layer.getContext('2d');
     if (!ctx) return;
-    const width = layer.width, height = layer.height, progress = transition.progress;
+    const width = layer.width, height = layer.height;
     ctx.clearRect(0, 0, width, height); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
-    if (transition.type === 'dissolve') {
-      drawTransitionFrame(ctx, outgoing, 0, width, height, 1);
-      drawTransitionFrame(ctx, incoming, 0, width, height, progress);
-    } else if (transition.type === 'slide-left') {
-      if (beforeCut) {
-        const phase = Math.max(0, Math.min(1, (time - (transition.cut - transition.duration / 2)) / (transition.duration / 2)));
-        drawTransitionFrame(ctx, outgoing, -phase * width, width, height, 1);
-        drawTransitionFrame(ctx, incoming, (1 - phase) * width, width, height, 1);
-      } else {
-        const fade = Math.max(0, 1 - (time - transition.cut) / (transition.duration / 2));
-        drawTransitionFrame(ctx, incoming, 0, width, height, fade);
-      }
-    } else if (transition.type === 'wipe') {
-      if (beforeCut) {
-        drawTransitionFrame(ctx, outgoing, 0, width, height, 1);
-        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, width * Math.min(1, progress * 2), height); ctx.clip();
-        drawTransitionFrame(ctx, incoming, 0, width, height, 1); ctx.restore();
-      } else {
-        const fade = Math.max(0, 1 - (time - transition.cut) / (transition.duration / 2));
-        drawTransitionFrame(ctx, incoming, 0, width, height, fade);
-      }
-    } else {
-      drawTransitionFrame(ctx, beforeCut ? outgoing : incoming, 0, width, height, 1);
-      const phase = beforeCut ? Math.min(1, (time - (transition.cut - transition.duration / 2)) / (transition.duration / 2)) : Math.max(0, 1 - (time - transition.cut) / (transition.duration / 2));
-      if (transition.type === 'fade-to-black' || transition.type === 'fade-from-white') {
-        ctx.fillStyle = transition.type === 'fade-from-white' ? '#fff' : '#000';
-        ctx.globalAlpha = Math.max(0, Math.min(1, phase)); ctx.fillRect(0, 0, width, height); ctx.globalAlpha = 1;
-      }
-    }
+    drawTransitionComposition(ctx, transition, time, outgoing, incoming, width, height);
   }
   function renderTransitionPreview() {
     setupTransitionPreviewLayer();
@@ -1265,42 +1287,14 @@
         const outgoing = getElement(transition.outgoing), incoming = getElement(transition.incoming);
         if (!outgoing || !incoming) continue;
         const beforeCut = overlayTime < transition.cut;
-        const outTime = Math.max(transition.outgoing.trimStart, Math.min(transition.outgoing.trimEnd - 0.001, transition.outgoing.trimStart + overlayTime - transition.outgoing.start));
-        const inTime = beforeCut ? transition.incoming.trimStart : Math.max(transition.incoming.trimStart, Math.min(transition.incoming.trimEnd - 0.001, transition.incoming.trimStart + overlayTime - transition.cut));
+        const outTime = transitionSourceTime(transition, transition.outgoing, 'outgoing', overlayTime);
+        const inTime = transitionSourceTime(transition, transition.incoming, 'incoming', overlayTime);
         for (const [element, sourceTime] of [[outgoing, beforeCut ? outTime : transition.outgoing.trimEnd - 0.001], [incoming, inTime]]) {
           if (element instanceof HTMLVideoElement && Math.abs(element.currentTime - sourceTime) > 0.02) await seekMediaElement(element, sourceTime);
         }
-        const width = exportTransitionCanvas.width, height = exportTransitionCanvas.height, progress = transition.progress;
+        const width = exportTransitionCanvas.width, height = exportTransitionCanvas.height;
         layerContext.globalAlpha = 1; layerContext.globalCompositeOperation = 'source-over';
-        if (transition.type === 'dissolve') {
-          drawTransitionFrame(layerContext, outgoing, 0, width, height, 1);
-          drawTransitionFrame(layerContext, incoming, 0, width, height, progress);
-        } else if (transition.type === 'slide-left') {
-          if (beforeCut) {
-            const phase = Math.max(0, Math.min(1, (overlayTime - (transition.cut - transition.duration / 2)) / (transition.duration / 2)));
-            drawTransitionFrame(layerContext, outgoing, -phase * width, width, height, 1);
-            drawTransitionFrame(layerContext, incoming, (1 - phase) * width, width, height, 1);
-          } else {
-            const fade = Math.max(0, 1 - (overlayTime - transition.cut) / (transition.duration / 2));
-            drawTransitionFrame(layerContext, incoming, 0, width, height, fade);
-          }
-        } else if (transition.type === 'wipe') {
-          if (beforeCut) {
-            drawTransitionFrame(layerContext, outgoing, 0, width, height, 1);
-            layerContext.save(); layerContext.beginPath(); layerContext.rect(0, 0, width * Math.min(1, progress * 2), height); layerContext.clip();
-            drawTransitionFrame(layerContext, incoming, 0, width, height, 1); layerContext.restore();
-          } else {
-            const fade = Math.max(0, 1 - (overlayTime - transition.cut) / (transition.duration / 2));
-            drawTransitionFrame(layerContext, incoming, 0, width, height, fade);
-          }
-        } else {
-          drawTransitionFrame(layerContext, beforeCut ? outgoing : incoming, 0, width, height, 1);
-          const phase = beforeCut ? Math.min(1, (overlayTime - (transition.cut - transition.duration / 2)) / (transition.duration / 2)) : Math.max(0, 1 - (overlayTime - transition.cut) / (transition.duration / 2));
-          if (transition.type === 'fade-to-black' || transition.type === 'fade-from-white') {
-            layerContext.fillStyle = transition.type === 'fade-from-white' ? '#fff' : '#000';
-            layerContext.globalAlpha = Math.max(0, Math.min(1, phase)); layerContext.fillRect(0, 0, width, height); layerContext.globalAlpha = 1;
-          }
-        }
+        drawTransitionComposition(layerContext, transition, overlayTime, outgoing, incoming, width, height);
         ctx.drawImage(exportTransitionCanvas, 0, 0);
         continue;
       }
@@ -1382,7 +1376,8 @@
       tracks: state.tracks.map((track) => ({ ...track })),
       clips: clips.map((clip) => {
         const media = state.media.get(clip.mediaId);
-        return { id: clip.id, mediaId: clip.mediaId, track: clip.track, start: clip.start, trimStart: clip.trimStart, trimEnd: clip.trimEnd, duration: clipDuration(clip), transition: clip.transition || 'none', transitionDuration: transitionInfo(clip).duration, type: media?.type || 'video', source: media?.src || null };
+        const transition = transitionInfo(clip);
+        return { id: clip.id, mediaId: clip.mediaId, track: clip.track, start: clip.start, trimStart: clip.trimStart, trimEnd: clip.trimEnd, duration: clipDuration(clip), transition: transition.type, transitionDuration: transition.duration, type: media?.type || 'video', source: media?.src || null };
       }),
       composite: { base: 'main', overlays: state.tracks.filter((track) => track.id !== 'main' && track.id !== 'audio').map((track) => track.id) },
     };
@@ -1409,7 +1404,8 @@
         const gapStart = previousSegment?.end || 0;
         segments.push({ start: gapStart, end: start, originalStart: previousClip ? clipEnd(previousClip) : 0, gap: true, blackFrame: true, transition: 'none', index: segments.length });
       }
-      const segment = { id: clip.id, clipId: clip.id, mediaId: clip.mediaId, source: media.src, start, end: start + duration, originalStart: clip.start, trimStart: clip.trimStart, trimEnd: clip.trimEnd, transition: clip.transition || 'none', transitionDuration: transitionInfo(clip).duration, index: segments.length };
+      const clipTransition = transitionInfo(clip);
+      const segment = { id: clip.id, clipId: clip.id, mediaId: clip.mediaId, source: media.src, start, end: start + duration, originalStart: clip.start, trimStart: clip.trimStart, trimEnd: clip.trimEnd, transition: clipTransition.type, transitionDuration: clipTransition.duration, index: segments.length };
       if (adjacent && previousSegment) previousSegment.next = segment;
       segments.push(segment);
       previousClip = clip; previousSegment = segment;
@@ -1433,7 +1429,12 @@
   document.addEventListener('keydown', (event) => {
     if (!state.initialized || bridge().exporting || document.body.dataset.mode !== 'video') return;
     const target = event.target;
+    if (event.key === 'Escape' && !target?.closest('[role="dialog"]') && (!transitionMenu.hidden || !contextMenu.hidden)) {
+      event.preventDefault(); event.stopImmediatePropagation(); hideMenus();
+      return;
+    }
     if (target?.closest('input,textarea,select,[contenteditable="true"],[role="dialog"]')) return;
+    if (target?.closest('#mtl-playhead,#mtl-ruler-playhead,#cropFrame,#trimStartHandle,#trimEndHandle') && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)) return;
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
       event.preventDefault(); event.stopImmediatePropagation();
       if (event.shiftKey) redo(); else undo();
@@ -1471,7 +1472,7 @@
     play,
     pause,
     isReady: () => state.initialized,
-    hasEdits: () => state.clips.length > 1 || overlayClips().length > 0 || state.clips.some((clip) => clip.start !== 0 || clip.transition !== 'none'),
+    hasEdits: () => state.clips.length > 1 || overlayClips().length > 0 || state.clips.some((clip) => clip.start !== 0 || (canTransition(clip) && transitionInfo(clip).type !== 'none')),
   };
   window.addEventListener('beforeunload', () => {
     for (const media of state.media.values()) if (media.external) URL.revokeObjectURL(media.src);
