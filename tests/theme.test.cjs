@@ -97,6 +97,14 @@ test('keyboard shortcuts let Space activate a focused theme button', () => {
 });
 
 
+test('sidebar shortcut keycaps are removed while the mounted legacy node and bottom footer remain', () => {
+  const legacy = html.match(/<div id="shortcuts"[^>]*>[\s\S]*?<\/div>/)?.[0] || '';
+  assert.match(legacy, /aria-hidden="true" hidden/);
+  assert.doesNotMatch(legacy, /<kbd|Before \/ After|Reset all|Download|Expand all|Crop \/ export panel/);
+  assert.match(styles, /#shortcuts \{ display: none !important; \}/);
+  assert.equal((html.match(/class="shortcuts-bar"/g) || []).length, 1);
+});
+
 test('mobile video controls keep the timeline above the phone safe area and the editing sheet clear of tracks', () => {
   assert.match(styles, /#app \{ padding-bottom: env\(safe-area-inset-bottom\); \}/);
   assert.match(styles, /#app\[data-workspace="video"\] #mainArea \{ inset: 0 0 220px;/);
