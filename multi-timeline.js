@@ -17,6 +17,8 @@
   const playhead = byId('mtl-playhead');
   const emptyHint = byId('mtl-empty');
   const transitionMenu = byId('mtl-transition-popover');
+  const transitionDurationSlider = byId('mtl-transition-duration');
+  const transitionDurationValue = byId('mtl-transition-duration-value');
   const contextMenu = byId('mtl-context-menu');
   const timeArea = byId('mtl-time-area');
   const globalPlayhead = playhead;
@@ -40,6 +42,10 @@
   let clipSequence = 1;
   let mediaSequence = 1;
   let overlayLayer = null;
+  let transitionLayer = null;
+  const transitionPreviewElements = new Map();
+  const overlayTransitionCanvases = new Map();
+  let transitionPreviewSignature = '';
   const sharedTimeline = window.filmLabTimeline || (window.filmLabTimeline = {});
   Object.defineProperties(sharedTimeline, {
     tracks: { configurable: true, enumerable: true, get: () => state.tracks.map((track) => ({ ...track })) },
@@ -49,7 +55,10 @@
     selectedClip: { configurable: true, enumerable: true, get: () => state.selected ? { ...state.selected } : null },
   });
 
+  const FRAME_RATE = 24;
+  const MIN_CLIP_DURATION = 0.1;
   const uid = (prefix) => `${prefix}-${Date.now().toString(36)}-${(clipSequence++).toString(36)}`;
+  const snapFrame = (time) => Math.max(0, Math.round(time * FRAME_RATE) / FRAME_RATE);
   const mainClips = () => state.clips.filter((clip) => clip.track === 'main').sort((a, b) => a.start - b.start);
   const overlayClips = () => state.clips.filter((clip) => clip.track !== 'main').sort((a, b) => {
     const aTrack = state.tracks.find((track) => track.id === a.track);
@@ -58,7 +67,7 @@
     const layerB = bTrack?.kind === 'photo' ? 1 : 0;
     return layerA - layerB || state.tracks.indexOf(aTrack) - state.tracks.indexOf(bTrack) || a.start - b.start;
   });
-  const clipDuration = (clip) => Math.max(0.05, clip.trimEnd - clip.trimStart);
+  const clipDuration = (clip) => Math.max(MIN_CLIP_DURATION, clip.trimEnd - clip.trimStart);
   const trackRows = () => [...root.querySelectorAll('.mtl-track[data-track-id]')];
   const trackContent = (id) => root.querySelector(`.mtl-track[data-track-id="${CSS.escape(id)}"] .mtl-track-content`);
   const rememberTracks = () => state.tracks.map((track) => ({ ...track }));
@@ -94,7 +103,7 @@
     content.addEventListener('click', snapPointerToTime);
   }
   function availableTrack(media, requested) {
-    if (requested === 'main' && media.type === 'video') return 'main';
+    if (media.type === 'video' && (!requested || requested === 'main')) return 'main';
     const explicit = state.tracks.find((track) => track.id === requested);
     if (explicit && explicit.kind === (media.type === 'image' ? 'photo' : 'video')) return requested;
     if (media.type === 'image' || requested === 'photo' || requested === 'overlay') {
@@ -112,6 +121,21 @@
   }
   const clipEnd = (clip) => clip.start + clipDuration(clip);
   const safeTime = (time) => Math.max(0, Number.isFinite(time) ? time : 0);
+  function transitionInfo(clip) {
+    const transition = clip?.transitionOut || {};
+    return { type: transition.type || clip?.transition || 'none', duration: Math.max(0.1, Math.min(2, Number(transition.duration) || 0.5)) };
+  }
+  function setTransition(clip, type, duration = transitionInfo(clip).duration) {
+    clip.transitionOut = { type, duration: Math.max(0.1, Math.min(2, Number(duration) || 0.5)) };
+    clip.transition = type;
+    if (type !== 'none') {
+      const incoming = state.clips.filter((item) => item.track === clip.track && item.id !== clip.id && Math.abs(item.start - clipEnd(clip)) <= 0.025).sort((a, b) => a.start - b.start)[0];
+      if (incoming) {
+        getTransitionSource(state.media.get(clip.mediaId), clip.id, clip.track);
+        getTransitionSource(state.media.get(incoming.mediaId), incoming.id, clip.track);
+      }
+    }
+  }
   const makeSnapshot = () => ({ clips: state.clips.map((clip) => ({ ...clip })), selected: state.selected?.id || null, timelineTime: state.timelineTime });
 
   function remember() {
@@ -164,7 +188,7 @@
       tick.appendChild(label);
       frag.appendChild(tick);
     }
-    ruler.replaceChildren(frag);
+    ruler.replaceChildren(frag, rulerPlayhead);
     byId('mtl-zoom-label').textContent = `${Math.round(state.zoom)}%`;
     zoomSlider.value = String(state.zoom);
     byId('mtl-timecode').textContent = `${formatTime(state.timelineTime)} / ${formatTime(state.projectDuration)}`;
@@ -193,11 +217,11 @@
     byId('mtl-selection-status').textContent = state.selected ? `${label} · ${formatTime(clipDuration(state.selected))}` : active ? `${activeLabel} PLAYING` : 'Select a clip';
   }
   function renderGaps() {
-    mainTrack.querySelectorAll('.mtl-gap,.mtl-transition').forEach((node) => node.remove());
-    const clips = mainClips();
-    for (let i = 0; i < clips.length - 1; i++) {
-      const clip = clips[i];
-      const next = clips[i + 1];
+    root.querySelectorAll('.mtl-track-content .mtl-gap,.mtl-track-content .mtl-transition').forEach((node) => node.remove());
+    const primary = mainClips();
+    for (let i = 0; i < primary.length - 1; i++) {
+      const clip = primary[i];
+      const next = primary[i + 1];
       const end = clipEnd(clip);
       if (next.start > end + 0.025) {
         const gap = document.createElement('div');
@@ -206,20 +230,30 @@
         gap.style.width = `${(next.start - end) * state.pixelsPerSecond}px`;
         mainTrack.appendChild(gap);
       }
-      const transition = document.createElement('button');
-      transition.type = 'button';
-      transition.className = 'mtl-transition';
-      transition.textContent = clip.transition && clip.transition !== 'none' ? '◆' : '+';
-      transition.title = `Transition after ${state.media.get(clip.mediaId)?.name || 'clip'}`;
-      transition.style.left = `${next.start * state.pixelsPerSecond}px`;
-      transition.dataset.transitionFor = clip.id;
-      mainTrack.appendChild(transition);
-      transition.addEventListener('click', (event) => {
-        event.stopPropagation();
-        state.selected = clip;
-        renderSelection();
-        showTransitionMenu(event, clip);
-      });
+    }
+    for (const track of state.tracks.filter((item) => item.kind === 'video' || item.kind === 'photo')) {
+      const content = trackContent(track.id);
+      if (!content) continue;
+      const clips = state.clips.filter((clip) => clip.track === track.id).sort((a, b) => a.start - b.start);
+      for (let i = 0; i < clips.length - 1; i++) {
+        const clip = clips[i], next = clips[i + 1];
+        if (Math.abs(next.start - clipEnd(clip)) > 0.025) continue;
+        const info = transitionInfo(clip);
+        const transition = document.createElement('button');
+        transition.type = 'button'; transition.className = `mtl-transition${info.type !== 'none' ? ' mtl-transition-active' : ''}`;
+        transition.textContent = '◆';
+        transition.title = `${info.type === 'none' ? 'Add transition' : info.type} · ${info.duration.toFixed(1)}s`;
+        transition.setAttribute('aria-label', `Transition at cut after ${state.media.get(clip.mediaId)?.name || 'clip'}`);
+        transition.style.left = `${next.start * state.pixelsPerSecond}px`;
+        transition.dataset.transitionFor = clip.id;
+        content.appendChild(transition);
+        transition.addEventListener('click', (event) => {
+          event.stopPropagation();
+          state.selected = clip;
+          renderSelection();
+          showTransitionMenu(event, clip);
+        });
+      }
     }
   }
   function renderTrackClips(trackName, element) {
@@ -250,6 +284,7 @@
       right.type = 'button'; right.className = 'mtl-trim-handle mtl-trim-right'; right.setAttribute('aria-label', 'Trim clip end');
       node.append(left, right);
       node.addEventListener('pointerdown', onClipPointerDown);
+      node.addEventListener('pointermove', onClipHoverMove);
       node.addEventListener('contextmenu', onClipContextMenu);
       node.addEventListener('click', (event) => {
         if (event.target.closest('.mtl-trim-handle')) return;
@@ -343,9 +378,15 @@
     pool.appendChild(card);
   }
   function addFirstMedia(file, src, duration, videoElement) {
+    const overlayVideoElement = document.createElement('video');
+    overlayVideoElement.muted = true; overlayVideoElement.playsInline = true; overlayVideoElement.preload = 'auto';
+    overlayVideoElement.src = src;
+    overlayVideoElement.addEventListener('loadeddata', () => renderOverlayPreview());
+    overlayVideoElement.addEventListener('seeked', () => renderOverlayPreview());
+    overlayVideoElement.load();
     const media = {
       id: `first-${mediaSequence++}`, file, src, type: 'video', duration,
-      name: file?.name || 'Main video', thumbnail: '', videoElement,
+      name: file?.name || 'Main video', thumbnail: '', videoElement, overlayVideoElement,
       external: false,
     };
     media.thumbnail = getMediaThumbnail(media, videoElement) || '';
@@ -354,7 +395,7 @@
     addMediaCard(media);
     const trim = bridge().trim || { start: 0, end: Math.min(duration, 60) };
     const end = Math.min(duration, Math.max(0.05, trim.end || duration));
-    const firstClip = { id: uid('clip'), mediaId: media.id, track: 'main', start: 0, trimStart: Math.max(0, trim.start || 0), trimEnd: end, transition: 'none' };
+    const firstClip = { id: uid('clip'), mediaId: media.id, track: 'main', start: 0, trimStart: Math.max(0, trim.start || 0), trimEnd: end, transition: 'none', transitionOut: { type: 'none', duration: 0.5 } };
     state.clips.unshift(firstClip);
     filmLabState.clips = state.clips;
     state.selected = firstClip;
@@ -452,9 +493,9 @@
     const trackName = availableTrack(media, requestedTrack);
     const duration = media.type === 'image' ? 5 : Math.max(0.05, Math.min(media.duration, 60));
     const desired = at === null ? (trackName === 'main' ? Math.max(0, ...mainClips().map(clipEnd)) : state.timelineTime) : safeTime(at);
-    const start = resolveTrackStart(trackName, desired, duration);
+    const start = snapFrame(resolveTrackStart(trackName, desired, duration));
     remember();
-    const clip = { id: uid('clip'), mediaId, track: trackName, start, trimStart: 0, trimEnd: duration, transition: 'none' };
+    const clip = { id: uid('clip'), mediaId, track: trackName, start, trimStart: 0, trimEnd: duration, transition: 'none', transitionOut: { type: 'none', duration: 0.5 } };
     state.clips.push(clip);
     state.selected = clip;
     render();
@@ -464,18 +505,29 @@
     for (const file of Array.from(files || [])) {
       const media = await addExternalMedia(file);
       if (!media) continue;
-      const target = media.type === 'video' ? (mainClips().length ? 'video' : 'main') : 'photo';
-      addClipFromMedia(media.id, target, state.timelineTime);
+      const target = media.type === 'video' ? 'main' : 'photo';
+      const at = media.type === 'video' ? Math.max(0, ...mainClips().map(clipEnd)) : state.timelineTime;
+      addClipFromMedia(media.id, target, at);
     }
     render();
   }
 
   function showTransitionMenu(event, clip) {
     transitionMenu.hidden = false;
-    transitionMenu.style.left = `${Math.min(event.offsetX || 80, Math.max(0, canvas.clientWidth - 175))}px`;
-    transitionMenu.style.top = '8px';
-    transitionMenu.querySelectorAll('[data-mtl-transition]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.mtlTransition === clip.transition)));
     transitionMenu.dataset.clipId = clip.id;
+    const info = transitionInfo(clip);
+    transitionMenu.querySelectorAll('[data-mtl-transition]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.mtlTransition === info.type)));
+    transitionDurationSlider.value = String(info.duration);
+    transitionDurationValue.textContent = `${info.duration.toFixed(1)}s`;
+    const canvasRect = canvas.getBoundingClientRect();
+    const anchorRect = event.currentTarget.getBoundingClientRect();
+    const width = transitionMenu.offsetWidth || 270;
+    const height = transitionMenu.offsetHeight || 150;
+    const left = Math.max(4, Math.min(canvas.clientWidth - width - 4, anchorRect.left + anchorRect.width / 2 - canvasRect.left - width / 2));
+    let top = anchorRect.top - canvasRect.top - height - 8;
+    if (top < 4) top = anchorRect.bottom - canvasRect.top + 8;
+    transitionMenu.style.left = `${left}px`;
+    transitionMenu.style.top = `${top}px`;
   }
   function hideMenus() { transitionMenu.hidden = true; contextMenu.hidden = true; }
   function onClipContextMenu(event) {
@@ -499,15 +551,85 @@
     const rect = canvas.getBoundingClientRect();
     return Math.max(0, (clientX - rect.left - 58) / state.pixelsPerSecond);
   }
+  // === TIMELINE DRAG MODULE ===
+  function createTrackForClip(media, drag) {
+    if (drag.generatedTrack && state.tracks.some((track) => track.id === drag.generatedTrack)) return drag.generatedTrack;
+    if (media.type === 'image') {
+      drag.generatedTrack = state.clips.some((clip) => clip.track === 'photo-1') ? ensureTrack('photo').id : 'photo-1';
+      overlayTrack.closest('.mtl-track').hidden = false;
+    } else {
+      drag.generatedTrack = ensureTrack('video').id;
+    }
+    return drag.generatedTrack;
+  }
+  function trackAtPointerY(clientY, clip, drag) {
+    const media = state.media.get(clip.mediaId);
+    const kind = media?.type === 'image' ? 'photo' : 'video';
+    const rows = trackRows().filter((row) => row.dataset.trackId !== 'audio' && !row.hidden && row.getClientRects().length);
+    const row = rows.find((item) => {
+      const rect = item.getBoundingClientRect();
+      return clientY >= rect.top && clientY <= rect.bottom;
+    });
+    if (row) {
+      const track = state.tracks.find((item) => item.id === row.dataset.trackId);
+      if (track?.kind === kind) return track.id;
+    }
+    // A drop outside an existing compatible row is a request for a new lane,
+    // including space above the current top lane.
+    return createTrackForClip(media || { type: 'video' }, drag);
+  }
+  function pushTrackCollisions(clip, direction) {
+    const peers = () => state.clips.filter((item) => item.track === clip.track && item.id !== clip.id).sort((a, b) => a.start - b.start);
+    const before = peers().filter((item) => item.start < clip.start && clip.start < clipEnd(item)).sort((a, b) => b.start - a.start);
+    if (before.length) {
+      if (direction < 0) {
+        let boundary = clip.start;
+        for (const peer of before) {
+          peer.start = snapFrame(Math.max(0, boundary - clipDuration(peer)));
+          boundary = peer.start;
+        }
+      } else {
+        clip.start = snapFrame(Math.max(clip.start, ...before.map(clipEnd)));
+      }
+    }
+    let boundary = clipEnd(clip);
+    for (const peer of peers()) {
+      if (peer.start < boundary && clipEnd(peer) > clip.start) {
+        peer.start = snapFrame(boundary);
+        boundary = clipEnd(peer);
+      } else if (peer.start >= boundary) {
+        break;
+      }
+    }
+    clip.start = snapFrame(resolveTrackStart(clip.track, clip.start, clipDuration(clip), clip.id));
+    let lastEnd = -Infinity;
+    for (const item of [...state.clips].filter((entry) => entry.track === clip.track).sort((a, b) => a.start - b.start)) {
+      if (item.start < lastEnd - 0.001) item.start = snapFrame(lastEnd);
+      lastEnd = clipEnd(item);
+    }
+  }
+  function onClipHoverMove(event) {
+    if (activePointer) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const edge = Math.min(event.clientX - rect.left, rect.right - event.clientX);
+    event.currentTarget.style.cursor = edge <= 8 ? 'col-resize' : 'grab';
+  }
   function onClipPointerDown(event) {
     if (bridge().exporting || event.button !== 0 || event.target.closest('.mtl-transition')) return;
     const node = event.currentTarget;
     const clip = state.clips.find((item) => item.id === node.dataset.clipId);
     if (!clip) return;
-    event.stopPropagation();
+    event.preventDefault(); event.stopPropagation();
     state.selected = clip; renderSelection();
     const edge = event.target.closest('.mtl-trim-left') ? 'left' : event.target.closest('.mtl-trim-right') ? 'right' : 'move';
-    activePointer = { id: event.pointerId, clip, edge, node, startX: event.clientX, initialStart: clip.start, initialTrimStart: clip.trimStart, initialTrimEnd: clip.trimEnd, historySaved: false };
+    const ghost = node.cloneNode(true);
+    ghost.classList.add('mtl-drag-ghost'); ghost.removeAttribute('data-clip-id'); ghost.setAttribute('aria-hidden', 'true');
+    ghost.querySelectorAll('button').forEach((button) => button.remove());
+    ghost.style.left = `${clip.start * state.pixelsPerSecond}px`;
+    ghost.style.width = `${Math.max(18, clipDuration(clip) * state.pixelsPerSecond)}px`;
+    node.parentElement.appendChild(ghost);
+    node.classList.add('mtl-dragging');
+    activePointer = { id: event.pointerId, clip, edge, node, ghost, startX: event.clientX, startY: event.clientY, initialStart: clip.start, initialTrack: clip.track, initialTrimStart: clip.trimStart, initialTrimEnd: clip.trimEnd, historySaved: false, generatedTrack: null };
     node.setPointerCapture(event.pointerId);
     node.addEventListener('pointermove', onClipPointerMove);
     node.addEventListener('pointerup', onClipPointerEnd, { once: true });
@@ -516,19 +638,27 @@
   function onClipPointerMove(event) {
     if (bridge().exporting || !activePointer || event.pointerId !== activePointer.id) return;
     const drag = activePointer;
-    const delta = (event.clientX - drag.startX) / state.pixelsPerSecond;
-    if (!drag.historySaved && Math.abs(delta) > 0.02) { remember(); drag.historySaved = true; }
-    const min = 0.05;
+    const delta = Math.round(((event.clientX - drag.startX) / state.pixelsPerSecond) * FRAME_RATE) / FRAME_RATE;
+    if (!drag.historySaved && (Math.abs(delta) > 0.02 || Math.abs(event.clientY - drag.startY) > 6)) { remember(); drag.historySaved = true; }
     if (drag.edge === 'move') {
-      drag.clip.start = safeTime(drag.initialStart + delta);
+      drag.clip.start = snapFrame(drag.initialStart + delta);
+      const targetTrack = trackAtPointerY(event.clientY, drag.clip, drag);
+      if (targetTrack) {
+        drag.clip.track = targetTrack;
+        if (targetTrack === 'photo-1') overlayTrack.closest('.mtl-track').hidden = false;
+        const destination = trackContent(targetTrack);
+        // Keep the captured pointer target mounted; reparenting the clip here cancels
+        // pointer capture in browsers. Move only its ghost, then commit on pointerup.
+        if (destination && drag.ghost.parentElement !== destination) destination.appendChild(drag.ghost);
+      }
     } else if (drag.edge === 'left') {
-      const bounded = Math.max(-Math.min(drag.initialTrimStart, drag.initialStart), Math.min(drag.initialTrimEnd - drag.initialTrimStart - min, delta));
-      drag.clip.start = safeTime(drag.initialStart + bounded);
-      drag.clip.trimStart = drag.initialTrimStart + bounded;
+      const bounded = Math.max(-Math.min(drag.initialTrimStart, drag.initialStart), Math.min(drag.initialTrimEnd - drag.initialTrimStart - MIN_CLIP_DURATION, delta));
+      drag.clip.start = snapFrame(drag.initialStart + bounded);
+      drag.clip.trimStart = snapFrame(drag.initialTrimStart + bounded);
     } else {
       const media = state.media.get(drag.clip.mediaId);
       const maxDuration = media?.type === 'image' ? drag.initialTrimStart + 60 : Math.min(media?.duration || Infinity, drag.initialTrimStart + 60);
-      drag.clip.trimEnd = Math.max(drag.initialTrimStart + min, Math.min(maxDuration, drag.initialTrimEnd + delta));
+      drag.clip.trimEnd = snapFrame(Math.max(drag.initialTrimStart + MIN_CLIP_DURATION, Math.min(maxDuration, drag.initialTrimEnd + delta)));
     }
     const media = state.media.get(drag.clip.mediaId);
     drag.node.style.left = `${drag.clip.start * state.pixelsPerSecond}px`;
@@ -539,19 +669,26 @@
   function onClipPointerEnd(event) {
     if (!activePointer || event.pointerId !== activePointer.id) return;
     const drag = activePointer; activePointer = null;
-    drag.clip.start = resolveTrackStart(drag.clip.track, drag.clip.start, clipDuration(drag.clip), drag.clip.id);
-    if (drag.edge === 'right') {
+    if (drag.edge === 'move') {
+      drag.clip.start = snapFrame(drag.clip.start);
+      pushTrackCollisions(drag.clip, Math.sign(drag.clip.start - drag.initialStart));
+    } else if (drag.edge === 'left') {
+      drag.clip.start = snapFrame(resolveTrackStart(drag.clip.track, drag.clip.start, clipDuration(drag.clip), drag.clip.id));
+    } else {
       const nextStart = Math.min(Infinity, ...state.clips.filter((clip) => clip.track === drag.clip.track && clip.id !== drag.clip.id && clip.start >= drag.clip.start).map((clip) => clip.start));
-      if (Number.isFinite(nextStart)) drag.clip.trimEnd = Math.min(drag.clip.trimEnd, drag.clip.trimStart + Math.max(0.05, nextStart - drag.clip.start));
+      if (Number.isFinite(nextStart)) drag.clip.trimEnd = Math.min(drag.clip.trimEnd, drag.clip.trimStart + Math.max(MIN_CLIP_DURATION, nextStart - drag.clip.start));
     }
-    drag.clip.start = Math.round(drag.clip.start * 100) / 100;
-    drag.clip.trimStart = Math.round(drag.clip.trimStart * 100) / 100;
-    drag.clip.trimEnd = Math.round(drag.clip.trimEnd * 100) / 100;
-    drag.clip.trimEnd = Math.max(drag.clip.trimStart + 0.05, drag.clip.trimEnd);
+    drag.clip.start = snapFrame(drag.clip.start);
+    drag.clip.trimStart = snapFrame(drag.clip.trimStart);
+    drag.clip.trimEnd = Math.max(drag.clip.trimStart + MIN_CLIP_DURATION, snapFrame(drag.clip.trimEnd));
+    const wasPlaying = state.transportPlaying;
+    drag.node.classList.remove('mtl-dragging');
+    drag.ghost.remove();
     event.currentTarget.removeEventListener('pointermove', onClipPointerMove);
     render();
-    const media = state.media.get(drag.clip.mediaId);
-    if (drag.clip.track === 'main' && media?.src === bridge().sourceUrl) bridge().setTimelineTrim?.(drag.clip.trimStart, drag.clip.trimEnd);
+    // Re-resolve the active base clip after a lane/drop edit. Otherwise a clip
+    // moved off V1 can remain active in the transport and blank or skip playback.
+    if (state.initialized) seekTo(state.timelineTime, wasPlaying);
   }
 
   function deleteSelected() {
@@ -570,16 +707,18 @@
     if (!state.selected) return;
     remember();
     const copy = { ...state.selected, id: uid('clip'), start: clipEnd(state.selected) };
-    copy.start = resolveTrackStart(copy.track, copy.start, clipDuration(copy));
+    copy.start = snapFrame(resolveTrackStart(copy.track, copy.start, clipDuration(copy)));
     state.clips.push(copy); state.selected = copy; render();
   }
   function splitClip(clip, at) {
-    if (!clip || at <= clip.start + 0.05 || at >= clipEnd(clip) - 0.05) return;
+    const splitAt = snapFrame(at);
+    if (!clip || splitAt <= clip.start + MIN_CLIP_DURATION || splitAt >= clipEnd(clip) - MIN_CLIP_DURATION) return;
     const media = state.media.get(clip.mediaId);
     remember();
-    const sourceSplit = clip.trimStart + (at - clip.start);
-    const right = { ...clip, id: uid('clip'), start: at, trimStart: sourceSplit, transition: 'none' };
+    const sourceSplit = snapFrame(clip.trimStart + (splitAt - clip.start));
+    const right = { ...clip, id: uid('clip'), start: splitAt, trimStart: sourceSplit, transition: 'none', transitionOut: { type: 'none', duration: clip.transitionOut?.duration || 0.5 } };
     clip.trimEnd = sourceSplit;
+    clip.transitionOut = { type: 'none', duration: clip.transitionOut?.duration || 0.5 };
     clip.transition = 'none';
     state.clips.push(right); state.selected = right;
     render();
@@ -676,6 +815,21 @@
     state.pixelsPerSecond = 18 * state.zoom / 100;
     render();
   });
+  let transitionDurationHistorySaved = false;
+  const saveTransitionDurationHistory = () => {
+    if (transitionDurationHistorySaved) return;
+    const clip = state.clips.find((item) => item.id === transitionMenu.dataset.clipId);
+    if (clip) { remember(); transitionDurationHistorySaved = true; }
+  };
+  transitionDurationSlider.addEventListener('pointerdown', saveTransitionDurationHistory);
+  transitionDurationSlider.addEventListener('keydown', saveTransitionDurationHistory);
+  transitionDurationSlider.addEventListener('input', () => {
+    const clip = state.clips.find((item) => item.id === transitionMenu.dataset.clipId);
+    const duration = Number(transitionDurationSlider.value);
+    transitionDurationValue.textContent = `${duration.toFixed(1)}s`;
+    if (clip) { setTransition(clip, transitionInfo(clip).type, duration); renderGaps(); }
+  });
+  transitionDurationSlider.addEventListener('change', () => { transitionDurationHistorySaved = false; });
   root.querySelector('.mtl-media-heading').addEventListener('dragover', (event) => { event.preventDefault(); });
   root.querySelector('.mtl-media-heading').addEventListener('drop', async (event) => { event.preventDefault(); event.stopPropagation(); await addFilesToPool(event.dataTransfer.files); });
   root.addEventListener('click', (event) => {
@@ -697,7 +851,8 @@
     const transition = event.target.closest('[data-mtl-transition]');
     if (transition) {
       const clip = state.clips.find((item) => item.id === transitionMenu.dataset.clipId);
-      if (clip) { remember(); clip.transition = transition.dataset.mtlTransition; render(); }
+      if (clip) { remember(); setTransition(clip, transition.dataset.mtlTransition, Number(transitionDurationSlider.value)); render(); }
+      transitionDurationHistorySaved = false;
       hideMenus();
     }
     const context = event.target.closest('[data-mtl-context]');
@@ -755,10 +910,17 @@
     const next = mainClips().find((item) => item.start >= clipEnd(clip) - 0.025 && item.id !== clip.id);
     const end = clipEnd(clip);
     if (!next) {
-      state.transportPlaying = false;
-      state.timelineTime = end;
-      bridge().pause?.();
-      updateTransportButton(); updatePlayhead();
+      if (end < state.projectDuration - 0.025) {
+        // Keep the transport moving through a V1 gap so V2+ overlays can finish.
+        setGapAt(end, true);
+        state.lastTick = performance.now();
+        ensureTick();
+      } else {
+        state.transportPlaying = false;
+        state.timelineTime = end;
+        bridge().pause?.();
+      }
+      updateTransportButton(); updatePlayhead(); renderOverlayPreview();
       return;
     }
     if (next.start > end + 0.025) {
@@ -786,7 +948,10 @@
       state.lastTick = now;
       state.timelineTime += delta * (bridge().videoElement?.playbackRate || 1);
       if (state.pendingMain && state.timelineTime >= state.pendingMain.start) switchToMain(state.pendingMain, state.pendingMain.start, true);
-      else if (!state.pendingMain || state.timelineTime >= state.projectDuration) state.transportPlaying = false;
+      else if (state.timelineTime >= state.projectDuration) {
+        state.timelineTime = state.projectDuration;
+        state.transportPlaying = false; state.inGap = false;
+      }
     } else if (state.transportPlaying && state.activeMain) {
       const video = bridge().videoElement;
       if (!video || video.paused) state.transportPlaying = false;
@@ -821,10 +986,20 @@
   }
   function play() {
     if (state.timelineTime >= state.projectDuration - 0.02) state.timelineTime = 0;
-    state.transportPlaying = true; updateTransportButton(); ensureTick();
-    const clip = getMainAt(state.timelineTime) || mainClips().find((item) => item.start >= state.timelineTime - 0.02);
-    if (clip) { state.transportPlaying = true; seekTo(Math.max(clip.start, state.timelineTime), true); }
-    else if (mainClips().length) { state.transportPlaying = true; setGapAt(state.timelineTime, true); state.lastTick = performance.now(); }
+    const at = state.timelineTime;
+    state.transportPlaying = true;
+    const clip = getMainAt(at);
+    if (clip) seekTo(at, true);
+    else if (state.clips.length) {
+      // Play through timeline gaps so composited lanes remain time-aligned; do not
+      // jump ahead to the next V1 clip and skip overlays inside the gap.
+      setGapAt(at, true);
+      state.lastTick = performance.now();
+    } else {
+      state.transportPlaying = false;
+    }
+    updateTransportButton();
+    if (state.transportPlaying) ensureTick();
   }
   function pause() {
     state.switchToken++; state.switchingSource = false;
@@ -841,8 +1016,125 @@
   function getOverlaysAt(time) {
     return overlayClips().filter((clip) => time >= clip.start && time < clipEnd(clip)).map((clip) => {
       const media = state.media.get(clip.mediaId);
-      return media ? { clipId: clip.id, src: media.src, type: media.type, name: media.name, element: media.imageElement || media.videoElement, time: clip.trimStart + (time - clip.start) } : null;
+      return media ? { clipId: clip.id, src: media.src, type: media.type, name: media.name, element: media.imageElement || media.overlayVideoElement || media.videoElement, time: clip.trimStart + (time - clip.start) } : null;
     }).filter(Boolean);
+  }
+  // === TIMELINE TRANSITION PREVIEW MODULE ===
+  function transitionAt(time, trackName = 'main') {
+    const clips = state.clips.filter((clip) => clip.track === trackName).sort((a, b) => a.start - b.start);
+    for (let index = 0; index < clips.length - 1; index++) {
+      const outgoing = clips[index], incoming = clips[index + 1];
+      if (Math.abs(incoming.start - clipEnd(outgoing)) > 0.025) continue;
+      const info = transitionInfo(outgoing);
+      if (info.type === 'none') continue;
+      const cut = incoming.start, half = info.duration / 2;
+      if (time < cut - half || time > cut + half) continue;
+      return { outgoing, incoming, type: info.type, duration: info.duration, cut, progress: Math.max(0, Math.min(1, (time - (cut - half)) / info.duration)) };
+    }
+    return null;
+  }
+  function getTransitionSource(media, clipId, trackName = 'main') {
+    if (!media) return null;
+    const sourceKey = `${trackName}:${clipId || media.id}`;
+    if (transitionPreviewElements.has(sourceKey)) return transitionPreviewElements.get(sourceKey);
+    let element;
+    if (media.type === 'image') {
+      element = document.createElement('img'); element.src = media.src; element.alt = '';
+      element.addEventListener('load', () => { renderTransitionPreview(); renderOverlayPreview(); });
+    } else {
+      element = document.createElement('video'); element.muted = true; element.playsInline = true; element.preload = 'auto'; element.src = media.src;
+      element.addEventListener('loadeddata', () => { renderTransitionPreview(); renderOverlayPreview(); });
+      element.addEventListener('seeked', () => { renderTransitionPreview(); renderOverlayPreview(); });
+      element.load();
+    }
+    transitionPreviewElements.set(sourceKey, element);
+    return element;
+  }
+  function setupTransitionPreviewLayer() {
+    const stage = byId('canvasWrap');
+    if (!stage || transitionLayer) return;
+    transitionLayer = document.createElement('canvas');
+    transitionLayer.className = 'mtl-transition-preview-layer'; transitionLayer.hidden = true;
+    if (overlayLayer?.parentNode === stage) stage.insertBefore(transitionLayer, overlayLayer);
+    else stage.appendChild(transitionLayer);
+  }
+  function drawTransitionFrame(ctx, element, x, width, height, alpha = 1) {
+    const sourceWidth = element.videoWidth || element.naturalWidth;
+    const sourceHeight = element.videoHeight || element.naturalHeight;
+    if (!sourceWidth || !sourceHeight || element instanceof HTMLVideoElement && element.readyState < 2) return;
+    const scale = Math.min(width / sourceWidth, height / sourceHeight);
+    const drawWidth = sourceWidth * scale, drawHeight = sourceHeight * scale;
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(element, x + (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+    ctx.globalAlpha = 1;
+  }
+  function drawTransitionEffect(layer, transition, trackName = 'main') {
+    const outgoing = getTransitionSource(state.media.get(transition.outgoing.mediaId), transition.outgoing.id, trackName);
+    const incoming = getTransitionSource(state.media.get(transition.incoming.mediaId), transition.incoming.id, trackName);
+    if (!outgoing || !incoming) return;
+    const base = byId('glCanvas');
+    if (layer.width !== base.width || layer.height !== base.height) { layer.width = base.width; layer.height = base.height; }
+    const time = state.timelineTime, beforeCut = time < transition.cut;
+    const outTime = Math.max(transition.outgoing.trimStart, Math.min(transition.outgoing.trimEnd - 0.001, transition.outgoing.trimStart + time - transition.outgoing.start));
+    const inTime = beforeCut ? transition.incoming.trimStart : Math.max(transition.incoming.trimStart, Math.min(transition.incoming.trimEnd - 0.001, transition.incoming.trimStart + time - transition.cut));
+    for (const [element, sourceTime, sourceIsMoving] of [[outgoing, beforeCut ? outTime : transition.outgoing.trimEnd - 0.001, beforeCut], [incoming, inTime, !beforeCut]]) {
+      if (!(element instanceof HTMLVideoElement)) continue;
+      element.playbackRate = bridge().videoElement?.playbackRate || 1;
+      if (Math.abs(element.currentTime - sourceTime) > 0.14) { try { element.currentTime = sourceTime; } catch (error) {} }
+      const shouldPlay = state.transportPlaying && sourceIsMoving;
+      if (shouldPlay && element.paused) element.play().catch(() => {});
+      else if (!shouldPlay && !element.paused) element.pause();
+    }
+    const ctx = layer.getContext('2d');
+    if (!ctx) return;
+    const width = layer.width, height = layer.height, progress = transition.progress;
+    ctx.clearRect(0, 0, width, height); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    if (transition.type === 'dissolve') {
+      drawTransitionFrame(ctx, outgoing, 0, width, height, 1);
+      drawTransitionFrame(ctx, incoming, 0, width, height, progress);
+    } else if (transition.type === 'slide-left') {
+      if (beforeCut) {
+        const phase = Math.max(0, Math.min(1, (time - (transition.cut - transition.duration / 2)) / (transition.duration / 2)));
+        drawTransitionFrame(ctx, outgoing, -phase * width, width, height, 1);
+        drawTransitionFrame(ctx, incoming, (1 - phase) * width, width, height, 1);
+      } else {
+        const fade = Math.max(0, 1 - (time - transition.cut) / (transition.duration / 2));
+        drawTransitionFrame(ctx, incoming, 0, width, height, fade);
+      }
+    } else if (transition.type === 'wipe') {
+      if (beforeCut) {
+        drawTransitionFrame(ctx, outgoing, 0, width, height, 1);
+        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, width * Math.min(1, progress * 2), height); ctx.clip();
+        drawTransitionFrame(ctx, incoming, 0, width, height, 1); ctx.restore();
+      } else {
+        const fade = Math.max(0, 1 - (time - transition.cut) / (transition.duration / 2));
+        drawTransitionFrame(ctx, incoming, 0, width, height, fade);
+      }
+    } else {
+      drawTransitionFrame(ctx, beforeCut ? outgoing : incoming, 0, width, height, 1);
+      const phase = beforeCut ? Math.min(1, (time - (transition.cut - transition.duration / 2)) / (transition.duration / 2)) : Math.max(0, 1 - (time - transition.cut) / (transition.duration / 2));
+      if (transition.type === 'fade-to-black' || transition.type === 'fade-from-white') {
+        ctx.fillStyle = transition.type === 'fade-from-white' ? '#fff' : '#000';
+        ctx.globalAlpha = Math.max(0, Math.min(1, phase)); ctx.fillRect(0, 0, width, height); ctx.globalAlpha = 1;
+      }
+    }
+  }
+  function renderTransitionPreview() {
+    setupTransitionPreviewLayer();
+    if (!transitionLayer) return;
+    const transition = transitionAt(state.timelineTime, 'main');
+    if (!transition) {
+      transitionLayer.hidden = true;
+      transitionPreviewElements.forEach((element, key) => { if (key.startsWith('main:') && element instanceof HTMLVideoElement && !element.paused) element.pause(); });
+      return;
+    }
+    transitionLayer.hidden = false;
+    const stage = byId('canvasWrap'), base = byId('glCanvas');
+    const stageRect = stage.getBoundingClientRect(), baseRect = base.getBoundingClientRect();
+    transitionLayer.style.left = `${baseRect.left - stageRect.left}px`;
+    transitionLayer.style.top = `${baseRect.top - stageRect.top}px`;
+    transitionLayer.style.width = `${baseRect.width}px`; transitionLayer.style.height = `${baseRect.height}px`;
+    drawTransitionEffect(transitionLayer, transition, 'main');
   }
   function setupPreviewLayer() {
     const stage = byId('canvasWrap');
@@ -854,35 +1146,80 @@
   function renderOverlayPreview() {
     setupPreviewLayer();
     if (!overlayLayer) return;
-    const active = getOverlaysAt(state.timelineTime);
-    const inGap = state.initialized && !getMainAt(state.timelineTime) && state.timelineTime < state.projectDuration;
-    const overlaySignature = active.map((item) => item.clipId).join('|');
-    const signature = `${inGap ? 'gap:' : ''}${overlaySignature}`;
+    const time = state.timelineTime;
+    const active = getOverlaysAt(time);
+    const trackOrder = state.tracks.filter((track) => track.id !== 'main' && (track.kind === 'video' || track.kind === 'photo')).sort((a, b) => {
+      const layerA = a.kind === 'photo' ? 1 : 0, layerB = b.kind === 'photo' ? 1 : 0;
+      return layerA - layerB || state.tracks.indexOf(a) - state.tracks.indexOf(b);
+    });
+    const entries = [];
+    const activeTransitionKeys = new Set();
+    for (const track of trackOrder) {
+      const transition = transitionAt(time, track.id);
+      if (transition) {
+        entries.push({ kind: 'transition', trackId: track.id, transition, key: `transition:${track.id}:${transition.outgoing.id}:${transition.incoming.id}` });
+        activeTransitionKeys.add(`${track.id}:${transition.outgoing.id}`);
+        activeTransitionKeys.add(`${track.id}:${transition.incoming.id}`);
+      } else {
+        for (const item of active.filter((activeClip) => state.clips.find((clip) => clip.id === activeClip.clipId)?.track === track.id)) {
+          entries.push({ kind: 'clip', item, key: `clip:${track.id}:${item.clipId}` });
+        }
+      }
+    }
+    const inGap = state.initialized && !getMainAt(time) && time < state.projectDuration;
+    const signature = `${inGap ? 'gap:' : ''}${entries.map((entry) => entry.key).join('|')}`;
     if (signature !== state.lastOverlaySignature) {
       state.lastOverlaySignature = signature;
       overlayLayer.querySelectorAll('video').forEach((video) => video.pause());
       overlayLayer.replaceChildren();
-      for (const item of active) {
+      overlayTransitionCanvases.clear();
+      for (const entry of entries) {
+        if (entry.kind === 'transition') {
+          const layer = document.createElement('canvas');
+          layer.className = 'mtl-transition-track-canvas'; layer.dataset.transitionTrack = entry.trackId;
+          overlayLayer.appendChild(layer); overlayTransitionCanvases.set(entry.trackId, layer);
+          continue;
+        }
+        const item = entry.item;
         const media = state.media.get(state.clips.find((clip) => clip.id === item.clipId)?.mediaId);
         if (item.type === 'image' && media?.imageElement) {
           const img = document.createElement('img'); img.src = item.src; img.alt = media.name; overlayLayer.appendChild(img);
-        } else if (item.type === 'video' && media?.videoElement) {
-          const vid = media.videoElement; vid.classList.add('mtl-preview-media'); vid.muted = true; vid.playsInline = true; vid.hidden = false;
+        } else if (item.type === 'video' && item.element) {
+          const vid = item.element; vid.classList.add('mtl-preview-media'); vid.muted = true; vid.playsInline = true; vid.hidden = false;
           overlayLayer.appendChild(vid);
         }
       }
     }
-    overlayLayer.hidden = active.length === 0 && !inGap;
+    overlayLayer.hidden = entries.length === 0 && !inGap;
     overlayLayer.style.backgroundColor = inGap ? '#000' : 'transparent';
-    active.forEach((item) => {
-      if (item.type !== 'video') return;
-      const media = state.media.get(state.clips.find((clip) => clip.id === item.clipId)?.mediaId);
-      const vid = media?.videoElement;
-      if (!vid) return;
+    const stage = byId('canvasWrap'), base = byId('glCanvas');
+    if (stage && base) {
+      const stageRect = stage.getBoundingClientRect(), baseRect = base.getBoundingClientRect();
+      overlayLayer.style.left = `${baseRect.left - stageRect.left}px`;
+      overlayLayer.style.top = `${baseRect.top - stageRect.top}px`;
+      overlayLayer.style.width = `${baseRect.width}px`;
+      overlayLayer.style.height = `${baseRect.height}px`;
+    }
+    for (const item of active) {
+      const clip = state.clips.find((entry) => entry.id === item.clipId);
+      if (!clip || activeTransitionKeys.has(`${clip.track}:${clip.id}`) || item.type !== 'video') continue;
+      const vid = item.element;
+      if (!vid) continue;
+      vid.playbackRate = bridge().videoElement?.playbackRate || 1;
       if (Math.abs(vid.currentTime - item.time) > 0.14) { try { vid.currentTime = item.time; } catch (error) {} }
       if (state.transportPlaying && vid.paused) vid.play().catch(() => {});
       else if (!state.transportPlaying && !vid.paused) vid.pause();
+    }
+    for (const entry of entries) {
+      if (entry.kind === 'transition') {
+        const layer = overlayTransitionCanvases.get(entry.trackId);
+        if (layer) drawTransitionEffect(layer, entry.transition, entry.trackId);
+      }
+    }
+    transitionPreviewElements.forEach((element, key) => {
+      if (!key.startsWith('main:') && !activeTransitionKeys.has(key) && element instanceof HTMLVideoElement && !element.paused) element.pause();
     });
+    renderTransitionPreview();
   }
   async function renderOverlays(outputCanvas, time, plan = null) {
     const overlayTime = plan?.toOriginalTime ? plan.toOriginalTime(time) : time;
@@ -893,8 +1230,9 @@
       const media = state.media.get(state.clips.find((clip) => clip.id === item.clipId)?.mediaId);
       if (!media) continue;
       let element = media.imageElement;
-      if (media.type === 'video' && media.videoElement) {
-        element = media.videoElement;
+      const overlayVideo = media.overlayVideoElement || media.videoElement;
+      if (media.type === 'video' && overlayVideo) {
+        element = overlayVideo;
         try {
           if (Math.abs(element.currentTime - item.time) > 0.02) await seekMediaElement(element, item.time);
         } catch (error) { continue; }

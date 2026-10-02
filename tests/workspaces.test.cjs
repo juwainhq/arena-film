@@ -177,9 +177,13 @@ test('multi-clip editor is additive, multi-track, and keeps the first-upload vid
   assert.match(script, /window\.multiTimeline\.renderOverlays\(output,outputTime,editPlan\)/);
   assert.match(script, /Segment \$\{segmentIndex\}\/\$\{segmentCount\}/);
   assert.match(html, /id="shortcut-footer"/);
-  assert.match(styles, /#shortcuts,#cropPanelToggle > kbd,#downloadBtn > kbd/);
+  assert.match(styles, /#shortcuts \{ display: none !important; \}/);
+  const sidebar = html.match(/<aside id="sidebar">([\s\S]*?)<\/aside>/)?.[1] || '';
+  assert.doesNotMatch(sidebar, /<kbd|class="shortcut"/, 'sidebar controls and section headers do not render keybind labels');
+  assert.equal((html.match(/class="shortcuts-bar"/g) || []).length, 1, 'the bottom shortcuts bar is the only rendered shortcut reference');
+  assert.doesNotMatch(html, /<kbd>INFO<\/kbd>/i, 'the shortcuts modal has no INFO keycaps');
+  assert.match(html, /<div id="shortcut-footer" class="shortcuts-bar"[\s\S]*?SPACE[\s\S]*?RESET[\s\S]*?EXPORT[\s\S]*?EXPAND[\s\S]*?CROP/);
   assert.match(html, /id="shortcut-footer" class="shortcuts-bar"/);
-  assert.equal((html.match(/class="shortcuts-bar"/g) || []).length, 1, 'only one shortcuts bar is rendered');
   assert.match(styles, /#shortcut-footer\.shortcuts-bar \{ position: relative; z-index: 0;/);
   assert.match(html, /data-mtl-action="step-back"[\s\S]*?−5s[\s\S]*?data-mtl-action="step-forward"[\s\S]*?\+5s/);
   assert.match(html, /id="mtl-zoom-slider"/);
@@ -194,6 +198,85 @@ test('multi-clip editor is additive, multi-track, and keeps the first-upload vid
   assert.match(styles, /\.mtl-clip\.mtl-selected/);
   assert.match(styles, /#app\[data-workspace="video"\] #timeline-module,#app\[data-workspace="video"\] #editorTimeline \{ display: none !important; \}/);
   assert.match(html, /<section id="timeline-module" class="video-only"/);
+});
+
+test('timeline drag moves clips across tracks, frame-snaps, pushes collisions, and trims to a 0.1s minimum', () => {
+  assert.match(multiTimeline, /\/\/ === TIMELINE DRAG MODULE ===/);
+  assert.match(multiTimeline, /const FRAME_RATE = 24/);
+  assert.match(multiTimeline, /const MIN_CLIP_DURATION = 0\.1/);
+  assert.match(multiTimeline, /function trackAtPointerY\(clientY, clip, drag\)/);
+  assert.match(multiTimeline, /drop outside an existing compatible row is a request for a new lane/);
+  assert.doesNotMatch(multiTimeline, /clientY < first\.top && kind === 'video'\) return 'main'/);
+  assert.ok(html.indexOf('id="mtl-extra-video-tracks"') < html.indexOf('data-track-id="main"'), 'new V2+ lanes appear above V1');
+  assert.match(multiTimeline, /function pushTrackCollisions\(clip, direction\)/);
+  assert.match(multiTimeline, /function onClipHoverMove\(event\)/);
+  assert.match(multiTimeline, /const ghost = node\.cloneNode\(true\)/);
+  assert.match(multiTimeline, /node\.setPointerCapture\(event\.pointerId\)/);
+  assert.match(multiTimeline, /drag\.ghost\.parentElement !== destination\) destination\.appendChild\(drag\.ghost\)/);
+  assert.match(multiTimeline, /if \(media\.type === 'video' && \(!requested \|\| requested === 'main'\)\) return 'main'/);
+  assert.match(multiTimeline, /const target = media\.type === 'video' \? 'main' : 'photo'/);
+  assert.match(multiTimeline, /Math\.max\(0, \.\.\.mainClips\(\)\.map\(clipEnd\)\)/);
+  assert.match(multiTimeline, /pushTrackCollisions\(drag\.clip, Math\.sign\(drag\.clip\.start - drag\.initialStart\)\)/);
+  assert.match(multiTimeline, /if \(state\.initialized\) seekTo\(state\.timelineTime, wasPlaying\)/);
+  assert.match(multiTimeline, /key: `clip:\$\{track\.id\}:\$\{item\.clipId\}`/);
+  assert.match(styles, /\.mtl-clip\.mtl-drag-ghost/);
+  assert.match(styles, /\.mtl-trim-handle[^}]*cursor: ew-resize/);
+});
+
+test('transitions expose six preview choices and render frame-synced preview effects', () => {
+  for (const type of ['none', 'dissolve', 'fade-to-black', 'fade-from-white', 'slide-left', 'wipe']) {
+    assert.match(html, new RegExp(`data-mtl-transition="${type}"`));
+  }
+  assert.match(html, /id="mtl-transition-duration" min="0\.1" max="2" step="0\.1" value="0\.5"/);
+  assert.match(multiTimeline, /clip\.transitionOut = \{ type, duration:/);
+  assert.match(multiTimeline, /if \(type !== 'none'\)[\s\S]*?getTransitionSource\(state\.media\.get\(clip\.mediaId\), clip\.id, clip\.track\)[\s\S]*?getTransitionSource\(state\.media\.get\(incoming\.mediaId\), incoming\.id, clip\.track\)/);
+  assert.match(multiTimeline, /function transitionAt\(time, trackName = 'main'\)/);
+  const transitionSource = multiTimeline.match(/function transitionAt\(time, trackName = 'main'\) \{[\s\S]*?\n  \}/)[0];
+  const transitionState = vm.createContext({});
+  vm.runInContext(`const state={clips:[]}; const mainClips=()=>state.clips.filter(c=>c.track==='main').sort((a,b)=>a.start-b.start); const clipEnd=c=>c.start+c.trimEnd-c.trimStart; const transitionInfo=c=>({type:c.transitionOut?.type||'none',duration:c.transitionOut?.duration||0.5}); ${transitionSource}; this.setClips=clips=>state.clips=clips; this.at=transitionAt;`, transitionState);
+  transitionState.setClips([{id:'a',track:'main',start:0,trimStart:0,trimEnd:2,transitionOut:{type:'dissolve',duration:0.5}},{id:'b',track:'main',start:2,trimStart:0,trimEnd:2,transitionOut:{type:'none',duration:0.5}}]);
+  assert.equal(transitionState.at(1.75).progress, 0);
+  assert.equal(transitionState.at(2).progress, 0.5);
+  assert.equal(transitionState.at(2.251), null);
+  transitionState.setClips([{id:'o1',track:'video-2',start:0,trimStart:0,trimEnd:2,transitionOut:{type:'wipe',duration:0.5}},{id:'o2',track:'video-2',start:2,trimStart:0,trimEnd:2,transitionOut:{type:'none',duration:0.5}}]);
+  assert.equal(transitionState.at(2, 'video-2').type, 'wipe');
+  assert.match(multiTimeline, /transitionAt\(time, track\.id\)/);
+  assert.match(multiTimeline, /drawTransitionEffect\(layer, entry\.transition, entry\.trackId\)/);
+  assert.match(multiTimeline, /function getTransitionSource\(media, clipId, trackName = 'main'\)/);
+  const transitionSourceFn = multiTimeline.match(/function getTransitionSource\(media, clipId, trackName = 'main'\) \{[\s\S]*?\n  \}/)[0];
+  const transitionSourceContext = vm.createContext({ document: { createElement: () => ({ addEventListener() {}, load() {} }) } });
+  vm.runInContext(`const transitionPreviewElements=new Map(); const transitionLayer=null; ${transitionSourceFn}; this.get=getTransitionSource; this.cache=transitionPreviewElements;`, transitionSourceContext);
+  const testMedia = { id: 'same-media', type: 'video', src: 'blob:test' };
+  assert.notEqual(transitionSourceContext.get(testMedia, 'left-split'), transitionSourceContext.get(testMedia, 'right-split'), 'split clips need independent transition frames');
+  assert.equal(transitionSourceContext.get(testMedia, 'left-split'), transitionSourceContext.get(testMedia, 'left-split'));
+  assert.match(multiTimeline, /function renderTransitionPreview\(\)/);
+  assert.match(multiTimeline, /drawTransitionFrame\(ctx, incoming, 0, width, height, progress\)/);
+  assert.match(multiTimeline, /transition\.type === 'slide-left'/);
+  assert.match(multiTimeline, /transition\.type === 'wipe'/);
+  assert.match(multiTimeline, /renderTransitionPreview\(\);/);
+});
+
+test('lane changes keep playback on the edited timeline and do not jump over overlay gaps', () => {
+  const playSource = multiTimeline.match(/function play\(\) \{[\s\S]*?\n  \}/)[0];
+  const playback = vm.createContext({});
+  vm.runInContext(`const state={timelineTime:1,projectDuration:5,transportPlaying:false,clips:[{track:'main',start:3}]}; let gapCall=null,tickCount=0; const performance={now:()=>10}; const getMainAt=()=>null; const setGapAt=(at,autoplay)=>{gapCall={at,autoplay};}; const updateTransportButton=()=>{}; const ensureTick=()=>tickCount++; ${playSource}; this.run=play; this.gap=()=>gapCall; this.ticks=()=>tickCount;`, playback);
+  playback.run();
+  assert.deepEqual(JSON.parse(JSON.stringify(playback.gap())), {at:1,autoplay:true}, 'playback stays in the gap instead of jumping to the next V1 clip');
+  assert.equal(playback.ticks(), 1);
+  assert.doesNotMatch(multiTimeline, /getMainAt\(state\.timelineTime\) \|\| mainClips\(\)\.find/);
+  assert.match(multiTimeline, /if \(state\.initialized\) seekTo\(state\.timelineTime, wasPlaying\)/);
+  assert.match(multiTimeline, /key: `clip:\$\{track\.id\}:\$\{item\.clipId\}`/);
+});
+
+test('V2+ composite against the actual preview frame and keep playback running for overlay-only tails', () => {
+  assert.match(multiTimeline, /overlayVideoElement\.src = src/);
+  assert.match(multiTimeline, /media\.imageElement \|\| media\.overlayVideoElement \|\| media\.videoElement/);
+  assert.match(multiTimeline, /const overlayVideo = media\.overlayVideoElement \|\| media\.videoElement/);
+  assert.match(multiTimeline, /overlayLayer\.style\.left = `\$\{baseRect\.left - stageRect\.left\}px`/);
+  assert.match(multiTimeline, /end < state\.projectDuration - 0\.025[\s\S]*?setGapAt\(end, true\)/);
+  assert.match(multiTimeline, /else if \(state\.timelineTime >= state\.projectDuration\)/);
+  assert.doesNotMatch(multiTimeline, /else if \(!state\.pendingMain \|\| state\.timelineTime >= state\.projectDuration\)/);
+  assert.match(styles, /\.mtl-preview-overlay \{ position: absolute; z-index: 9; display: block;/);
 });
 
 test('multi-timeline export mapping preserves clip trims, gap black frames, and dissolve/fade timing', () => {

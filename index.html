@@ -865,8 +865,8 @@ body[data-mode="empty"] #app #timeline-module { flex: none; width: 100%; height:
   #timeline-selected-duration { display: none; }
 }
 
-/* Keep shortcut keycaps out of sidebar section flows; the footer is their only inline home. */
-#shortcuts,#cropPanelToggle > kbd,#downloadBtn > kbd,#beforeAfterBtn > kbd { display: none !important; }
+/* Keep the legacy sidebar shortcut area hidden; the bottom bar is the only visible shortcut reference. */
+#shortcuts { display: none !important; }
 #shortcut-footer.shortcuts-bar { position: relative; z-index: 0; display: flex; flex: none; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 16px; width: 100%; min-height: 26px; padding: 5px 9px; overflow: hidden; border-top: 1px solid var(--panel-border); background: var(--bg); color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .08em; white-space: nowrap; pointer-events: none; }
 #shortcut-footer span { display: flex; gap: 5px; }
 #shortcut-footer b { color: var(--text-dim); font-weight: 500; }
@@ -914,26 +914,39 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
 .mtl-track-content { position: relative; min-width: 0; height: 100%; min-height: 30px; overflow: hidden; background: var(--soft-bg); border-left: 1px solid var(--panel-border); }
 .mtl-clip { position: absolute; top: 2px; bottom: 2px; overflow: hidden; border: 1px solid rgba(255,255,255,.45); background: #222; color: #fff; cursor: grab; }
 .mtl-clip.mtl-selected { border: 2px solid var(--accent); box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
+.mtl-clip.mtl-dragging { z-index: 12; opacity: .92; cursor: grabbing; box-shadow: 0 8px 28px rgba(0,0,0,.7); }
+.mtl-clip.mtl-drag-ghost { z-index: 1; border-style: dashed; border-color: var(--accent); opacity: .28; pointer-events: none; }
 .mtl-clip img { width: 100%; height: 100%; object-fit: cover; opacity: .8; pointer-events: none; }
 .mtl-clip-name { position: absolute; inset: 2px 10px auto 5px; overflow: hidden; color: #fff; font: 7px 'JetBrains Mono',monospace; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 4px #000; pointer-events: none; }
 .mtl-trim-handle { position: absolute; z-index: 3; top: 0; bottom: 0; width: 8px; min-height: 0; padding: 0; border: 0; background: rgba(0,0,0,.72); cursor: ew-resize; touch-action: none; }
 .mtl-trim-left { left: 0; border-right: 2px solid var(--accent); }
 .mtl-trim-right { right: 0; border-left: 2px solid var(--accent); }
 .mtl-gap { position: absolute; top: 0; bottom: 0; background: rgba(0,0,0,.7); pointer-events: none; }
-.mtl-transition { position: absolute; z-index: 5; top: 50%; width: 18px; height: 18px; min-height: 0; padding: 0; transform: translate(-50%,-50%); border: 1px solid var(--accent); border-radius: 50%; background: var(--bg); color: var(--accent); font-size: 10px; cursor: pointer; }
+.mtl-transition { position: absolute; z-index: 7; top: 50%; width: 22px; height: 22px; min-height: 0; padding: 0; transform: translate(-50%,-50%); border: 0; background: var(--bg); color: var(--text-dim); font-size: 17px; line-height: 1; text-shadow: 0 1px 3px #000; cursor: pointer; }
+.mtl-transition.mtl-transition-active { color: var(--accent); text-shadow: 0 0 7px var(--accent-glow); }
+.mtl-transition:hover,.mtl-transition:focus-visible { color: var(--text); outline: 1px solid var(--accent); outline-offset: 0; }
 .mtl-wave { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 1px; overflow: hidden; opacity: .7; pointer-events: none; }
 .mtl-wave i { flex: 1 1 0; min-width: 1px; max-width: 4px; background: var(--text-dim); }
 .mtl-playhead { position: absolute; z-index: 5; top: 0; bottom: 0; width: 2px; background: var(--accent); box-shadow: 0 0 3px #000; cursor: ew-resize; pointer-events: auto; touch-action: none; }
 .mtl-playhead::before { position: absolute; top: 0; left: -4px; width: 10px; height: 8px; content: ''; background: var(--accent); clip-path: polygon(0 0,100% 0,50% 100%); }
 .mtl-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; pointer-events: none; }
 .mtl-empty[hidden] { display: none !important; }
-.mtl-transition-popover,.mtl-context-menu { position: absolute; z-index: 20; display: flex; flex-direction: column; gap: 3px; min-width: 150px; padding: 7px; border: 1px solid var(--panel-border); background: var(--bg); box-shadow: 0 10px 34px var(--shadow); }
+.mtl-transition-popover,.mtl-context-menu { position: absolute; z-index: 20; display: flex; flex-direction: column; gap: 7px; min-width: 150px; padding: 9px; border: 1px solid var(--panel-border); background: var(--bg); box-shadow: 0 10px 34px var(--shadow); }
+.mtl-transition-popover { width: 270px; }
 .mtl-transition-popover[hidden],.mtl-context-menu[hidden] { display: none !important; }
-.mtl-transition-popover b { padding: 3px; color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; letter-spacing: .1em; }
-.mtl-transition-popover button,.mtl-context-menu button { min-height: 24px; padding: 3px 6px; border: 1px solid transparent; background: transparent; color: var(--text); font: 8px 'JetBrains Mono',monospace; text-align: left; cursor: pointer; }
-.mtl-transition-popover button:hover,.mtl-transition-popover button[aria-pressed="true"],.mtl-context-menu button:hover { border-color: var(--panel-border); color: var(--accent); }
-.mtl-preview-overlay { position: absolute; z-index: 9; inset: 0; display: block; overflow: hidden; pointer-events: none; }
-.mtl-preview-overlay img,.mtl-preview-overlay video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.mtl-transition-popover > b { padding: 2px 1px; color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .1em; }
+.mtl-transition-options { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px; }
+.mtl-transition-options button { display: flex; align-items: center; flex-direction: column; justify-content: center; gap: 3px; min-width: 0; min-height: 48px; padding: 4px 3px; border: 1px solid var(--panel-border); background: var(--soft-bg); color: var(--text-dim); font: 7px 'JetBrains Mono',monospace; text-align: center; cursor: pointer; }
+.mtl-transition-options button:hover,.mtl-transition-options button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-bg); color: var(--text); }
+.mtl-transition-preview { display: grid; place-items: center; width: 100%; min-height: 20px; color: var(--accent); font: 14px 'JetBrains Mono',monospace; }
+.mtl-transition-duration-row { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 7px; color: var(--text-dim); font: 8px 'JetBrains Mono',monospace; }
+.mtl-transition-duration-row input { width: 100%; min-width: 0; height: 16px; accent-color: var(--accent); }
+.mtl-transition-duration-row output { color: var(--text); white-space: nowrap; }
+.mtl-context-menu button { min-height: 24px; padding: 3px 6px; border: 1px solid transparent; background: transparent; color: var(--text); font: 8px 'JetBrains Mono',monospace; text-align: left; cursor: pointer; }
+.mtl-context-menu button:hover { border-color: var(--panel-border); color: var(--accent); }
+.mtl-transition-preview-layer { position: absolute; z-index: 8; pointer-events: none; }
+.mtl-preview-overlay { position: absolute; z-index: 9; display: block; overflow: hidden; pointer-events: none; }
+.mtl-preview-overlay img,.mtl-preview-overlay video,.mtl-preview-overlay canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .mtl-preview-overlay[hidden] { display: none !important; }
 @media (max-width: 767px) {
   #app[data-workspace="video"] #mainArea { inset: 0 0 272px; padding: 8px 12px 4px; }
@@ -1260,7 +1273,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
           </section>
           <section class="sidebarPanel exportTabPanel" id="exportTabPanel" data-panel="export" role="tabpanel" aria-labelledby="exportTab" hidden>
 <section id="exportPanel" class="socialPanel photo-only" aria-label="Instagram export">
-        <button type="button" id="cropPanelToggle" class="panelHeading" aria-expanded="true" aria-controls="cropPanelBody"><span class="sectionLabel" id="exportPanelTitle">Photo export</span><kbd>C</kbd><span class="panelChevron" aria-hidden="true"></span></button>
+        <button type="button" id="cropPanelToggle" class="panelHeading" aria-expanded="true" aria-controls="cropPanelBody"><span class="sectionLabel" id="exportPanelTitle">Photo export</span><span class="panelChevron" aria-hidden="true"></span></button>
         <div id="cropPanelBody">
           <div class="formatGrid" role="group" aria-label="Instagram crop formats">
             <button type="button" class="formatBtn" data-format="square" aria-pressed="false"><span>Square post</span><small>1:1 · 1080 × 1080</small></button>
@@ -1314,17 +1327,17 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
         <p id="videoExportStatus" class="socialHint" role="status" aria-live="polite">Ready to export this video.</p>
       </section>
             <details class="exportExtras"><summary>More export actions</summary><div id="actions" class="photo-only">
-        <button type="button" id="beforeAfterBtn" hidden>◑ Toggle Before / After <kbd style="margin-left:auto;opacity:.6">Space</kbd></button>
-        <button class="actionBtn primary" id="downloadBtn">⤓ Original-size PNG <kbd style="margin-left:auto">D</kbd></button>
+        <button type="button" id="beforeAfterBtn" hidden>◑ Toggle Before / After</button>
+        <button class="actionBtn primary" id="downloadBtn">⤓ Original-size PNG</button>
       </div></details>
           </section>
         </div>
 <div id="shortcuts">
-        <div class="kbdRow"><span>Before / After</span><kbd>Space</kbd></div>
-        <div class="kbdRow"><span>Reset all</span><kbd>R</kbd></div>
-        <div class="kbdRow"><span>Download</span><kbd>D</kbd></div>
-        <div class="kbdRow"><span>Expand all</span><kbd>E</kbd></div>
-        <div class="kbdRow"><span>Crop / export panel</span><kbd>C</kbd></div>
+        <div class="kbdRow"><span>Before / After</span></div>
+        <div class="kbdRow"><span>Reset all</span></div>
+        <div class="kbdRow"><span>Download</span></div>
+        <div class="kbdRow"><span>Expand all</span></div>
+        <div class="kbdRow"><span>Crop / export panel</span></div>
       </div>
 </div>
     </aside>
@@ -1384,14 +1397,14 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
       <div id="mtl-ruler-scroll" class="mtl-ruler-scroll"><div id="mtl-ruler" class="mtl-ruler"><div id="mtl-ruler-playhead" class="mtl-ruler-playhead" role="slider" tabindex="0" aria-label="Timeline playhead" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></div></div></div>
       <div id="mtl-scroll" class="mtl-scroll" tabindex="0" aria-label="Multi-track timeline. Drag clips to arrange, resize their edges, or right-click for clip actions.">
         <div id="mtl-canvas" class="mtl-canvas">
-          <div class="mtl-track mtl-video-row" data-track-id="main"><span class="mtl-track-name">V1</span><div id="mtl-main-track" class="mtl-track-content" data-track="main"></div></div>
           <div id="mtl-extra-video-tracks" class="mtl-track-stack" aria-label="Additional video tracks"></div>
+          <div class="mtl-track mtl-video-row" data-track-id="main"><span class="mtl-track-name">V1</span><div id="mtl-main-track" class="mtl-track-content" data-track="main"></div></div>
           <div class="mtl-track mtl-photo-row" data-track-id="photo-1" hidden><span class="mtl-track-name">PHOTO 1</span><div id="mtl-overlay-track" class="mtl-track-content" data-track="photo-1"></div></div>
           <div id="mtl-extra-photo-tracks" class="mtl-track-stack" aria-label="Additional photo overlay tracks"></div>
           <div class="mtl-track mtl-audio-row" data-track-id="audio"><span class="mtl-track-name">AUDIO</span><div id="mtl-audio-track" class="mtl-track-content" role="img" aria-label="Non-editable audio waveform"></div></div>
           <div id="mtl-playhead" class="mtl-playhead" role="slider" tabindex="0" aria-label="Timeline playhead" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></div>
           <div id="mtl-empty" class="mtl-empty">Add media to create clips at the playhead. Secondary video and photos composite over V1.</div>
-          <div id="mtl-transition-popover" class="mtl-transition-popover" hidden><b>TRANSITION</b><button type="button" data-mtl-transition="none">None</button><button type="button" data-mtl-transition="dissolve">Dissolve</button><button type="button" data-mtl-transition="fade-to-black">Fade to black</button><button type="button" data-mtl-transition="fade-from-black">Fade from black</button></div>
+          <div id="mtl-transition-popover" class="mtl-transition-popover" hidden role="group" aria-label="Clip transition settings"><b>TRANSITIONS</b><div class="mtl-transition-options" role="group" aria-label="Transition type"><button type="button" data-mtl-transition="none" aria-pressed="true"><span class="mtl-transition-preview">╳</span><span>None</span></button><button type="button" data-mtl-transition="dissolve" aria-pressed="false"><span class="mtl-transition-preview">▓░</span><span>Dissolve</span></button><button type="button" data-mtl-transition="fade-to-black" aria-pressed="false"><span class="mtl-transition-preview">◩</span><span>Fade to black</span></button><button type="button" data-mtl-transition="fade-from-white" aria-pressed="false"><span class="mtl-transition-preview">▨</span><span>Fade from white</span></button><button type="button" data-mtl-transition="slide-left" aria-pressed="false"><span class="mtl-transition-preview">→</span><span>Slide left</span></button><button type="button" data-mtl-transition="wipe" aria-pressed="false"><span class="mtl-transition-preview">◧</span><span>Wipe</span></button></div><label class="mtl-transition-duration-row" for="mtl-transition-duration"><span>Duration</span><input type="range" id="mtl-transition-duration" min="0.1" max="2" step="0.1" value="0.5"><output id="mtl-transition-duration-value">0.5s</output></label></div>
           <div id="mtl-context-menu" class="mtl-context-menu" hidden><button type="button" data-mtl-context="delete">Delete</button><button type="button" data-mtl-context="duplicate">Duplicate</button><button type="button" data-mtl-context="split">Split here</button></div>
         </div>
       </div>
@@ -1404,13 +1417,13 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
     <button type="button" class="modalClose" id="closeShortcutsBtn" aria-label="Close shortcuts">×</button>
     <div class="sectionLabel" id="shortcutsTitle">Keyboard shortcuts</div>
     <div class="shortcutList">
-      <div><kbd>INFO</kbd><span>Keyboard hints are consolidated in the bottom bar.</span></div>
-      <div><kbd>INFO</kbd><span>Editing controls remain available in the workspace.</span></div>
-      <div><kbd>INFO</kbd><span>Timeline controls are available above the tracks.</span></div>
-      <div><kbd>INFO</kbd><span>Use the preview tools to inspect your media.</span></div>
-      <div><kbd>INFO</kbd><span>Adjustments remain available in the sidebar.</span></div>
-      <div><kbd>INFO</kbd><span>Track actions appear in the timeline toolbar.</span></div>
-      <div><kbd>INFO</kbd><span>Close this panel to return to editing.</span></div>
+      <div><span>Keyboard hints are consolidated in the bottom bar.</span></div>
+      <div><span>Editing controls remain available in the workspace.</span></div>
+      <div><span>Timeline controls are available above the tracks.</span></div>
+      <div><span>Use the preview tools to inspect your media.</span></div>
+      <div><span>Adjustments remain available in the sidebar.</span></div>
+      <div><span>Track actions appear in the timeline toolbar.</span></div>
+      <div><span>Close this panel to return to editing.</span></div>
     </div>
   </section>
 </div>
