@@ -13,6 +13,10 @@ test('the existing upload landing routes image and video files without a reload'
   assert.match(html, /READY FOR AN IMAGE/);
   assert.match(html, /id="fileInput" accept="image\/\*[^\"]*video\/\*" multiple hidden/);
   assert.match(script, /function handleFiles\(fileList/);
+  assert.match(script, /if\(document\.readyState==='loading'\)document\.addEventListener\('DOMContentLoaded',startFilmLab,\{once:true\}\)/);
+  assert.ok(html.indexOf('<canvas id="glCanvas"')<html.indexOf("const canvas = document.getElementById('glCanvas')"), 'the persistent canvas exists before WebGL initialization');
+  assert.match(script, /fileInput\.addEventListener\('change'/);
+  assert.match(script, /dropZone\.addEventListener\('drop'/);
   assert.match(script, /const images=files\.filter\(isPhotoFile\), videos=files\.filter\(isVideoFile\)/);
   assert.match(script, /isVideo=false; hasContent=true; currentPhoto=item/);
   assert.match(script, /isVideo=true; hasContent=true; setWorkspaceMode\('video'\); videoCrop=/);
@@ -26,10 +30,12 @@ test('workspace state shows subtle top-bar mode and only exposes video controls 
   const fn = script.match(/function updateWorkspaceUI\(\)\{[\s\S]*?\n\}/)[0];
   const ids=['app','workspacePill','videoPlaybackControls','editorTimeline','grainSpeedRow','backToDropBtn','exportPanelTitle','frameFormatLabel','frameQualityLabel'];
   const elements = Object.fromEntries(ids.map(id => [id, {dataset:{},hidden:false,disabled:false,textContent:''}]));
-  const state = vm.createContext({hasContent:true,isVideo:false,mediaBusy:false,exportBusy:false,$:id=>elements[id],updateCaptionOverlay(){}});
+  const state = vm.createContext({appState:{mode:'empty'},document:{body:{dataset:{}}},hasContent:true,isVideo:false,mediaBusy:false,exportBusy:false,$:id=>elements[id],updateCaptionOverlay(){}});
   vm.runInContext(`${fn}\nthis.update=updateWorkspaceUI;`,state);
   state.update();
   assert.equal(elements.app.dataset.workspace,'photo');
+  assert.equal(state.appState.mode,'photo');
+  assert.equal(state.document.body.dataset.mode,'photo');
   assert.equal(elements.workspacePill.hidden,false);
   assert.equal(elements.workspacePill.textContent,'Photo mode');
   assert.equal(elements.videoPlaybackControls.hidden,true);
@@ -37,12 +43,16 @@ test('workspace state shows subtle top-bar mode and only exposes video controls 
   assert.equal(elements.grainSpeedRow.hidden,true);
   state.isVideo=true; state.update();
   assert.equal(elements.workspacePill.textContent,'Video mode');
+  assert.equal(state.appState.mode,'video');
+  assert.equal(state.document.body.dataset.mode,'video');
   assert.equal(elements.videoPlaybackControls.hidden,false);
   assert.equal(elements.editorTimeline.hidden,false);
   assert.equal(elements.grainSpeedRow.hidden,false);
   assert.equal(elements.backToDropBtn.disabled,false);
   state.hasContent=false; state.update();
   assert.equal(elements.app.dataset.workspace,'empty');
+  assert.equal(state.appState.mode,'empty');
+  assert.equal(state.document.body.dataset.mode,'empty');
   assert.equal(elements.workspacePill.hidden,true);
   assert.equal(elements.videoPlaybackControls.hidden,true);
   assert.equal(elements.editorTimeline.hidden,true);
@@ -59,7 +69,7 @@ test('video workspace places the canvas and playback above a full-width timeline
   assert.match(styles, /#timelineFilmstrip img \{ flex: 1 1 0;[^}]*object-fit: cover/);
   assert.match(styles, /\.timelineKeyframeMarker \{ position: absolute/);
   assert.match(styles, /#app\[data-workspace="video"\] #sidebarViews > \.sidebarPanel\.active #videoExportPanel \{ display: flex; \}/);
-  assert.match(html, /id="videoPlaybackControls" hidden/);
+  assert.match(html, /id="videoPlaybackControls" class="video-only" hidden/);
   for(const id of ['videoSkipStart','videoPlayBtn','videoSkipEnd','videoTime','videoSeek','videoVolume','videoMuteBtn','videoLoopToggle','videoSpeed']) assert.match(html,new RegExp(`id="${id}"`));
   for(const speed of ['0.5','1','1.5','2']) assert.match(html,new RegExp(`data-playback-rate="${speed}"`));
   assert.match(html, /id="timelineFilmstrip"/);
@@ -77,23 +87,28 @@ test('video workspace places the canvas and playback above a full-width timeline
   assert.match(script, /if\(videoEl\.currentTime>=videoTrim\.end\)\{[\s\S]*?videoLoopToggle'\)\.getAttribute\('aria-pressed'\)==='true'[\s\S]*?videoEl\.pause\(\);videoEl\.currentTime=videoTrim\.end/);
 });
 
-test('workspace mounting physically parks controls that do not belong to the active file type', () => {
-  assert.match(script, /const \$ = id => document\.getElementById\(id\) \|\| detachedWorkspaceElements\.get\(id\)/);
-  assert.match(script, /function parkWorkspaceNode\(node,mode\)/);
-  assert.match(script, /fragment\.appendChild\(node\); workspaceModeSlots\.push/);
-  assert.match(script, /function setWorkspaceMode\(mode\)/);
-  assert.match(script, /for\(const id of \['exportPanel','actions','carouselStrip'\]\)parkWorkspaceNode\(\$\(id\),'photo'\)/);
-  assert.match(script, /for\(const id of \['videoPlaybackControls','videoCaptionPanel','videoTrimPanel','videoExportPanel','editorTimeline','grainSpeedRow'\]\)parkWorkspaceNode\(\$\(id\),'video'\)/);
-  assert.match(script, /parkWorkspaceNode\(document\.querySelector\('#effectsWrap \[data-group="dither"\]'\),'photo'\)/);
-  assert.match(script, /parkWorkspaceNode\(document\.querySelector\('#effectsWrap \[data-group="hallation"\]'\),'photo'\)/);
-  assert.match(script, /parkWorkspaceNode\(\$\('sliderBloomAnam'\)\.closest\('\.subRow'\),'photo'\)/);
-  assert.match(script, /parkWorkspaceNode\(\$\('grainSeedRow'\),'photo'\)/);
-  assert.match(script, /parkWorkspaceNode\(document\.querySelector\('\.creativeVignette'\),'photo'\)/);
-  assert.match(script, /function initializeWorkspaceModes\(\)[\s\S]*?setWorkspaceMode\('empty'\)/);
+test('photo and video panels switch with appState.mode while the existing DOM stays mounted', () => {
+  assert.match(script, /const \$ = id => document\.getElementById\(id\)/);
+  assert.match(script, /const appState=\{mode:'empty'\}/);
+  assert.match(script, /function setWorkspaceMode\(mode\)[\s\S]*?appState\.mode=mode;[\s\S]*?document\.body\.dataset\.mode=mode/);
+  assert.match(script, /function updateWorkspaceUI\(\)[\s\S]*?document\.body\.dataset\.mode=workspace/);
+  assert.match(html, /<body data-mode="empty">/);
+  assert.match(styles, /body\[data-mode="photo"\] \.video-only \{ display: none !important; \}/);
+  assert.match(styles, /body\[data-mode="video"\] \.photo-only \{ display: none !important; \}/);
+  assert.match(styles, /body\[data-mode="empty"\] \.photo-only,body\[data-mode="empty"\] \.video-only \{ display: none !important; \}/);
+  for(const [id,modeClass] of [['exportPanel','photo-only'],['actions','photo-only'],['carouselStrip','photo-only'],['videoPlaybackControls','video-only'],['videoCaptionPanel','video-only'],['videoTrimPanel','video-only'],['videoExportPanel','video-only'],['editorTimeline','video-only'],['grainSpeedRow','video-only'],['captionOverlay','video-only']]){
+    const root=html.match(new RegExp(`<[^>]+id="${id}"[^>]*>`))[0];
+    assert.match(root,new RegExp(`class="[^"]*${modeClass}`),id);
+  }
+  for(const text of ['id="glCanvas"','id="videoEl"','id="fileInput"','id="editorTimeline"']) assert.ok(html.includes(text),`${text} remains in the source DOM`);
+  assert.doesNotMatch(script, /DocumentFragment|parkWorkspaceNode|detachedWorkspaceElements/);
+  assert.match(script, /const slider=row\.querySelector\('input\[type="range"\]'\);\s*if\(!slider\)return/);
+  assert.match(script, /const group=groupRoot\?\.querySelector\('\.effectTitle'\)\?\.textContent/);
+  assert.match(script, /function initializeWorkspaceModes\(\)\{ setWorkspaceMode\('empty'\); \}/);
   assert.match(script, /uploadPhoto\(item,img,resetView=true\)[\s\S]*?setWorkspaceMode\('photo'\)/);
   assert.match(script, /isVideo=true; hasContent=true; setWorkspaceMode\('video'\)/);
-  assert.doesNotMatch(script, /#effectsWrap \.effectGroup\[data-group="dither"\] \{ display: none !important;/);
   assert.match(script, /if\(typeof isVideo!==\x27undefined\x27&&isVideo\)strength=0/);
+  assert.doesNotMatch(styles, /#effectsWrap \.effectGroup\[data-group="dither"\] \{ display: none !important;/);
   assert.match(html, /Text &amp; Captions/);
   for(const id of ['captionText','captionFont','captionSize','captionColor','captionEnabled','captionOverlay','captionKeyframeBtn','captionKeyframeMarkers']) assert.match(html,new RegExp(`id="${id}"`));
   assert.match(script, /function drawVideoCaption\(ctx,output/);

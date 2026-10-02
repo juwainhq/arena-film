@@ -731,7 +731,11 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 }
 
 
-/* Distinct mounted workspace modes: the inactive mode's controls live in DocumentFragments, not this DOM tree. */
+/* File mode only controls panel visibility. The canvas, media, effects, and event-bound controls stay mounted. */
+body[data-mode="empty"] .photo-only,body[data-mode="empty"] .video-only { display: none !important; }
+body[data-mode="empty"] #sidebar { display: none !important; }
+body[data-mode="photo"] .video-only { display: none !important; }
+body[data-mode="video"] .photo-only { display: none !important; }
 header #backToDropBtn { position: static; top: auto; left: auto; z-index: auto; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 26px; min-height: 28px; margin: 0 -20px 0 0; padding: 0; color: var(--text-dim2); font: 500 17px Inter,system-ui,sans-serif; letter-spacing: 0; }
 header #backToDropBtn:hover { color: var(--text); }
 header #backToDropBtn[hidden] { display: none !important; }
@@ -792,7 +796,7 @@ header #backToDropBtn[hidden] { display: none !important; }
 
 </style>
 </head>
-<body>
+<body data-mode="empty">
 <div id="app">
   <header>
     <button type="button" id="backToDropBtn" aria-label="Back to media upload" hidden>←</button>
@@ -836,7 +840,7 @@ header #backToDropBtn[hidden] { display: none !important; }
         <button type="button" id="maskDoneBtn" aria-label="Finish painting subject mask">✓ Finish mask</button>
         <div id="beforeLabel">BEFORE</div>
         <button type="button" id="holdCompareBtn" aria-label="Hold to compare with the original" aria-pressed="false">◑ <span>Hold to compare</span></button>
-        <div id="captionOverlay" hidden tabindex="0" aria-label="Video caption. Drag to reposition, use arrow keys for fine adjustment."></div>
+        <div id="captionOverlay" class="video-only" hidden tabindex="0" aria-label="Video caption. Drag to reposition, use arrow keys for fine adjustment."></div>
         <div id="zoomControls" role="group" aria-label="Preview zoom and rotation controls">
           <span class="zoomInstructions" aria-hidden="true">Scroll to zoom · drag when zoomed</span>
           <button type="button" id="rotateMediaBtn" aria-label="Rotate media 90 degrees clockwise" title="Rotate media 90° clockwise">↻</button>
@@ -847,7 +851,7 @@ header #backToDropBtn[hidden] { display: none !important; }
       </div>
       <video id="videoEl" muted playsinline></video>
       </div>
-      <div id="videoPlaybackControls" hidden aria-label="Video playback controls">
+      <div id="videoPlaybackControls" class="video-only" hidden aria-label="Video playback controls">
         <button type="button" class="toolBtn playbackButton" id="videoSkipStart" aria-label="Skip to trim start">|◀</button>
         <button type="button" class="toolBtn playbackButton" id="videoPlayBtn" aria-label="Play video">▶</button>
         <button type="button" class="toolBtn playbackButton" id="videoSkipEnd" aria-label="Skip to trim end">▶|</button>
@@ -861,7 +865,7 @@ header #backToDropBtn[hidden] { display: none !important; }
         <label class="visuallyHidden" for="videoSpeed">Playback speed</label>
         <select id="videoSpeed" class="sourceControl" aria-label="Playback speed" aria-hidden="true" tabindex="-1"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
       </div>
-      <section id="carouselStrip" aria-label="Carousel photos" hidden>
+      <section id="carouselStrip" class="photo-only" aria-label="Carousel photos" hidden>
         <div class="stripHead"><span class="stripTitle" id="carouselCount">Carousel / 01 of 01</span><div class="stripActions"><button type="button" id="exportZipBtn" disabled>Carousel ZIP <span id="zipCount">0 photos</span></button><button type="button" id="applyAllBtn">↗ Apply to all</button><button type="button" id="addPhotosBtn">+ Add</button><button type="button" id="removePhotoBtn">Remove</button></div></div>
         <div id="photoThumbnails" role="group" aria-label="Switch photo"></div>
         <p id="carouselHint" class="socialHint">One shared edit. Reposition the crop on each photo.</p>
@@ -949,9 +953,9 @@ header #backToDropBtn[hidden] { display: none !important; }
             <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>falloff</span></div><div class="subVal" id="valBloomSoft">0</div></div><input class="subSlider" type="range" id="sliderBloomSoft" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Tint <span>cool → amber</span></div><div class="subVal" id="valBloomTint">0</div></div><input class="subSlider" type="range" id="sliderBloomTint" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Blend <span>strong add → screen</span></div><div class="subVal" id="valBloomBlend">0</div></div><input class="subSlider" type="range" id="sliderBloomBlend" min="-100" max="100" value="0"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Anamorphic <button type="button" class="infoTip" aria-label="About Anamorphic" aria-expanded="false" data-tip="Stretches lens glow into wider horizontal streaks.">i</button><span>vertical → horizontal</span></div><div class="subVal" id="valBloomAnam">0</div></div><input class="subSlider" type="range" id="sliderBloomAnam" min="-100" max="100" value="0"></div>
+            <div class="subRow photo-only"><div class="subHead"><div class="subLabel">Anamorphic <button type="button" class="infoTip" aria-label="About Anamorphic" aria-expanded="false" data-tip="Stretches lens glow into wider horizontal streaks.">i</button><span>vertical → horizontal</span></div><div class="subVal" id="valBloomAnam">0</div></div><input class="subSlider" type="range" id="sliderBloomAnam" min="-100" max="100" value="0"></div>
           </div>
-        </div><div class="effectGroup" data-group="hallation">
+        </div><div class="effectGroup photo-only" data-group="hallation">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="hallationControls"><i style="background:var(--accent2)"></i> Hallation <span class="expand" aria-hidden="true"></span></button>
             <button type="button" class="infoTip" aria-label="About Hallation" aria-expanded="false" data-tip="A warm red-orange glow that gathers around bright edges.">i</button>
@@ -975,17 +979,17 @@ header #backToDropBtn[hidden] { display: none !important; }
           <div class="subControls" id="grainControls">
             <div class="subRow"><div class="subHead"><div class="subLabel">Size <span>fine → coarse</span></div><div class="subVal" id="valGrainSize">0</div></div><input class="subSlider" type="range" id="sliderGrainSize" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Roughness <span>uniform → irregular</span></div><div class="subVal" id="valGrainRough">0</div></div><input class="subSlider" type="range" id="sliderGrainRough" min="-100" max="100" value="0"></div>
-            <div class="subRow" id="grainSpeedRow" hidden><div class="subHead"><div class="subLabel">Speed</div><div class="subVal" id="valGrainSpeed">0</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="-100" max="100" value="0"></div>
+            <div class="subRow video-only" id="grainSpeedRow" hidden><div class="subHead"><div class="subLabel">Speed</div><div class="subVal" id="valGrainSpeed">0</div></div><input class="subSlider" type="range" id="sliderGrainSpeed" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Color <span>mono → chroma</span></div><div class="subVal" id="valGrainColor">0</div></div><input class="subSlider" type="range" id="sliderGrainColor" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Luma Influence <button type="button" class="infoTip" aria-label="About Luma Influence" aria-expanded="false" data-tip="Controls how strongly grain follows the image's brightness.">i</button><span>midtones</span></div><div class="subVal" id="valGrainLuma">0</div></div><input class="subSlider" type="range" id="sliderGrainLuma" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>blur grain</span></div><div class="subVal" id="valGrainSoft">0</div></div><input class="subSlider" type="range" id="sliderGrainSoft" min="-100" max="100" value="0"></div>
-            <div id="grainSeedRow"><span>Static grain pattern<br>per photo</span><button type="button" id="randomizeGrainBtn">↻ Randomize</button></div>
+            <div id="grainSeedRow" class="photo-only"><span>Static grain pattern<br>per photo</span><button type="button" id="randomizeGrainBtn">↻ Randomize</button></div>
           </div>
-        </div><div class="creativeVignette"><div class="adjustSectionHeading">Vignette</div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div></div></div>
+        </div><div class="creativeVignette photo-only"><div class="adjustSectionHeading">Vignette</div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div></div></div>
               </details>
               <details class="adjustCluster" data-cluster="technical">
                 <summary><span>Technical</span><span class="clusterSummary" data-summary="technical">Dither / Halftone · Sharpening</span></summary>
-                <div class="clusterContents"><div class="adjustSectionHeading">Pattern &amp; detail</div><div class="effectGroup" data-group="dither">
+                <div class="clusterContents"><div class="adjustSectionHeading">Pattern &amp; detail</div><div class="effectGroup photo-only" data-group="dither">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="ditherControls"><i style="background:var(--text-dim)"></i> Dither <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="dither" role="switch" aria-checked="true" aria-label="Dither effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="dither" hidden aria-label="Reset Dither section" title="Reset Dither">↺</button></div>
@@ -1082,7 +1086,7 @@ header #backToDropBtn[hidden] { display: none !important; }
         </div></div>
               </details>
             </div>
-<section id="videoCaptionPanel" class="socialPanel" aria-label="Text and captions">
+<section id="videoCaptionPanel" class="socialPanel video-only" aria-label="Text and captions">
         <div class="sectionLabel">Text &amp; Captions</div>
         <label class="checkLabel"><input type="checkbox" id="captionEnabled">Show on this clip</label>
         <label class="fieldLabel" for="captionText">Caption text</label>
@@ -1100,7 +1104,7 @@ header #backToDropBtn[hidden] { display: none !important; }
       </section>
           </section>
           <section class="sidebarPanel exportTabPanel" id="exportTabPanel" data-panel="export" role="tabpanel" aria-labelledby="exportTab" hidden>
-<section id="exportPanel" class="socialPanel" aria-label="Instagram export">
+<section id="exportPanel" class="socialPanel photo-only" aria-label="Instagram export">
         <button type="button" id="cropPanelToggle" class="panelHeading" aria-expanded="true" aria-controls="cropPanelBody"><span class="sectionLabel" id="exportPanelTitle">Photo export</span><kbd>C</kbd><span class="panelChevron" aria-hidden="true"></span></button>
         <div id="cropPanelBody">
           <div class="formatGrid" role="group" aria-label="Instagram crop formats">
@@ -1126,7 +1130,7 @@ header #backToDropBtn[hidden] { display: none !important; }
 
           <p id="exportStatus" class="socialHint" role="status" aria-live="polite">Private by design. Your photos never leave this browser.</p>
         </div>
-      </section><section id="videoTrimPanel" class="socialPanel" aria-label="Reels video trim" hidden>
+      </section><section id="videoTrimPanel" class="socialPanel video-only" aria-label="Reels video trim" hidden>
         <div class="sectionLabel">Video Trim</div>
         <div class="trimSummary"><span id="videoTrimSummary">Exporting 0:00 → 0:00 (0s)</span><output id="trimDuration">0.0s</output></div>
         <div class="trimQuick" role="group" aria-label="Auto trim for Reels"><button type="button" class="toolBtn" data-trim="15" aria-pressed="false">15s</button><button type="button" class="toolBtn" data-trim="30" aria-pressed="false">30s</button><button type="button" class="toolBtn" data-trim="60" aria-pressed="false">60s</button></div>
@@ -1135,7 +1139,7 @@ header #backToDropBtn[hidden] { display: none !important; }
         <div class="trimRow"><label for="trimOut">Out</label><output class="trimValue" id="trimOutValue">60.0s</output><input type="range" id="trimOut" min="0" max="60" step="0.01" value="60" aria-label="Trim out point"><input type="number" id="trimOutNumber" min="0" max="60" step="0.1" value="60" aria-label="Out point in seconds"></div>
         <div class="inlineActions"><button type="button" class="toolBtn" id="setTrimInBtn">Set in at playhead</button><button type="button" class="toolBtn" id="setTrimOutBtn">Set out at playhead</button></div>
         <p class="socialHint">Preview loops your selection. Maximum 60s. Video exports preserve the source aspect ratio. Encoding needs an internet connection.</p>
-      </section><section id="videoExportPanel" class="socialPanel" aria-label="Video export">
+      </section><section id="videoExportPanel" class="socialPanel video-only" aria-label="Video export">
         <div class="sectionLabel">Video Export</div>
         <label class="fieldLabel" for="videoContainer">Format</label>
         <select id="videoContainer" class="socialSelect sourceControl" aria-hidden="true" tabindex="-1"><option value="mp4">MP4</option><option value="webm">WEBM</option></select>
@@ -1154,7 +1158,7 @@ header #backToDropBtn[hidden] { display: none !important; }
         <button type="button" class="actionBtn primary" id="processVideoBtn" style="display:none">⤓ Export Video</button>
         <p id="videoExportStatus" class="socialHint" role="status" aria-live="polite">Ready to export this video.</p>
       </section>
-            <details class="exportExtras"><summary>More export actions</summary><div id="actions">
+            <details class="exportExtras"><summary>More export actions</summary><div id="actions" class="photo-only">
         <button type="button" id="beforeAfterBtn" hidden>◑ Toggle Before / After <kbd style="margin-left:auto;opacity:.6">Space</kbd></button>
         <button class="actionBtn primary" id="downloadBtn">⤓ Original-size PNG <kbd style="margin-left:auto">D</kbd></button>
       </div></details>
@@ -1169,7 +1173,7 @@ header #backToDropBtn[hidden] { display: none !important; }
       </div>
 </div>
     </aside>
-    <section id="editorTimeline" hidden aria-label="Video trim timeline">
+    <section id="editorTimeline" class="video-only" hidden aria-label="Video trim timeline">
       <div class="timelineHeader"><span class="timelineTitle">Timeline</span><output id="trimRangeReadout">Exporting 0:00 → 0:00 (0s)</output><div class="timelineTimecodes"><span>IN <output id="timelineInTime">0:00</output></span><span>PLAYHEAD <output id="timelinePlayheadTime">0:00</output></span><span>OUT <output id="timelineOutTime">0:00</output></span></div></div>
       <div id="timelineTrack" role="group" aria-label="Video clip timeline. Drag the end handles to trim and the playhead to scrub.">
         <div id="timelineFilmstrip" aria-hidden="true"></div>
@@ -1265,6 +1269,7 @@ header #backToDropBtn[hidden] { display: none !important; }
 </script>
 <script src="social-tools.js"></script>
 <script>
+const startFilmLab=()=>{
 (() => {
 const themeToggle = document.getElementById('themeToggle');
 function syncThemeButton(){
@@ -1287,8 +1292,7 @@ syncThemeButton();
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl2', {preserveDrawingBuffer:true, antialias:false, premultipliedAlpha:false});
 if(!gl){ alert('WebGL 2 not supported'); return; }
-const detachedWorkspaceElements=new Map();
-const $ = id => document.getElementById(id) || detachedWorkspaceElements.get(id) || null;
+const $ = id => document.getElementById(id);
 const social = window.FilmSocial;
 const dropZone=$('dropZone'), canvasWrap=$('canvasWrap'), fileInput=$('fileInput'), beforeLabel=$('beforeLabel'), toastEl=$('toast');
 let videoEl=$('videoEl');
@@ -1312,7 +1316,8 @@ const ditherPaletteShadow=$('ditherPaletteShadow'), ditherPaletteHighlight=$('di
 
 let sourceTexture=null, fboComposite=null, fboSharpened=null, fboBloomExtract=null, fboBloomBlurH=null, fboBloomBlurV=null, fboBloomBlurH2=null, fboBloomBlurV2=null, fboHallExtract=null, fboHallBlurH=null, fboHallBlurV=null;
 let floydTexture=null, floydLastKey=null, subjectMaskRevision=0;
-let isVideo=false, showOriginal=false, hasContent=false, animId=null, currentWorkspaceMode='empty';
+const appState={mode:'empty'};
+let isVideo=false, showOriginal=false, hasContent=false, animId=null;
 const MIN_PREVIEW_ZOOM=0.5, MAX_PREVIEW_ZOOM=5;
 let previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null;
 const effectEnabled={color:true,bloom:true,hallation:true,grain:true,dither:true,sharpen:true};
@@ -1536,9 +1541,14 @@ function addScale(container){
   container.appendChild(scale);
 }
 document.querySelectorAll('.subRow').forEach(row=>{
-  const slider=row.querySelector('input');
-  const group=row.closest('.effectGroup').querySelector('.effectTitle').textContent.replace('⌄','').trim();
-  const label=row.querySelector('.subLabel').firstChild.textContent.trim();
+  const slider=row.querySelector('input[type="range"]');
+  if(!slider)return; // Dither option rows use selects, not sliders.
+  const groupRoot=row.closest('.effectGroup');
+  const group=groupRoot?.querySelector('.effectTitle')?.textContent.replace('⌄','').trim()
+    || row.closest('.creativeVignette')?.querySelector('.adjustSectionHeading')?.textContent.trim()
+    || 'Adjustment';
+  const labelElement=row.querySelector('.subLabel');
+  const label=(labelElement?.firstChild?.textContent||labelElement?.textContent||slider.id).trim();
   slider.setAttribute('aria-label',`${group} — ${label}`);
   slider.title='Double-click to reset to 0';
   addScale(row);
@@ -3379,6 +3389,8 @@ function bringPreviewIntoView(){
 }
 function updateWorkspaceUI(){
   const workspace=hasContent?(isVideo?'video':'photo'):'empty';
+  appState.mode=workspace;
+  document.body.dataset.mode=workspace;
   $('app').dataset.workspace=workspace;
   $('workspacePill').hidden=!hasContent;
   $('workspacePill').textContent=isVideo?'Video mode':'Photo mode';
@@ -4271,7 +4283,7 @@ function updateClusterSummaries(){
   };
   for(const [name,items] of Object.entries(groups)){
     const target=document.querySelector(`[data-summary="${name}"]`);if(!target)continue;
-    const active=items.filter(([id])=>(currentWorkspaceMode!=='video'||!['Dither','Hall','BloomAnam','VignStrength','VignSize'].includes(id))&&sliders[id]&&Number(sliders[id].value)!==0).map(([id,label])=>`${label} ${Number(sliders[id].value)>0?'+':''}${sliders[id].value}`);
+    const active=items.filter(([id])=>(appState.mode!=='video'||!['Dither','Hall','BloomAnam','VignStrength','VignSize'].includes(id))&&sliders[id]&&Number(sliders[id].value)!==0).map(([id,label])=>`${label} ${Number(sliders[id].value)>0?'+':''}${sliders[id].value}`);
     target.textContent=active.length?active.join(' · '):'No active adjustments';
   }
 }
@@ -4305,47 +4317,27 @@ holdCompareButton.addEventListener('pointerdown',event=>{if(event.button!==undef
 holdCompareButton.addEventListener('keydown',event=>{if(event.key===' '||event.key==='Enter'){event.preventDefault();setHoldCompare(true);}});
 holdCompareButton.addEventListener('keyup',event=>{if(event.key===' '||event.key==='Enter')setHoldCompare(false);});
 
-// Photo and video UI roots are parked in DocumentFragments outside their active mode.
-// ID lookup falls back to parked nodes so the shared renderer/state handlers stay stable.
-const workspaceModeSlots=[];
-function parkWorkspaceNode(node,mode){
-  if(!node || workspaceModeSlots.some(slot=>slot.node===node))return;
-  const anchor=document.createComment(`${mode}-workspace:${node.id||node.dataset.group||node.className}`), fragment=document.createDocumentFragment();
-  node.parentNode.insertBefore(anchor,node);
-  if(node.id) detachedWorkspaceElements.set(node.id,node);
-  node.querySelectorAll('[id]').forEach(element=>detachedWorkspaceElements.set(element.id,element));
-  fragment.appendChild(node); workspaceModeSlots.push({node,mode,anchor,fragment});
-}
+// Mode state only changes the root attributes; media, canvas, controls, and event handlers stay mounted.
 function setWorkspaceMode(mode){
   if(!['empty','photo','video'].includes(mode))return;
-  currentWorkspaceMode=mode;
-  for(const slot of workspaceModeSlots){
-    const shouldMount=slot.mode===mode;
-    if(shouldMount && slot.node.parentNode===slot.fragment){slot.anchor.parentNode?.replaceChild(slot.node,slot.anchor);}
-    else if(!shouldMount && slot.node.isConnected){slot.node.parentNode.replaceChild(slot.anchor,slot.node);slot.fragment.appendChild(slot.node);}
-  }
-  $('app').dataset.workspace=mode; $('sidebar').hidden=mode==='empty';
+  appState.mode=mode;
+  document.body.dataset.mode=mode;
+  $('app').dataset.workspace=mode;
+  $('sidebar').hidden=mode==='empty';
   if(mode!=='empty')setEffectStates(effectEnabled);
   if(mode==='photo')setDitherScope(ditherScope);
   updateClusterSummaries();
 }
-function initializeWorkspaceModes(){
-  for(const id of ['exportPanel','actions','carouselStrip'])parkWorkspaceNode($(id),'photo');
-  for(const id of ['videoPlaybackControls','videoCaptionPanel','videoTrimPanel','videoExportPanel','editorTimeline','grainSpeedRow'])parkWorkspaceNode($(id),'video');
-  parkWorkspaceNode($('captionOverlay'),'video');
-      parkWorkspaceNode(document.querySelector('#effectsWrap [data-group="dither"]'),'photo');
-      parkWorkspaceNode(document.querySelector('#effectsWrap [data-group="hallation"]'),'photo');
-      parkWorkspaceNode($('sliderBloomAnam').closest('.subRow'),'photo');
-      parkWorkspaceNode($('grainSeedRow'),'photo');
-      parkWorkspaceNode(document.querySelector('.creativeVignette'),'photo');
-      setWorkspaceMode('empty');
-}
+function initializeWorkspaceModes(){ setWorkspaceMode('empty'); }
 // init
 setupSliderNumberEditing(); updateFromSliders(); updateSliderUI(); updateSocialUI(); restoreSharedLook(); render(performance.now()); initializeWorkspaceModes();
 window.addEventListener('dragover',e=> e.preventDefault());
 window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ e.preventDefault(); handleFiles(e.dataTransfer.files); } });
 console.log('Film Lab — Instagram tools · 44 signed controls — WebGL2', gl.getParameter(gl.VERSION));
 })();
+};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startFilmLab,{once:true});
+else startFilmLab();
 </script>
 </body>
 </html>
