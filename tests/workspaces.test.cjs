@@ -7,6 +7,7 @@ const vm = require('node:vm');
 const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
 const script = html.split('<script>')[1].split('</script>')[0];
 const styles = html.split('<style>')[1].split('</style>')[0];
+const timeline = readFileSync(resolve(__dirname, '../timeline-module.js'), 'utf8');
 
 test('the existing upload landing routes image and video files without a reload', () => {
   assert.match(html, /id="dropZone"/);
@@ -117,6 +118,47 @@ test('photo and video panels switch with appState.mode while the existing DOM st
   assert.match(script, /function captionPositionAt\(time\)/);
   assert.match(script, /function renderCaptionKeyframeMarkers\(\)/);
   assert.match(html, /Show on this clip/);
+});
+
+test('video timeline is an additive module with trim, cut, history, zoom, waveform and transition controls', () => {
+  assert.match(html, /<section id="timeline-module" class="video-only"/);
+  for(const id of ['timeline-skip-start','timeline-play','timeline-skip-end','timeline-timecode','timeline-cut','timeline-delete','timeline-undo','timeline-redo','timeline-zoom-minus','timeline-zoom-plus','timeline-ruler','timeline-clips','timeline-audio','timeline-playhead']) assert.match(html,new RegExp(`id="${id}"`));
+  for(const transition of ['none','dissolve','fade-to-black','fade-from-black']) assert.match(html,new RegExp(`data-transition="${transition}"`));
+  assert.match(html, /src="\.\/timeline-module\.js"/);
+  assert.match(timeline, /function splitAt\(time\)/);
+  assert.match(timeline, /No clip loaded/);
+  assert.match(styles, /body\[data-mode="empty"\] #app #content #timeline-module:not\(\[hidden\]\)/);
+  assert.match(timeline, /function getExportPlan\(\)/);
+  assert.match(timeline, /function mapOutputTime\(time, plan = getExportPlan\(\)\)/);
+  assert.match(timeline, /addEventListener\('timeupdate', onPlaybackTime\)/);
+  assert.match(timeline, /video\(\)\.currentTime\s*=/);
+  assert.doesNotMatch(timeline, /video\(\)\.(?:play|pause|volume|muted|playbackRate)\s*=/);
+  assert.match(script, /window\.filmLabTimelineBridge=/);
+  assert.equal((html.match(/id="glCanvas"/g)||[]).length,1,'the existing WebGL canvas remains mounted exactly once');
+  assert.match(styles, /#app\[data-workspace="video"\] #timeline-module \{ grid-column: 1; grid-row: 2/);
+  assert.match(styles, /body\[data-mode="photo"\] #app #mainArea \.video-only/);
+  assert.match(styles, /#exportProgress\.show \{ position: fixed; top: 50%/);
+});
+
+test('timeline output mapping covers concatenated cuts, dissolves, and black fades', () => {
+  const mapper=timeline.match(/function mapOutputTime\(time, plan = getExportPlan\(\)\) \{[\s\S]*?\n  \}/)[0];
+  const state=vm.createContext({getExportPlan:()=>({}),clamp:(n,min,max)=>Math.max(min,Math.min(max,n))});
+  vm.runInContext(`${mapper}\nthis.map=mapOutputTime;`,state);
+  const dissolve={transitionSeconds:.5,segments:[{start:0,end:2,transition:'dissolve'},{start:5,end:7,transition:'none'}]};
+  assert.deepEqual(JSON.parse(JSON.stringify(state.map(1.75,dissolve))),{sourceTime:1.75,blendTime:5.25,blend:.5});
+  const fadeOut={transitionSeconds:.5,segments:[{start:0,end:2,transition:'fade-to-black'},{start:4,end:5,transition:'none'}]};
+  assert.deepEqual(JSON.parse(JSON.stringify(state.map(1.75,fadeOut))),{sourceTime:1.75,blackAlpha:.5});
+  const fadeIn={transitionSeconds:.5,segments:[{start:0,end:2,transition:'fade-from-black'},{start:3,end:5,transition:'none'}]};
+  assert.deepEqual(JSON.parse(JSON.stringify(state.map(2.25,fadeIn))),{sourceTime:3.25,blackAlpha:.5});
+});
+
+test('FFmpeg stays dormant until video upload and export progress opens only on export', () => {
+  const upload=script.match(/async function handleVideoFile\(file\)\{[\s\S]*?\n\}/)[0];
+  assert.match(upload, /loadFFmpeg\(\)\.catch/);
+  assert.match(script, /ff=await loadFFmpeg\(\)/);
+  assert.doesNotMatch(script, /loadFFmpeg\(\)\.catch\(error=>console\.warn\('Video encoder preload failed/);
+  assert.match(script, /progressWrap\.classList\.add\('show'\)/);
+  assert.match(html, /id="exportProgress" role="dialog" aria-modal="true"/);
 });
 
 test('video export UI exposes only trimmed output, requested sizes, formats and quality with live encoding status', () => {

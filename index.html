@@ -794,6 +794,77 @@ header #backToDropBtn[hidden] { display: none !important; }
   #app[data-workspace="video"] #sidebar.mobileSheetOpen { transform: translateY(0); }
 }
 
+/* Isolated CapCut-style video timeline; existing editor controls stay mounted underneath. */
+body[data-mode="photo"] #app #mainArea .video-only,body[data-mode="photo"] #app #sidebar .video-only,body[data-mode="photo"] #app #content .video-only,body[data-mode="photo"] #app #captionOverlay,body[data-mode="photo"] #app #videoPlaybackControls,body[data-mode="photo"] #app #sidebarControls #grainSpeedRow,body[data-mode="photo"] #app #sidebarViews > .sidebarPanel.active #videoCaptionPanel,body[data-mode="photo"] #app #sidebarViews > .sidebarPanel.active #videoTrimPanel,body[data-mode="photo"] #app #sidebarViews > .sidebarPanel.active #videoExportPanel,body[data-mode="photo"] #app #content #editorTimeline,body[data-mode="photo"] #app #content #timeline-module,body[data-mode="empty"] #app #mainArea .video-only,body[data-mode="empty"] #app #sidebar .video-only,body[data-mode="empty"] #app #content .video-only { display: none !important; }
+#timeline-module { display: none; }
+#timeline-module[hidden] { display: none !important; }
+body[data-mode="video"] #app #timeline-module:not([hidden]),body[data-mode="empty"] #app #content #timeline-module:not([hidden]) { display: flex; }
+body[data-mode="empty"] #app #content { display: flex; flex-direction: column; }
+body[data-mode="empty"] #app #mainArea { flex: 1 1 auto; min-height: 0; }
+body[data-mode="empty"] #app #timeline-module { flex: none; width: 100%; height: 166px; padding: 5px 16px 7px; flex-direction: column; gap: 4px; overflow: hidden; border-top: 1px solid var(--panel-border); background: var(--bg); }
+#app[data-workspace="video"] #content { grid-template-rows: minmax(0,1fr) 166px; }
+#app[data-workspace="video"] #editorTimeline { display: none !important; }
+#app[data-workspace="video"] #timeline-module { grid-column: 1; grid-row: 2; min-width: 0; min-height: 0; flex-direction: column; gap: 4px; padding: 5px 16px 7px; overflow: hidden; border-top: 1px solid var(--panel-border); background: var(--bg); }
+.timeline-toolbar { display: flex; flex: none; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-height: 28px; }
+.timeline-toolbar button { display: inline-flex; align-items: center; justify-content: center; min-height: 23px; padding: 3px 6px; border: 1px solid var(--panel-border); background: transparent; color: var(--text); font: 9px 'JetBrains Mono',monospace; cursor: pointer; }
+.timeline-toolbar button:hover,.timeline-toolbar button[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: var(--accent-bg); }
+.timeline-toolbar button:disabled { opacity: .38; cursor: not-allowed; }
+.timeline-playback,.timeline-rates,.timeline-audio-controls,.timeline-edit-tools,.timeline-zoom-tools { display: inline-flex; align-items: center; gap: 3px; }
+.timeline-playback output { margin: 0 4px; color: var(--text); font: 9px 'JetBrains Mono',monospace; white-space: nowrap; }
+#timeline-selected-duration,.timeline-zoom-tools > span { color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; white-space: nowrap; }
+.timeline-rate { min-width: 30px; }
+.timeline-audio-controls { margin-left: auto; }
+#timeline-volume { width: 70px; height: 15px; margin: 0; }
+.timeline-ruler-scroll { flex: none; height: 17px; overflow: hidden; }
+.timeline-ruler { position: relative; height: 17px; }
+.timeline-ruler-tick { position: absolute; top: 0; height: 15px; border-left: 1px solid var(--panel-border); color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; }
+.timeline-ruler-label { position: absolute; top: 2px; left: 3px; white-space: nowrap; }
+.timeline-scroll { position: relative; flex: 1 1 auto; min-height: 54px; overflow: auto hidden; scrollbar-width: thin; scrollbar-color: var(--text-dim2) transparent; touch-action: pan-x; user-select: none; }
+.timeline-inner { position: relative; min-width: 100%; height: 100%; }
+.timeline-track { position: relative; height: calc(100% - 22px); min-height: 36px; overflow: hidden; border: 1px solid var(--panel-border); background: var(--soft-bg); }
+.timeline-thumbnails { display: none; }
+.timeline-clips { position: absolute; inset: 0; }
+.timeline-clip { position: absolute; top: 0; bottom: 0; overflow: hidden; background: #171717; border-left: 1px solid rgba(255,255,255,.24); border-right: 1px solid rgba(255,255,255,.24); cursor: pointer; }
+.timeline-clip-selected { outline: 1px solid var(--accent); outline-offset: -1px; }
+.timeline-clip-thumbnails { position: absolute; inset: 0; display: flex; overflow: hidden; opacity: .77; pointer-events: none; }
+.timeline-clip-thumbnails img { flex: 1 1 0; min-width: 0; height: 100%; object-fit: cover; }
+.timeline-trim-handle { position: absolute; z-index: 4; top: 0; bottom: 0; width: 10px; min-height: 0; padding: 0; border: 0 !important; background: rgba(0,0,0,.75) !important; cursor: ew-resize !important; touch-action: none; }
+.timeline-trim-in { left: 0; border-right: 2px solid var(--accent) !important; }
+.timeline-trim-out { right: 0; border-left: 2px solid var(--accent) !important; }
+.timeline-trim-label { position: absolute; top: 1px; padding: 2px 3px; background: rgba(0,0,0,.82); color: #fff; font: 7px 'JetBrains Mono',monospace; white-space: nowrap; pointer-events: none; }
+.timeline-trim-in .timeline-trim-label { left: 8px; }
+.timeline-trim-out .timeline-trim-label { right: 8px; }
+.timeline-gap { position: absolute; top: 0; bottom: 0; z-index: 2; background: rgba(0,0,0,.84); pointer-events: none; }
+.timeline-playhead { position: absolute; z-index: 6; top: -2px; bottom: 0; width: 1px; background: var(--text); box-shadow: 0 0 5px #000; pointer-events: none; }
+.timeline-playhead::before { position: absolute; top: 0; left: -4px; width: 9px; height: 7px; content: ''; background: var(--accent); clip-path: polygon(0 0,100% 0,50% 100%); }
+.timeline-audio { display: flex; align-items: center; justify-content: space-between; gap: 1px; width: 100%; height: 19px; overflow: hidden; border: 1px solid var(--panel-border); background: var(--soft-bg); opacity: .7; }
+.timeline-wave-bar { flex: 1 1 0; min-width: 1px; max-width: 4px; height: 8%; background: var(--text-dim); }
+.timeline-transition { position: absolute; z-index: 8; top: 50%; width: 18px; height: 18px; min-height: 0 !important; padding: 0 !important; transform: translate(-50%,-50%); border-color: var(--accent) !important; border-radius: 50%; background: var(--bg) !important; color: var(--accent) !important; }
+.timeline-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-dim2); font: 9px 'JetBrains Mono',monospace; pointer-events: none; }
+.timeline-transition-menu { position: absolute; z-index: 12; display: flex; flex-direction: column; gap: 4px; width: 184px; padding: 9px; border: 1px solid var(--panel-border); background: var(--bg); box-shadow: 0 8px 30px var(--shadow); }
+.timeline-transition-menu[hidden] { display: none !important; }
+.timeline-transition-menu b { padding: 3px 22px 4px 3px; color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .12em; text-transform: uppercase; }
+.timeline-transition-menu button { min-height: 25px; padding: 4px 6px; border: 1px solid transparent; background: transparent; color: var(--text); font-size: 9px; text-align: left; cursor: pointer; }
+.timeline-transition-menu button:hover,.timeline-transition-menu button[aria-pressed="true"] { border-color: var(--panel-border); color: var(--accent); }
+#timeline-transition-close { position: absolute; top: 5px; right: 5px; width: 20px; min-height: 20px; padding: 0; text-align: center; }
+#timeline-module.timeline-cut-mode .timeline-scroll { cursor: crosshair; }
+#exportProgress.show { position: fixed; top: 50%; right: auto; bottom: auto; left: 50%; transform: translate(-50%,-50%); z-index: 2000; box-shadow: 0 0 0 100vmax rgba(0,0,0,.68),0 24px 90px var(--shadow); }
+@media (max-width: 767px) {
+  body[data-mode="empty"] #app #content { position: relative; display: block; }
+  body[data-mode="empty"] #app #mainArea { position: absolute; inset: 0 0 166px; width: 100%; height: auto; min-height: 0; padding: 24px 20px; }
+  body[data-mode="empty"] #app #timeline-module { position: absolute; z-index: 12; right: 0; bottom: 0; left: 0; height: 166px; }
+  #app[data-workspace="video"] #mainArea { padding-bottom: 245px; }
+  #app[data-workspace="video"] #videoPlaybackControls { bottom: 222px; }
+  #app[data-workspace="video"] #editorTimeline { display: none !important; }
+  #app[data-workspace="video"] #timeline-module { position: absolute; z-index: 12; right: 0; bottom: 52px; left: 0; display: flex; width: 100%; height: 166px; padding: 5px 9px 7px; }
+  .timeline-toolbar { gap: 3px 5px; }
+  .timeline-edit-tools { margin-left: auto; }
+  .timeline-toolbar button { min-height: 22px; padding: 2px 4px; font-size: 8px; }
+  #timeline-volume { width: 54px; }
+  .timeline-playback output { font-size: 8px; }
+  #timeline-selected-duration { display: none; }
+}
+
 </style>
 </head>
 <body data-mode="empty">
@@ -870,10 +941,10 @@ header #backToDropBtn[hidden] { display: none !important; }
         <div id="photoThumbnails" role="group" aria-label="Switch photo"></div>
         <p id="carouselHint" class="socialHint">One shared edit. Reposition the crop on each photo.</p>
       </section>
-      <div id="exportProgress">
+      <div id="exportProgress" role="dialog" aria-modal="true" aria-labelledby="progressTitle">
         <div id="progressHead"><b id="progressTitle">Exporting</b><span id="progressPct">0%</span></div>
         <div id="progressBar"><div id="progressFill"></div></div>
-        <div id="progressText" role="status" aria-live="polite">Initializing ffmpeg.wasm…</div>
+        <div id="progressText" role="status" aria-live="polite">Waiting to start…</div>
         <div id="progressEta" aria-live="polite">Estimated time remaining: calculating…</div>
         <button type="button" id="cancelExportBtn">Cancel export</button>
       </div>
@@ -1184,6 +1255,42 @@ header #backToDropBtn[hidden] { display: none !important; }
         <div id="timelinePlayhead" aria-hidden="true"></div>
       </div>
       <div id="audioWaveform" role="img" aria-label="Audio waveform"></div>
+    </section>
+    <section id="timeline-module" class="video-only" aria-label="Video editing timeline">
+      <div class="timeline-toolbar">
+        <div class="timeline-playback" role="group" aria-label="Timeline playback">
+          <button type="button" id="timeline-skip-start" aria-label="Skip to start">|◀</button>
+          <button type="button" id="timeline-play" aria-label="Play video">▶</button>
+          <button type="button" id="timeline-skip-end" aria-label="Skip to end">▶|</button>
+          <output id="timeline-timecode">0:00 / 0:00</output>
+          <span id="timeline-selected-duration">0.0s selected</span>
+        </div>
+        <div class="timeline-rates" role="group" aria-label="Playback speed">
+          <button class="timeline-rate" type="button" data-rate="0.5">0.5×</button><button class="timeline-rate" type="button" data-rate="1" aria-pressed="true">1×</button><button class="timeline-rate" type="button" data-rate="1.5">1.5×</button><button class="timeline-rate" type="button" data-rate="2">2×</button>
+        </div>
+        <div class="timeline-audio-controls"><button type="button" id="timeline-mute" aria-label="Toggle mute">🔇</button><input id="timeline-volume" type="range" min="0" max="100" value="100" aria-label="Timeline volume"></div>
+        <div class="timeline-edit-tools" role="toolbar" aria-label="Timeline editing tools">
+          <button type="button" id="timeline-cut" aria-pressed="false">✂ Cut</button><button type="button" id="timeline-delete" disabled>▣ Delete segment</button><button type="button" id="timeline-undo" disabled aria-label="Undo">↩</button><button type="button" id="timeline-redo" disabled aria-label="Redo">↪</button>
+        </div>
+        <div class="timeline-zoom-tools"><span>ZOOM</span><button type="button" id="timeline-zoom-minus" aria-label="Zoom out">−</button><output id="timeline-zoom-label">1.0×</output><button type="button" id="timeline-zoom-plus" aria-label="Zoom in">+</button></div>
+      </div>
+      <div class="timeline-ruler-scroll"><div id="timeline-ruler" class="timeline-ruler" aria-hidden="true"></div></div>
+      <div id="timeline-scroll" class="timeline-scroll" tabindex="0" aria-label="Video clips, trim handles, and playhead. Click to scrub; use the cut tool to split a clip.">
+        <div id="timeline-inner" class="timeline-inner">
+          <div class="timeline-track">
+            <div id="timeline-thumbnails" class="timeline-thumbnails" aria-hidden="true"></div>
+            <div id="timeline-clips" class="timeline-clips"></div>
+            <div id="timeline-playhead" class="timeline-playhead" aria-hidden="true"></div>
+            <span id="timeline-empty" class="timeline-empty" hidden>Load a video to build its timeline</span>
+          </div>
+          <div id="timeline-audio" class="timeline-audio" role="img" aria-label="Audio waveform"></div>
+          <div id="timeline-transition-menu" class="timeline-transition-menu" hidden role="group" aria-label="Transition options">
+            <button type="button" id="timeline-transition-close" aria-label="Close transition options">×</button>
+            <b>Transition</b>
+            <button type="button" data-transition="none">None · hard cut</button><button type="button" data-transition="dissolve">Dissolve</button><button type="button" data-transition="fade-to-black">Fade to black</button><button type="button" data-transition="fade-from-black">Fade from black</button>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 </div>
@@ -2710,12 +2817,14 @@ async function handleVideoFile(file){
     canvas.width=w; canvas.height=h; recreateFBOs(w,h); uploadVideoTexture();
     if(!isVideo && hasContent)photoExportOptions={...exportOptions};
     isVideo=true; hasContent=true; setWorkspaceMode('video'); videoCrop={x:0.5,y:0.5}; videoTrim=social.trimRange(dur,0,Math.min(dur,60));
+    loadFFmpeg().catch(error=>console.warn('Video engine preload failed; export will retry on demand.',error));
     exportOptions={...exportOptions,format:'original',comparison:false}; cropEditing=false;
     clearSubjectMask(true); setDitherScope('full');
     exportOptions.format='original'; exportOptions.comparison=false; cropEditing=false;
     dropZone.style.display='none'; canvasWrap.style.display='flex'; resetPreviewZoom();
     $('processVideoBtn').style.display='flex'; $('downloadBtn').innerHTML='⤓ Original-size frame PNG';
     updateTrimUI(); renderCaptionKeyframeMarkers(); await Promise.all([renderVideoFilmstrip(token),renderAudioWaveform(file,token)]); if(token!==fileLoadId) return;
+    window.filmLabTimeline?.setVideo(dur,videoTrim.start,videoTrim.end);
     await videoEl.play().catch(()=>{}); startLoop();
     showToast(dur>60?`${dur.toFixed(1)}s video — first 60s selected. Adjust the trim below.`:'Video loaded — drag crop and set trim points',5000);
   }catch(error){
@@ -3410,6 +3519,7 @@ function backToDropZone(){
   if(isVideo) unloadVideo();
   clearPhotos();
   currentPhoto=null; activePhotoIndex=-1; isVideo=false; hasContent=false;
+  globalThis.filmLabTimeline?.reset();
   if(typeof setWorkspaceMode==='function')setWorkspaceMode('empty');
   if(typeof selectSidebarTab==='function'){activeSidebarTab='looks';userSelectedSidebarTab=false;selectSidebarTab('looks');}
   showOriginal=false; splitPreview=false; cropEditing=false; maskPaintMode=null;
@@ -3944,7 +4054,7 @@ function changeTrim(start,end,changed){
   if(!isVideo || exportBusy || mediaBusy) return;
   videoTrim=social.trimRange(videoEl.duration,start,end,changed);
   if(videoEl.currentTime<videoTrim.start || videoEl.currentTime>=videoTrim.end) videoEl.currentTime=videoTrim.start;
-  updateTrimUI();
+  updateTrimUI(); window.filmLabTimeline?.syncBaseTrim(videoTrim);
 }
 function timeAtTimelinePointer(e){
   const rect=$('timelineTrack').getBoundingClientRect();
@@ -4176,11 +4286,15 @@ async function processVideo(){
   if(!isVideo || !hasContent || exportBusy || mediaBusy){ showToast('Upload video first'); return; }
   const range='trimmed'; $('videoExportRange').value=range;
   const trim=social.trimRange(videoEl.duration,videoTrim.start,videoTrim.end);
-  const dur=trim.end-trim.start, fps=24, total=Math.max(1,Math.ceil(dur*fps));
+  const proposedPlan=window.filmLabTimeline?.getExportPlan?.();
+  const editPlan=proposedPlan?.segments?.length?proposedPlan:{segments:[{start:trim.start,end:trim.end,transition:'none'}],duration:trim.end-trim.start,transitionSeconds:.5};
+  const dur=editPlan.duration, fps=24, total=Math.max(1,Math.ceil(dur*fps));
   const container=$('videoContainer').value, quality=$('videoQuality').value;
-  const keepAudio=$('keepVideoAudio').checked&&!!videoSourceFile, options={...exportOptions,comparison:false}, position={...videoCrop};
+  const audioRequested=$('keepVideoAudio').checked&&!!videoSourceFile;
+  const audioContinuous=editPlan.segments.every((segment,index,list)=>index===list.length-1||(segment.transition==='none'&&Math.abs(segment.end-list[index+1].start)<0.001));
+  const keepAudio=audioRequested&&audioContinuous, options={...exportOptions,comparison:false}, position={...videoCrop};
   const outputSize=videoOutputSize(options,position,$('videoResolution').value);
-  const rangeTitle=`${dur.toFixed(1)}s trimmed`;
+  const rangeTitle=`${dur.toFixed(1)}s edited`;
   const view=beginExport(`Exporting ${rangeTitle} · ${container.toUpperCase()}`), files=new Set(), segments=[];
   progressWrap.classList.add('loading'); progressText.textContent='Loading video engine…';
   // Two-second sections bound raw-frame memory, even for 60s full-HD clips with heavy grain.
@@ -4192,6 +4306,25 @@ async function processVideo(){
   const exec=async(args)=>{
     lastFFmpegLog=''; const code=ff.exec?await ff.exec(args):await ff.run(...args);
     if(typeof code==='number' && code!==0) throw new Error(`Video encoding failed (${code}).`);
+  };
+  const uploadFrame=async(time)=>{
+    await seekVideo(time); checkExportCancelled();
+    if(useWebCodecs){
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+      let frame=null;
+      try{ frame=new VideoFrame(videoEl,{timestamp:Math.round(time*1e6)}); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,frame); if(gl.getError()!==gl.NO_ERROR) throw new Error('VideoFrame texture upload unsupported'); }
+      catch(error){ useWebCodecs=false; uploadVideoTexture(); }
+      finally{ frame?.close(); }
+    }else uploadVideoTexture();
+  };
+  let timelineBlendCanvas=null;
+  const composeTimelineFrame=(first,second,amount,blackAlpha)=>{
+    if(!second && !(blackAlpha>0))return first;
+    if(!timelineBlendCanvas){ timelineBlendCanvas=document.createElement('canvas'); timelineBlendCanvas.width=outputSize.width; timelineBlendCanvas.height=outputSize.height; }
+    const ctx=timelineBlendCanvas.getContext('2d'); ctx.clearRect(0,0,timelineBlendCanvas.width,timelineBlendCanvas.height); ctx.globalAlpha=1; ctx.drawImage(first,0,0);
+    if(second){ ctx.globalAlpha=social.clamp(amount,0,1); ctx.drawImage(second,0,0); ctx.globalAlpha=1; }
+    if(blackAlpha>0){ ctx.fillStyle=`rgba(0,0,0,${social.clamp(blackAlpha,0,1)})`; ctx.fillRect(0,0,timelineBlendCanvas.width,timelineBlendCanvas.height); }
+    return timelineBlendCanvas;
   };
   try{
     ff=await loadFFmpeg(); checkExportCancelled();
@@ -4212,18 +4345,19 @@ async function processVideo(){
       const count=Math.min(CHUNK_FRAMES,total-chunkStart);
       for(let j=0;j<count;j++){
         checkExportCancelled();
-        const i=chunkStart+j, t=Math.min(trim.end-0.0001,trim.start+i/fps); await seekVideo(t); checkExportCancelled();
-        if(useWebCodecs){
-          gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-          let frame=null;
-          try{
-            frame=new VideoFrame(videoEl,{timestamp:Math.round(t*1e6)});
-            gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,frame);
-            if(gl.getError()!==gl.NO_ERROR) throw new Error('VideoFrame texture upload unsupported');
-          }catch(error){ useWebCodecs=false; uploadVideoTexture(); }
-          finally{ frame?.close(); }
-        }else uploadVideoTexture();
-        const output=makeExportCanvas(options,position,true,outputSize), blob=await canvasBlob(output,'image/jpeg',0.98);
+        const i=chunkStart+j, outputTime=i/fps;
+        const framePlan=window.filmLabTimeline?.mapOutputTime?.(outputTime,editPlan)||{sourceTime:trim.start+outputTime,blackAlpha:0};
+        const currentSegment=editPlan.segments.find(segment=>framePlan.sourceTime>=segment.start-.001&&framePlan.sourceTime<=segment.end+.001)||editPlan.segments[editPlan.segments.length-1];
+        const t=Math.min(currentSegment.end-0.0001,Math.max(currentSegment.start,framePlan.sourceTime));
+        await uploadFrame(t);
+        let output=makeExportCanvas(options,position,true,outputSize);
+        if(Number.isFinite(framePlan.blendTime)){
+          const nextSegment=editPlan.segments.find(segment=>framePlan.blendTime>=segment.start-.001&&framePlan.blendTime<=segment.end+.001)||editPlan.segments[editPlan.segments.length-1];
+          await uploadFrame(Math.min(nextSegment.end-0.0001,Math.max(nextSegment.start,framePlan.blendTime)));
+          const incoming=makeExportCanvas(options,position,true,outputSize); output=composeTimelineFrame(output,incoming,framePlan.blend||0,0);
+        }
+        if(framePlan.blackAlpha>0) output=composeTimelineFrame(output,null,0,framePlan.blackAlpha);
+        const blob=await canvasBlob(output,'image/jpeg',0.98);
         checkExportCancelled(); await writeFile(`frame_${String(j).padStart(4,'0')}.jpg`,new Uint8Array(await blob.arrayBuffer()));
         const pct=Math.round((i+1)/total*90); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Encoding… ${pct}%`; // Frame ${i+1}/${total} is represented by the percentage above.
         await new Promise(resolve=>setTimeout(resolve,0));
@@ -4241,12 +4375,12 @@ async function processVideo(){
     checkExportCancelled(); encodingVideo=true; encoderProgressBase=90; encoderProgressSpan=8;
     progressText.textContent=`Encoding… ${progressPct.textContent}`;
     const outputName='output.'+container; files.add(outputName);
-    await exec(social.muxVideoArgs({start:trim.start,duration:dur,container,audio:keepAudio,source:audioSource}));
+    await exec(social.muxVideoArgs({start:editPlan.segments[0]?.start??trim.start,duration:dur,container,audio:keepAudio,source:audioSource}));
     encodingVideo=false; checkExportCancelled(); progressFill.style.width='100%'; progressPct.textContent='100%'; progressText.textContent='Download ready'; $('progressTitle').textContent='Download ready';
     const data=await readFile(outputName), out=new Blob([data],{type:container==='mp4'?'video/mp4':'video/webm'});
     const filename=`${social.safeFilename(videoSourceFile?.name||'reel')}-${dur.toFixed(1)}s.${container}`;
     downloadBlob(out,filename);
-    $('videoExportStatus').textContent=`Download ready · ${dur.toFixed(1)}s ${container.toUpperCase()} · ${outputSize.width} × ${outputSize.height}. Download started automatically.`;
+    $('videoExportStatus').textContent=`Download ready · ${dur.toFixed(1)}s ${container.toUpperCase()} · ${outputSize.width} × ${outputSize.height}.${audioRequested&&!keepAudio?' Original audio is omitted for gaps or transitions.':''} Download started automatically.`;
     showToast('Download ready — saving video',2600);
   }catch(error){
     if(cancelRequested || error.name==='AbortError') showToast('Video export cancelled');
@@ -4333,17 +4467,22 @@ function setWorkspaceMode(mode){
   updateClusterSummaries();
 }
 function initializeWorkspaceModes(){ setWorkspaceMode('empty'); }
+// Narrow bridge keeps the standalone timeline module away from renderer and encoder internals.
+window.filmLabTimelineBridge={
+  get trim(){ return {...videoTrim}; },
+  setTrim(start,end){ if(isVideo && Number.isFinite(videoEl.duration)) changeTrim(start,end,start<videoTrim.start?'start':'end'); }
+};
 // init
 setupSliderNumberEditing(); updateFromSliders(); updateSliderUI(); updateSocialUI(); restoreSharedLook(); render(performance.now()); initializeWorkspaceModes();
 window.addEventListener('dragover',e=> e.preventDefault());
 window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ e.preventDefault(); handleFiles(e.dataTransfer.files); } });
-// Preload one shared encoder instance at boot; video export awaits this same promise.
-loadFFmpeg().catch(error=>console.warn('Video encoder preload failed; it will retry on export.',error));
+// FFmpeg is initialized only after a video upload succeeds; exports await the shared loader promise.
 console.log('Film Lab — Instagram tools · 44 signed controls — WebGL2', gl.getParameter(gl.VERSION));
 })();
 };
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startFilmLab,{once:true});
 else startFilmLab();
 </script>
+<script src="./timeline-module.js"></script>
 </body>
 </html>

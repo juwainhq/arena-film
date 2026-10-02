@@ -343,7 +343,8 @@ test('selecting, adjusting, saving, and deleting looks keeps both preset control
 
 test('video processing retains a 60s cap, WebCodecs fallback and frame progress', () => {
   assert.match(script, /social\.trimRange\(videoEl\.duration,videoTrim\.start,videoTrim\.end\)/);
-  assert.match(script, /t=Math\.min\(trim\.end-0\.0001,trim\.start\+i\/fps\)/);
+  assert.match(script, /framePlan=window\.filmLabTimeline\?\.mapOutputTime\?\.\(outputTime,editPlan\)/);
+  assert.match(script, /trim\.start\+outputTime/);
   assert.match(script, /@ffmpeg\/ffmpeg@0\.12\.10\/dist\/umd\/ffmpeg\.js/);
   assert.match(script, /vendor\/ffmpeg\/ffmpeg\.js/);
   assert.match(script, /social\.videoArgs\(\{fps,duration:count\/fps,container,quality,audio:false,output:segment\}\)/);
