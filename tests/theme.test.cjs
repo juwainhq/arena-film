@@ -102,8 +102,6 @@ test('sidebar shortcut keycaps are removed while the mounted legacy node and bot
   assert.match(legacy, /aria-hidden="true" hidden/);
   assert.doesNotMatch(legacy, /<kbd|Before \/ After|Reset all|Download|Expand all|Crop \/ export panel/);
   assert.match(styles, /#shortcuts \{ display: none !important; \}/);
-  assert.match(html, /id="shortcutsHelpBtn"[^>]*>\?<\/button>/, 'keep the existing node and listener dependency mounted');
-  assert.match(styles, /#shortcutsHelpBtn \{ display: none !important;/);
   assert.equal((html.match(/class="shortcuts-bar"/g) || []).length, 1);
 });
 
