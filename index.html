@@ -259,8 +259,8 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #shortcuts { display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 23px; border-top: 1px solid var(--panel-border); }
 .kbdRow { display: flex; justify-content: space-between; color: var(--text-dim2); font-size: 10px; letter-spacing: .04em; }
 .kbdRow kbd { padding: 1px 5px; background: none; border: 1px solid var(--panel-border); border-radius: 0; color: var(--text-dim); font: 10px 'JetBrains Mono',monospace; }
-#videoProgress { position: absolute; bottom: 38px; left: 50%; transform: translateX(-50%); z-index: 30; display: none; flex-direction: column; gap: 13px; width: min(460px,92%); padding: 20px 22px; background: var(--bg); border: 1px solid var(--panel-border); box-shadow: 0 20px 80px var(--shadow); }
-#videoProgress.show { display: flex; }
+#exportProgress { position: absolute; bottom: 38px; left: 50%; transform: translateX(-50%); z-index: 30; display: none; flex-direction: column; gap: 13px; width: min(460px,92%); padding: 20px 22px; background: var(--bg); border: 1px solid var(--panel-border); box-shadow: 0 20px 80px var(--shadow); }
+#exportProgress.show { display: flex; }
 #progressHead { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 #progressBar { height: 2px; background: var(--panel-border); overflow: hidden; }
 #progressFill { height: 100%; width: 0%; background: var(--text); transition: width .25s; }
@@ -282,9 +282,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #videoSeek { height: 17px; margin: 0; background: linear-gradient(var(--panel-border),var(--panel-border)) center / 100% 2px no-repeat; }
 #app[data-workspace="video"] #zoomControls { bottom: 58px; }
 #app[data-workspace="video"] #glCanvas { max-height: calc(100% - 112px); }
-#app[data-workspace="photo"] #grainSpeedRow,#app[data-workspace="empty"] #grainSpeedRow { display: none !important; }
 .visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-#app[data-workspace="video"] #photoComparisonField,#app[data-workspace="video"] #comparisonOptions,#app[data-workspace="video"] #exportZipBtn { display: none !important; }
 #previewStage { position: relative; flex: 1; width: 100%; min-height: 0; }
 .socialPanel { min-width: 0; }
 .advancedColor { padding-top: 2px; border-top: 1px solid var(--panel-border); }
@@ -480,79 +478,48 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #captionSizeValue { margin-left: 8px; color: var(--text-dim2); font: 10px 'JetBrains Mono',monospace; }
 #captionColor { width: 100%; height: 34px; padding: 3px; border: 1px solid var(--panel-border); background: var(--bg); }
 #progressEta { color: var(--text-dim2); font: 10px 'JetBrains Mono',monospace; }
-#app[data-workspace="video"] #content { display: grid; grid-template-columns: minmax(265px,315px) minmax(0,1fr); grid-template-rows: minmax(0,1fr) 148px; }
-#app[data-workspace="video"].sidebar-collapsed #content { grid-template-columns: 54px minmax(0,1fr); }
-#app[data-workspace="video"] #mainArea { grid-column: 2; grid-row: 1; min-height: 0; padding: 18px 28px 8px; align-items: stretch; justify-content: flex-start; gap: 9px; }
+/* Video Mode: preview and playback above a fixed timeline, with the same sidebar on the right. */
+#app[data-workspace="video"] #content { display: grid; grid-template-columns: minmax(0,1fr) 390px; grid-template-rows: minmax(0,1fr) 120px; }
+#app[data-workspace="video"] #mainArea { grid-column: 1; grid-row: 1; min-height: 0; padding: 18px 28px 8px; align-items: stretch; justify-content: flex-start; gap: 9px; }
 #app[data-workspace="video"] #previewStage { position: relative; display: flex; flex: 1; width: 100%; min-height: 0; }
 #app[data-workspace="video"] #canvasWrap { flex: 1; width: 100%; height: 100%; min-height: 0; }
-#app[data-workspace="video"] #sidebar { grid-column: 1; grid-row: 1 / 3; width: auto; min-width: 0; padding: 14px 18px 20px; gap: 12px; border-left: 0; border-right: 1px solid var(--panel-border); }
-#app[data-workspace="video"] #sidebarControls { gap: 22px; }
-#app[data-workspace="video"] #sidebarCollapseToggle { display: block; width: 100%; min-height: 30px; padding: 5px 0; border: 0; border-bottom: 1px solid var(--panel-border); background: transparent; color: var(--text-dim); font: 500 9px 'JetBrains Mono',monospace; letter-spacing: .12em; text-align: left; text-transform: uppercase; cursor: pointer; }
-#app[data-workspace="video"] #sidebarControls > * { display: none !important; }
-#app[data-workspace="video"] #sidebarControls > #effectsWrap { display: flex !important; }
-#app[data-workspace="video"] #sidebarControls > #videoCaptionPanel,#app[data-workspace="video"] #sidebarControls > #videoExportPanel { display: flex !important; }
-#app[data-workspace="video"] #effectsWrap > .sectionLabel,#app[data-workspace="video"] #effectsWrap > .sectionHint,#app[data-workspace="video"] #effectsWrap .effectGroup[data-group="dither"] { display: none !important; }
+#app[data-workspace="video"] #sidebar { grid-column: 2; grid-row: 1 / 3; width: 390px; min-width: 340px; padding: 18px 22px 24px; gap: 16px; border-left: 1px solid var(--panel-border); border-right: 0; }
+#app[data-workspace="video"] #sidebarControls { gap: 14px; }
+#app[data-workspace="video"] #sidebarCollapseToggle { display: none !important; }
 #app[data-workspace="video"] #effectsWrap .effectGroup { display: block; }
-#app[data-workspace="video"] #videoTrimPanel { display: none !important; }
 #app[data-workspace="video"] #captionOverlay { display: block; }
 #app[data-workspace="video"] #captionOverlay[hidden] { display: none !important; }
-#app[data-workspace="video"] #exportPanel { display: none !important; }
-#app[data-workspace="video"] #videoPlaybackControls { display: flex; flex: none; align-items: center; gap: 10px; width: min(100%,980px); min-height: 48px; margin: 0 auto; padding: 5px 10px; border-top: 1px solid var(--panel-border); }
-#app[data-workspace="video"] #videoPlayBtn { min-width: 62px; }
+#app[data-workspace="video"] #videoPlaybackControls { display: flex; flex: none; align-items: center; gap: 9px; width: min(100%,1080px); min-height: 50px; margin: 0 auto; padding: 5px 0; border-top: 1px solid var(--panel-border); }
+#app[data-workspace="video"] #videoPlayBtn { min-width: 40px; min-height: 34px; font-size: 17px; }
 #app[data-workspace="video"] #videoTime { flex: none; color: var(--text-dim); font: 10px 'JetBrains Mono',monospace; white-space: nowrap; }
 #app[data-workspace="video"] #videoSeek { flex: 1; min-width: 40px; height: 18px; margin: 0; }
 #app[data-workspace="video"] #videoVolume { width: 76px; height: 18px; margin: 0; }
-#app[data-workspace="video"] #videoSpeed { width: 76px; min-height: 30px; padding: 0 6px; font-size: 10px; }
 #app[data-workspace="video"] #videoLoopToggle[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 #app[data-workspace="video"] #videoCaptionPanel,#app[data-workspace="video"] #videoExportPanel { flex-direction: column; gap: 9px; padding-top: 14px; border-top: 1px solid var(--panel-border); }
+#app[data-workspace="video"] #sidebarViews > .sidebarPanel.active #videoCaptionPanel,
+#app[data-workspace="video"] #sidebarViews > .sidebarPanel.active #videoExportPanel { display: flex; }
+#app[data-workspace="video"] #sidebarViews > .sidebarPanel.active #videoTrimPanel { display: flex; flex-direction: column; gap: 9px; }
 #app[data-workspace="video"] #videoCaptionPanel .sectionLabel,#app[data-workspace="video"] #videoExportPanel .sectionLabel { margin-bottom: 2px; }
 #app[data-workspace="video"] #videoExportPanel .actionBtn.primary { margin-top: 4px; }
-#app[data-workspace="video"] #editorTimeline { grid-column: 2; grid-row: 2; display: flex; min-height: 0; flex-direction: column; gap: 8px; padding: 10px 28px 14px; border-top: 1px solid var(--panel-border); background: var(--bg); }
+#app[data-workspace="video"] #editorTimeline { grid-column: 1; grid-row: 2; display: flex; min-height: 0; flex-direction: column; gap: 5px; padding: 7px 20px 9px; border-top: 1px solid var(--panel-border); background: var(--bg); }
 #app[data-workspace="video"] #editorTimeline[hidden] { display: none !important; }
-.timelineHeader { display: flex; align-items: center; gap: 18px; min-height: 24px; }
-.timelineTitle { color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; }
-#trimRangeReadout { color: var(--text-dim); font: 10px 'JetBrains Mono',monospace; white-space: nowrap; }
-.timelineHeader .trimQuick { display: flex; gap: 6px; margin-left: auto; }
-.timelineHeader .toolBtn { min-height: 25px; padding: 3px 8px; font-size: 9px; }
-#timelineTrack { position: relative; flex: 1; min-height: 46px; max-height: 82px; overflow: visible; border: 1px solid var(--panel-border); background: var(--soft-bg); touch-action: none; cursor: crosshair; }
-#timelineFilmstrip { position: absolute; inset: 0; display: flex; overflow: hidden; }
-#timelineFilmstrip img { flex: 1; min-width: 0; height: 100%; object-fit: cover; opacity: .64; }
-#timelineSelection { position: absolute; z-index: 2; top: 0; bottom: 0; background: rgba(var(--accent-rgb),.13); border: 1px solid var(--accent); pointer-events: none; }
-.timelineHandle { position: absolute; z-index: 4; top: -2px; bottom: -2px; width: 18px; padding: 0; transform: translateX(-50%); border: 0; background: transparent; cursor: ew-resize; touch-action: none; }
-.timelineHandle span { display: block; width: 4px; height: 100%; margin: auto; background: var(--accent); box-shadow: 0 0 0 1px var(--bg); }
-.timelineHandle:focus-visible { outline: 1px solid var(--text); outline-offset: 1px; }
-#timelinePlayhead { position: absolute; z-index: 5; top: -5px; bottom: -5px; left: 0; width: 1px; background: var(--text); box-shadow: 0 0 0 1px var(--bg); pointer-events: none; }
-#timelinePlayhead::before { content: ''; position: absolute; top: 0; left: -4px; width: 9px; height: 7px; background: var(--text); clip-path: polygon(0 0,100% 0,50% 100%); }
-#captionKeyframeMarkers { position: absolute; z-index: 4; inset: 0; pointer-events: none; }
-.timelineKeyframeMarker { position: absolute; top: 2px; width: 10px; height: 10px; padding: 0; transform: translateX(-50%) rotate(45deg); border: 1px solid var(--bg); background: var(--accent); pointer-events: auto; cursor: pointer; }
-#app[data-workspace="video"] #effectsWrap [data-group="color"] .effectTitle::before { content: '01'; }
-#app[data-workspace="video"] #effectsWrap [data-group="bloom"] .effectTitle::before { content: '02'; }
-#app[data-workspace="video"] #effectsWrap [data-group="hallation"] .effectTitle::before { content: '03'; }
-#app[data-workspace="video"] #effectsWrap [data-group="grain"] .effectTitle::before { content: '04'; }
-#app[data-workspace="video"] #effectsWrap [data-group="sharpen"] .effectTitle::before { content: '05'; }
-#canvasWrap.videoDropTarget::after { content: 'DROP VIDEO TO REPLACE'; position: absolute; inset: 18px; z-index: 9; display: grid; place-items: center; outline: 1px solid var(--accent); background: rgba(0,0,0,.62); color: var(--text); font: 500 10px 'JetBrains Mono',monospace; letter-spacing: .16em; pointer-events: none; }
-#app[data-workspace="video"] #backToDropBtn { z-index: 10; }
-#app[data-workspace="video"] #zoomControls { bottom: 0; }
-#app[data-workspace="video"] #glCanvas { max-height: calc(100% - 44px); }
+#app[data-workspace="video"] #backToDropBtn { z-index: 20; }
 #app[data-workspace="video"] #processVideoBtn:disabled { opacity: .5; }
-#app[data-workspace="video"] #sidebar.isCollapsed { padding: 12px 8px; }
-#app[data-workspace="video"] #sidebar.isCollapsed #sidebarControls { display: none; }
-#app[data-workspace="video"] #sidebar.isCollapsed #sidebarCollapseToggle { min-height: 58px; border-bottom: 0; text-align: center; writing-mode: vertical-rl; transform: rotate(180deg); }
+.timelineHeader { display: flex; align-items: center; }
+.timelineTimecodes { display: flex; align-items: center; gap: 15px; margin-left: auto; }
+.timelineTimecodes span { display: flex; align-items: center; gap: 5px; color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .08em; }
+.timelineTimecodes output { color: var(--text); font-size: 10px; }
+#audioWaveform { display: flex; align-items: center; justify-content: space-between; gap: 1px; width: 100%; height: 14px; overflow: hidden; opacity: .65; }
+.audioWaveBar { flex: 1; min-width: 1px; max-width: 3px; height: var(--wave-height,20%); background: var(--text-dim); }
+.playbackSpeeds { display: flex; flex: none; align-items: center; gap: 2px; }
+.playbackSpeeds button { min-width: 35px; min-height: 28px; padding: 3px 5px; border: 1px solid transparent; background: transparent; color: var(--text-dim); font: 500 9px 'JetBrains Mono',monospace; cursor: pointer; }
+.playbackSpeeds button.active { border-color: var(--panel-border); color: var(--text); }
+.playbackSpeeds button:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+#videoSkipStart,#videoSkipEnd { min-width: 34px; min-height: 32px; padding: 4px 6px; border: 1px solid var(--panel-border); background: transparent; color: var(--text); font: 600 11px 'JetBrains Mono',monospace; cursor: pointer; }
+#exportProgress.ready #progressTitle { color: var(--accent); }
 @media (max-width: 767px) {
   #workspacePill { grid-column: 1 / -1; grid-row: 2; justify-self: start; margin-top: 7px; }
   #headerActions { grid-row: 3; }
-  #app[data-workspace="video"] #content { display: flex; flex-direction: column; overflow-y: hidden; }
-  #app[data-workspace="video"] #mainArea { order: 1; flex: 1 1 52svh; width: 100%; min-height: 290px; padding: 10px 16px 6px; }
-  #app[data-workspace="video"] #editorTimeline { order: 2; flex: none; min-height: 60px; padding: 7px 16px 9px; }
-  #app[data-workspace="video"] #timelineTrack { min-height: 22px; max-height: 26px; }
-  #app[data-workspace="video"] #timelineFilmstrip { display: none; }
-  #app[data-workspace="video"] #sidebar { order: 3; flex: 1 1 30vh; width: 100%; min-height: 120px; padding: 12px 20px 30px; overflow-y: auto; border-right: 0; border-top: 1px solid var(--panel-border); }
-  #app[data-workspace="video"] #sidebar.isCollapsed { flex: 0 0 48px; min-height: 48px; }
-  #app[data-workspace="video"] #sidebar.isCollapsed #sidebarCollapseToggle { writing-mode: horizontal-tb; transform: none; min-height: 28px; text-align: left; }
-  #app[data-workspace="video"] #videoPlaybackControls { flex-wrap: wrap; gap: 6px; min-height: 48px; padding: 5px 0; }
-  #app[data-workspace="video"] #videoTime { font-size: 9px; }
-  #app[data-workspace="video"] #videoVolume { width: 52px; }
-  #app[data-workspace="video"] #videoSpeed { width: 62px; }
   .timelineHeader { gap: 9px; }
   .timelineTitle { display: none; }
   #trimRangeReadout { font-size: 9px; }
@@ -596,18 +563,17 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #progressBar { position: relative; height: 3px; }
 #progressFill { position: relative; overflow: hidden; background: var(--accent); transition: width .3s ease; }
 #progressFill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg,transparent,rgba(255,255,255,.48),transparent); transform: translateX(-100%); animation: progressShimmer 1.5s linear infinite; }
-#videoProgress.loading #progressFill { width: 34% !important; animation: progressIndeterminate 1.35s ease-in-out infinite alternate; }
+#exportProgress.loading #progressFill { width: 34% !important; animation: progressIndeterminate 1.35s ease-in-out infinite alternate; }
 @keyframes progressIndeterminate { from { transform: translateX(-100%); } to { transform: translateX(190%); } }
 @keyframes progressShimmer { to { transform: translateX(100%); } }
-#videoProgress.ready #progressText { animation: readyFade 1.7s ease both; color: var(--accent); }
+#exportProgress.ready #progressText { animation: readyFade 1.7s ease both; color: var(--accent); }
 @keyframes readyFade { 0% { opacity: 0; } 18% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
 .numericReadout { cursor: text; }
 .numericEditor { width: 68px; padding: 2px 4px; border: 1px solid var(--accent); border-radius: 0; background: var(--bg); color: var(--text); font: inherit; text-align: right; }
 @media (max-width: 767px) {
   html,body { height: 100%; overflow: hidden; }
   #app { position: relative; height: 100dvh; min-height: 0; overflow: hidden; }
-  #app[data-workspace="empty"] #sidebar { display: none; }
-  #content { position: relative; display: block; flex: 1; min-height: 0; overflow: hidden; }
+    #content { position: relative; display: block; flex: 1; min-height: 0; overflow: hidden; }
   #mainArea,#mainArea.hasPhotos { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; padding: 24px 20px; order: initial; }
   #previewStage { width: 100%; height: 100%; }
   #canvasWrap { height: 100%; }
@@ -622,35 +588,229 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
   #app[data-workspace="video"] #mainArea { padding: 12px 14px 82px; }
   #app[data-workspace="video"] #glCanvas { max-height: calc(100% - 40px); }
   #app[data-workspace="video"] #videoPlaybackControls { position: absolute; z-index: 8; left: 10px; right: 10px; bottom: 20px; width: auto; min-height: 46px; padding: 4px; gap: 5px; background: var(--bg); border: 1px solid var(--panel-border); }
-  #app[data-workspace="video"] #videoTime { display: none; }
   #app[data-workspace="video"] #videoVolume { width: 62px; min-height: 44px; height: 44px; }
   #app[data-workspace="video"] #videoSeek { min-height: 44px; height: 44px; }
   #app[data-workspace="video"] #videoPlaybackControls { overflow-x: auto; }
-  #app[data-workspace="video"] #videoVolumeValue { display: none; }
   #app[data-workspace="video"] #editorTimeline { position: absolute; z-index: 9; left: 0; right: 0; bottom: 0; height: 84px; padding: 5px 10px 8px; background: var(--bg); }
   #app[data-workspace="video"] #editorTimeline .timelineHeader { gap: 5px; }
-  #app[data-workspace="video"] #editorTimeline .trimQuick { display: none; }
   #carouselStrip { position: absolute; z-index: 10; left: 12px; right: 12px; bottom: 12px; width: auto; margin: 0; padding: 8px 10px; border: 1px solid var(--panel-border); background: var(--bg); }
   .modalCard { padding: 22px 18px; }
   .trimRow { grid-template-columns: 25px 42px minmax(0,1fr) 60px; gap: 6px; }
 }
+
+/* Organized sidebar navigation; color, type and flat editorial surfaces remain unchanged. */
+#sidebar { width: 390px; min-width: 340px; gap: 16px; padding: 18px 22px 24px; }
+#sidebarControls { gap: 14px; min-height: 0; }
+.sidebarTabs { position: sticky; top: 0; z-index: 7; display: flex; width: 100%; padding: 3px; gap: 3px; border: 1px solid var(--panel-border); border-radius: 999px; background: var(--bg); }
+.sidebarTab { flex: 1; min-width: 0; padding: 9px 8px; border: 0; border-radius: 999px; background: transparent; color: var(--text-dim); font: 600 10px Inter,system-ui,sans-serif; letter-spacing: .16em; text-transform: uppercase; cursor: pointer; transition: background .2s,color .2s; }
+.sidebarTab:hover { color: var(--text); background: var(--soft-bg); }
+.sidebarTab.active { background: var(--text); color: var(--inverse); }
+.sidebarTab:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+.sidebarViews { display: flex; flex-direction: column; min-height: 0; }
+.sidebarPanel { display: none; flex-direction: column; gap: 17px; min-width: 0; }
+.sidebarPanel.active { display: flex; }
+.sidebarPanel[hidden] { display: none !important; }
+.panelHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.panelHeading .sectionLabel { margin: 0; font-size: 14px; letter-spacing: .18em; }
+.panelHeading .sectionLabel::after { display: none; }
+.textAction { padding: 5px 0; border: 0; border-bottom: 1px solid transparent; background: transparent; color: var(--text-dim); font: 500 9px Inter,system-ui,sans-serif; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+.textAction:hover { border-bottom-color: var(--text); color: var(--text); }
+#looksPanel > div:not(.panelHeading) { display: flex; flex-direction: column; gap: 7px; }
+#presetChips { grid-template-columns: repeat(2,minmax(0,1fr)); column-gap: 10px; row-gap: 9px; }
+#presetChips .chip { min-height: 79px; padding: 44px 9px 8px; border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 9px; letter-spacing: .1em; overflow: hidden; text-overflow: ellipsis; }
+#presetChips .chip:hover,#presetChips .chip.active { border-color: var(--border-strong); color: var(--text); }
+#presetChips .chip .presetColorSwatch { position: absolute; top: 8px; left: 8px; right: 8px; width: auto; height: 28px; margin: 0; border: 1px solid var(--panel-border); }
+.presetColorSwatch svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.presetColorSwatch svg path { fill: none; stroke: rgba(255,255,255,.88); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.presetColorSwatch svg path.curveAxis { stroke: rgba(255,255,255,.34); stroke-width: .7; }
+.presetColorSwatch::after { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'%3E%3Cpath d='M3 27V3M3 27H58' fill='none' stroke='white' stroke-opacity='.35' stroke-width='.8'/%3E%3Cpath d='M4 26C17 25 24 21 31 15S45 5 57 2' fill='none' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.savedPresetGrid .chip .presetColorSwatch { position: absolute; top: 7px; left: 7px; right: 7px; width: auto; height: 24px; margin: 0; border: 1px solid var(--panel-border); }
+
+.savedLooks { border-top: 1px solid var(--panel-border); padding-top: 12px; display: flex; flex-direction: column; gap: 7px; }
+.savedHeading .sectionLabel { margin: 0; font-size: 14px; letter-spacing: .18em; }
+.savedHeading .sectionLabel::after { display: none; }
+.savedPresetGrid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.savedPresetGrid:empty { display: none; }
+.savedPresetGrid .chip { position: relative; min-height: 48px; padding: 9px 8px; border: 1px solid var(--panel-border); font-size: 9px; }
+.savedPresetGrid .chip { min-height: 70px; padding: 39px 8px 8px; }
+.savedEmpty { color: var(--text-dim2); font-size: 10px; }
+.savedEmpty[hidden] { display: none; }
+.savedLooks #savePresetBtn { margin-top: 2px; }
+.adjustTitle { margin-bottom: 0; font-size: 14px; letter-spacing: .18em; }
+.adjustTitle::after { display: none; }
+.adjustCluster { margin-top: 3px; border-top: 1px solid var(--panel-border); padding: 8px 0 0; }
+.adjustCluster > summary { list-style: none; display: grid; grid-template-columns: minmax(78px,auto) minmax(0,1fr) 14px; gap: 10px; align-items: center; cursor: pointer; padding: 4px 1px 8px; color: var(--text); font: 600 14px Inter,system-ui,sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.adjustCluster > summary::-webkit-details-marker { display: none; }
+.adjustCluster > summary::after { content: ''; width: 7px; height: 7px; justify-self: end; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .2s; }
+.adjustCluster[open] > summary::after { transform: translateY(2px) rotate(225deg); }
+.clusterSummary { min-width: 0; overflow: hidden; color: var(--text-dim2); font: 400 9px/1.4 Inter,system-ui,sans-serif; letter-spacing: .01em; text-transform: none; text-overflow: ellipsis; white-space: nowrap; }
+.clusterContents { display: flex; flex-direction: column; gap: 10px; padding: 8px; border: 1px solid var(--panel-border); }
+.adjustSectionHeading { color: var(--text-dim); font: 600 14px Inter,system-ui,sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+.clusterContents .effectGroup { padding: 10px 0 8px; }
+.clusterContents .subControls { gap: 12px; }
+.clusterContents .subRow { gap: 6px; }
+.creativeVignette { display: flex; flex-direction: column; gap: 12px; padding-top: 10px; border-top: 1px solid var(--panel-border); }
+.creativeVignette .subRow { display: flex; flex-direction: column; gap: 6px; }
+.creativeVignette .subHead { display: flex; justify-content: space-between; align-items: center; }
+.creativeVignette .subLabel { color: var(--text-dim); font-size: 10px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
+.creativeVignette .subVal { min-width: 28px; color: var(--text-dim); text-align: right; font: 500 10px 'JetBrains Mono',monospace; }
+.sidebarPanel .subRow { margin-bottom: 0; }
+.sidebarPanel .subControls { gap: 12px; }
+.sidebarPanel .sectionLabel,.sidebarPanel .adjustSectionHeading { font-size: 14px; letter-spacing: .16em; }
+#exportPanel .panelHeading { margin-bottom: 10px; }
+.formatPills,.qualityPills { display: flex; gap: 4px; width: 100%; padding: 3px; border: 1px solid var(--panel-border); }
+.choicePill { flex: 1; min-height: 34px; padding: 7px 8px; border: 0; background: transparent; color: var(--text-dim); font: 600 9px Inter,system-ui,sans-serif; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+.choicePill:hover { background: var(--soft-bg); color: var(--text); }
+.choicePill.active { background: var(--text); color: var(--inverse); }
+.choicePill:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+.sourceControl { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
+#qualityField { margin: 12px 0 16px; }
+#qualityField .qualityPills { margin-top: 6px; }
+.exportExtras { margin-top: 9px; border-top: 1px solid var(--panel-border); padding-top: 9px; }
+.exportExtras > summary { list-style: none; cursor: pointer; color: var(--text-dim); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; }
+.exportExtras > summary::-webkit-details-marker { display: none; }
+.exportExtras > summary::after { content: '＋'; float: right; }
+.exportExtras[open] > summary::after { content: '−'; }
+.exportExtras > #actions { margin-top: 8px; }
+#actions #beforeAfterBtn[hidden] { display: none !important; }
+#actions #downloadBtn { min-height: 36px; padding: 8px; font-size: 9px; }
+#processVideoBtn,#exportPhotoBtn { width: 100%; min-height: 44px; margin-top: 12px; }
+#exportZipBtn { min-height: 28px; padding: 3px 0; border: 0; background: none; color: var(--text-dim); font-size: 9px; letter-spacing: .07em; }
+#zipCount { color: var(--text-dim2); }
+#holdCompareBtn { position: absolute; z-index: 12; left: 50%; bottom: 18px; display: inline-flex; align-items: center; gap: 8px; transform: translateX(-50%); padding: 8px 13px; border: 1px solid var(--border-strong); background: rgba(0,0,0,.82); color: #fff; font: 500 9px Inter,system-ui,sans-serif; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; touch-action: none; user-select: none; }
+#holdCompareBtn:hover,#holdCompareBtn[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
+#holdCompareBtn[aria-pressed="true"] { background: var(--accent); }
+#holdCompareBtn:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; }
+.sidebarTabs[hidden] { display: none !important; }
+.headerMenuItems { display: flex; align-items: center; gap: 32px; }
+.mobileMenuBtn { display: none; }
+@media (max-width: 767px) {
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px; }
+  #sidebar { width: 100%; min-width: 0; padding: 0 20px max(22px,env(safe-area-inset-bottom)); gap: 18px; }
+  #app[data-workspace="video"] #sidebar { padding: 0 20px max(22px,env(safe-area-inset-bottom)); gap: 18px; }
+  #workspacePill { display: none !important; }
+  #headerActions { position: relative; grid-row: auto; display: flex; align-items: center; margin: 0; padding: 0; border: 0; }
+  .headerMenuItems { display: none; }
+  .headerMenuItems.open { position: absolute; top: calc(100% + 10px); right: 0; z-index: 100; display: flex; align-items: stretch; flex-direction: column; gap: 6px; min-width: 190px; padding: 12px; border: 1px solid var(--panel-border); background: var(--bg); box-shadow: 0 16px 40px var(--shadow); }
+  .headerMenuItems .hdrBtn { width: 100%; padding: 10px 4px; text-align: left; }
+  .headerMenuItems #themeToggle { position: relative; inset: auto; margin: 4px 0 0; align-self: flex-end; }
+  #mobileMenuBtn { display: block; min-width: 40px; height: 34px; padding: 0 8px; border: 1px solid var(--panel-border); border-radius: 0; background: transparent; color: var(--text); font: 600 20px Inter,system-ui,sans-serif; letter-spacing: 2px; cursor: pointer; }
+  #mobileMenuBtn:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+  #sidebar { width: 100%; min-width: 0; }
+  #sidebarControls { gap: 12px; }
+  #sidebar.mobileSheetOpen #sidebarControls { gap: 12px; }
+  .sidebarTabs { position: sticky; top: 0; }
+  #sidebar:not(.mobileSheetOpen) .sidebarTabs,#sidebar:not(.mobileSheetOpen) .sidebarViews,#sidebar:not(.mobileSheetOpen) #shortcuts { visibility: hidden; pointer-events: none; }
+  #sidebar:not(.mobileSheetOpen) #sidebarSheetHandle { border-bottom: 0; }
+  #sidebarSheetHandle .sheetHandleText { font-size: 9px; letter-spacing: .15em; }
+  #holdCompareBtn { bottom: 96px; }
+  #app[data-workspace="video"] #holdCompareBtn { bottom: 96px; }
+  #app[data-workspace="video"] #sidebarControls > #sidebarTabs,
+  #app[data-workspace="video"] #sidebarControls > #sidebarViews { display: flex !important; }
+  #app[data-workspace="video"] #editorTimeline { bottom: 52px; }
+  #app[data-workspace="video"] #videoPlaybackControls { bottom: 142px; }
+  #app[data-workspace="video"] #holdCompareBtn { bottom: 204px; }
+  #app[data-workspace="photo"] #carouselStrip { bottom: 64px; }
+  #app[data-workspace="photo"] #mainArea.hasPhotos #holdCompareBtn { bottom: 164px; }
+  #app[data-workspace="video"] #sidebarViews > .sidebarPanel:not(.active) { display: none !important; }
+  #app[data-workspace="video"] #sidebarViews > .sidebarPanel.active { display: flex !important; }
+}
+@media (min-width: 768px) {
+  #app[data-workspace="video"] #sidebarControls > * { display: flex !important; }
+  #app[data-workspace="video"] #sidebarControls > #sidebarViews { display: flex !important; }
+  #app[data-workspace="video"] #sidebarViews > .sidebarPanel:not(.active) { display: none !important; }
+  #app[data-workspace="video"] #sidebarViews > .sidebarPanel.active { display: flex !important; }
+  #app[data-workspace="video"] #sidebarCollapseToggle { display: none !important; }
+  #app[data-workspace="video"] #sidebarViews #effectsWrap { display: flex !important; }
+}
+@media (max-width: 380px) {
+  #sidebar { padding-left: 14px; padding-right: 14px; }
+  #sidebar #sidebarSheetHandle { width: calc(100% + 28px); margin-left: -14px; margin-right: -14px; }
+  .sidebarTab { padding-inline: 4px; letter-spacing: .1em; }
+  #holdCompareBtn { bottom: 92px; }
+}
+
+
+/* Distinct mounted workspace modes: the inactive mode's controls live in DocumentFragments, not this DOM tree. */
+header #backToDropBtn { position: static; top: auto; left: auto; z-index: auto; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 26px; min-height: 28px; margin: 0 -20px 0 0; padding: 0; color: var(--text-dim2); font: 500 17px Inter,system-ui,sans-serif; letter-spacing: 0; }
+header #backToDropBtn:hover { color: var(--text); }
+header #backToDropBtn[hidden] { display: none !important; }
+#app[data-workspace="photo"] #exportQuality { position: static !important; width: 100% !important; height: 18px !important; margin: 7px 0 12px !important; overflow: visible !important; clip: auto !important; }
+#app[data-workspace="photo"] #qualityField { display: block; }
+#timelineTrack { position: relative; display: block; flex: 1 1 auto; width: 100%; min-height: 54px; max-height: 70px; overflow: visible; border: 1px solid var(--panel-border); background: var(--soft-bg); touch-action: none; user-select: none; }
+#timelineFilmstrip { position: absolute; inset: 0; z-index: 0; display: flex; overflow: hidden; pointer-events: none; }
+#timelineFilmstrip img { flex: 1 1 0; min-width: 0; height: 100%; object-fit: cover; opacity: .72; }
+#timelineSelection { position: absolute; z-index: 1; top: 0; bottom: 0; border-left: 1px solid var(--accent); border-right: 1px solid var(--accent); background: var(--accent-bg); pointer-events: none; }
+#captionKeyframeMarkers { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
+.timelineKeyframeMarker { position: absolute; top: 3px; width: 9px; height: 9px; padding: 0; transform: translateX(-50%) rotate(45deg); border: 1px solid var(--bg); background: var(--accent); cursor: pointer; pointer-events: auto; }
+.timelineKeyframeMarker:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+.timelineHandle { position: absolute; z-index: 10; top: -4px; width: 18px; height: calc(100% + 8px); min-height: 0; margin: 0; padding: 0; transform: translateX(-50%); border: 0; background: transparent; cursor: ew-resize; touch-action: none; }
+.timelineHandle span { position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; transform: translateX(-50%); border-radius: 2px; background: var(--accent); box-shadow: 0 0 0 1px var(--bg); }
+.timelineHandle:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+#timelinePlayhead { position: absolute; z-index: 8; top: -5px; bottom: -5px; width: 1px; transform: translateX(-50%); background: var(--text); box-shadow: 0 0 3px var(--bg); pointer-events: none; }
+.timelineHeader .timelineTitle { display: block; }
+#trimRangeReadout { color: var(--text-dim); font: 9px 'JetBrains Mono',monospace; white-space: nowrap; }
+#audioWaveform[aria-label^="Audio waveform unavailable"] { opacity: .3; }
+#app[data-workspace="video"] #videoExportStatus { margin-top: 6px; }
+#app[data-workspace="video"] #videoExportPanel .actionBtn.primary { min-height: 48px; text-align: center; }
+@media (min-width: 768px) {
+  #app[data-workspace="video"] #content { display: grid; grid-template-columns: minmax(0,1fr) 390px; grid-template-rows: minmax(0,1fr) 120px; }
+  #app[data-workspace="video"] #mainArea { grid-column: 1; grid-row: 1; min-height: 0; padding: 18px 28px 8px; align-items: stretch; justify-content: flex-start; gap: 9px; }
+  #app[data-workspace="video"] #sidebar { grid-column: 2; grid-row: 1 / 3; width: 390px; min-width: 340px; padding: 18px 22px 24px; border-left: 1px solid var(--panel-border); border-right: 0; }
+  #app[data-workspace="video"] #editorTimeline { grid-column: 1; grid-row: 2; display: flex; min-height: 0; flex-direction: column; gap: 5px; padding: 7px 20px 9px; }
+}
+@media (max-width: 767px) {
+  #app[data-workspace="video"] #content { position: relative; display: block; overflow: hidden; }
+  #app[data-workspace="video"] #mainArea { position: absolute; inset: 0 0 172px; width: 100%; height: auto; min-height: 0; padding: 8px 12px 4px; display: flex; flex-direction: column; gap: 4px; }
+  #app[data-workspace="video"] #previewStage { display: flex; flex: 1; min-height: 0; }
+  #app[data-workspace="video"] #canvasWrap { display: flex; height: 100%; min-height: 0; }
+  #app[data-workspace="video"] #glCanvas { max-width: 100%; max-height: calc(100% - 42px); }
+  #app[data-workspace="video"] #videoPlaybackControls { position: relative; inset: auto; display: flex; flex: none; flex-wrap: nowrap; width: 100%; min-height: 50px; padding: 3px 0; gap: 4px; overflow-x: auto; background: var(--bg); }
+  #app[data-workspace="video"] #videoTime { display: block; font-size: 8px; }
+  #app[data-workspace="video"] #videoSeek { min-width: 38px; min-height: 32px; height: 32px; }
+  #app[data-workspace="video"] #videoVolume { width: 52px; min-height: 32px; height: 32px; }
+  #app[data-workspace="video"] .playbackVolume label,
+  #app[data-workspace="video"] #videoVolumeValue { display: none; }
+  #app[data-workspace="video"] .playbackSpeeds button { min-width: 31px; padding: 2px; font-size: 8px; }
+  #app[data-workspace="video"] #videoSkipStart,
+  #app[data-workspace="video"] #videoSkipEnd { min-width: 28px; padding: 3px; font-size: 9px; }
+  #app[data-workspace="video"] #editorTimeline { position: absolute; z-index: 10; left: 0; right: 0; bottom: 52px; display: flex; width: auto; height: 120px; padding: 6px 10px; gap: 5px; background: var(--bg); }
+  #app[data-workspace="video"] #timelineTrack { min-height: 54px; max-height: 58px; }
+  #app[data-workspace="video"] .timelineHeader { min-height: 24px; }
+  #app[data-workspace="video"] .timelineHeader .timelineTitle,
+  #app[data-workspace="video"] .timelineHeader #trimRangeReadout { display: none; }
+  #app[data-workspace="video"] .timelineTimecodes { gap: 8px; }
+  #app[data-workspace="video"] .timelineTimecodes span { gap: 3px; font-size: 7px; }
+  #app[data-workspace="video"] .timelineTimecodes output { font-size: 9px; }
+  #app[data-workspace="video"] #audioWaveform { height: 12px; }
+  #app[data-workspace="video"] #holdCompareBtn { bottom: 224px; }
+  #app[data-workspace="video"] #sidebar { width: 100%; min-width: 0; min-height: 0; padding: 0 20px max(22px,env(safe-area-inset-bottom)); gap: 18px; border: 1px solid var(--panel-border); border-bottom: 0; }
+  #app[data-workspace="video"] #sidebarControls { gap: 12px; }
+  #app[data-workspace="video"] #sidebarCollapseToggle { display: none !important; }
+  #app[data-workspace="video"] #sidebar.mobileSheetOpen { transform: translateY(0); }
+}
+
 </style>
 </head>
 <body>
 <div id="app">
   <header>
+    <button type="button" id="backToDropBtn" aria-label="Back to media upload" hidden>←</button>
     <div id="logo">Juwain Haque</div>
-    <span id="workspacePill" hidden></span>
     <div id="headerActions">
-      <button type="button" id="shortcutsHelpBtn" aria-label="Show keyboard shortcuts" title="Keyboard shortcuts">?</button>
-      <button type="button" class="hdrBtn" id="hdrUploadBtn">＋ Upload</button>
-      <button type="button" class="hdrBtn" id="hdrBeforeBtn">◑ Before</button>
-      <button type="button" class="hdrBtn primary" id="hdrDownloadBtn">⤓ Export</button>
-    </div>
-    <button type="button" id="themeToggle" aria-label="Switch to light theme" title="Toggle color theme">
+      <button type="button" class="mobileMenuBtn" id="mobileMenuBtn" aria-label="More options" aria-expanded="false">···</button>
+      <div class="headerMenuItems" id="headerMenuItems">
+        <span id="workspacePill" hidden></span>
+        <button type="button" id="shortcutsHelpBtn" aria-label="Show keyboard shortcuts" title="Keyboard shortcuts">?</button>
+        <button type="button" class="hdrBtn" id="hdrUploadBtn">＋ Upload</button>
+        <button type="button" class="hdrBtn" id="hdrBeforeBtn">◑ Before</button>
+        <button type="button" class="hdrBtn primary" id="hdrDownloadBtn">⤓ Export</button>
+        <button type="button" id="themeToggle" aria-label="Switch to light theme" title="Toggle color theme">
       <svg class="sunIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
       <svg class="moonIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-    </button>
+        </button>
+      </div>
+    </div>
   </header>
   <div id="content">
     <main id="mainArea">
@@ -670,12 +830,12 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         </div>
       </div>
       <div id="canvasWrap" style="display:none">
-        <button type="button" id="backToDropBtn" aria-label="Back to media upload">← Back</button>
         <canvas id="glCanvas" title="Scroll to zoom in or out. Drag to pan when zoomed."></canvas>
         <div id="cropOverlay" hidden><div id="cropFrame" role="group" tabindex="0" aria-label="Crop frame. Drag to reposition, or use arrow keys."><span id="cropFrameLabel"></span></div></div>
         <div id="splitDivider" hidden><span class="splitBadge before">BEFORE</span><span class="splitBadge after">AFTER</span></div>
         <button type="button" id="maskDoneBtn" aria-label="Finish painting subject mask">✓ Finish mask</button>
         <div id="beforeLabel">BEFORE</div>
+        <button type="button" id="holdCompareBtn" aria-label="Hold to compare with the original" aria-pressed="false">◑ <span>Hold to compare</span></button>
         <div id="captionOverlay" hidden tabindex="0" aria-label="Video caption. Drag to reposition, use arrow keys for fine adjustment."></div>
         <div id="zoomControls" role="group" aria-label="Preview zoom and rotation controls">
           <span class="zoomInstructions" aria-hidden="true">Scroll to zoom · drag when zoomed</span>
@@ -688,23 +848,26 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
       <video id="videoEl" muted playsinline></video>
       </div>
       <div id="videoPlaybackControls" hidden aria-label="Video playback controls">
-        <button type="button" class="toolBtn playbackButton" id="videoPlayBtn" aria-label="Play video">Play</button>
-        <output id="videoTime">0:00 / 0:00</output>
+        <button type="button" class="toolBtn playbackButton" id="videoSkipStart" aria-label="Skip to trim start">|◀</button>
+        <button type="button" class="toolBtn playbackButton" id="videoPlayBtn" aria-label="Play video">▶</button>
+        <button type="button" class="toolBtn playbackButton" id="videoSkipEnd" aria-label="Skip to trim end">▶|</button>
+        <output id="videoTime">0:00 / 0:23</output>
+        <div class="playbackSpeeds" role="group" aria-label="Playback speed"><button type="button" data-playback-rate="0.5" aria-pressed="false">0.5×</button><button type="button" data-playback-rate="1" class="active" aria-pressed="true">1×</button><button type="button" data-playback-rate="1.5" aria-pressed="false">1.5×</button><button type="button" data-playback-rate="2" aria-pressed="false">2×</button></div>
         <label class="visuallyHidden" for="videoSeek">Scrub video playback</label>
         <input type="range" id="videoSeek" min="0" max="60" step="0.01" value="0" aria-label="Video playback position">
         <button type="button" class="toolBtn" id="videoMuteBtn" aria-pressed="true" aria-label="Unmute video">Unmute</button>
         <div class="playbackVolume"><label for="videoVolume">VOL</label><input type="range" id="videoVolume" min="0" max="100" value="100" aria-label="Video volume"><output id="videoVolumeValue">100%</output></div>
         <button type="button" class="toolBtn" id="videoLoopToggle" aria-pressed="true" aria-label="Toggle loop">Loop</button>
         <label class="visuallyHidden" for="videoSpeed">Playback speed</label>
-        <select id="videoSpeed" class="socialSelect" aria-label="Playback speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+        <select id="videoSpeed" class="sourceControl" aria-label="Playback speed" aria-hidden="true" tabindex="-1"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
       </div>
       <section id="carouselStrip" aria-label="Carousel photos" hidden>
-        <div class="stripHead"><span class="stripTitle" id="carouselCount">Carousel / 01 of 01</span><div class="stripActions"><button type="button" id="applyAllBtn">↗ Apply to all</button><button type="button" id="addPhotosBtn">+ Add</button><button type="button" id="removePhotoBtn">Remove</button></div></div>
+        <div class="stripHead"><span class="stripTitle" id="carouselCount">Carousel / 01 of 01</span><div class="stripActions"><button type="button" id="exportZipBtn" disabled>Carousel ZIP <span id="zipCount">0 photos</span></button><button type="button" id="applyAllBtn">↗ Apply to all</button><button type="button" id="addPhotosBtn">+ Add</button><button type="button" id="removePhotoBtn">Remove</button></div></div>
         <div id="photoThumbnails" role="group" aria-label="Switch photo"></div>
         <p id="carouselHint" class="socialHint">One shared edit. Reposition the crop on each photo.</p>
       </section>
-      <div id="videoProgress">
-        <div id="progressHead"><b id="progressTitle">Processing video</b><span id="progressPct">0%</span></div>
+      <div id="exportProgress">
+        <div id="progressHead"><b id="progressTitle">Exporting</b><span id="progressPct">0%</span></div>
         <div id="progressBar"><div id="progressFill"></div></div>
         <div id="progressText" role="status" aria-live="polite">Initializing ffmpeg.wasm…</div>
         <div id="progressEta" aria-live="polite">Estimated time remaining: calculating…</div>
@@ -713,54 +876,25 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
       <div id="toast"></div>
     </main>
     <aside id="sidebar">
-      <button type="button" id="sidebarSheetHandle" aria-expanded="false" aria-label="Open editing controls"><span class="sheetHandleBar" aria-hidden="true"></span><span class="sheetHandleText">Adjustments &amp; tools</span></button>
+      <button type="button" id="sidebarSheetHandle" aria-expanded="false" aria-label="Open editing controls"><span class="sheetHandleBar" aria-hidden="true"></span><span class="sheetHandleText">Looks</span></button>
       <button type="button" id="sidebarCollapseToggle" aria-expanded="true" aria-controls="sidebarControls" aria-label="Collapse effect controls">‹ Collapse controls</button>
       <div id="sidebarControls">
-      <section id="exportPanel" class="socialPanel" aria-label="Instagram export">
-        <button type="button" id="cropPanelToggle" class="panelHeading" aria-expanded="true" aria-controls="cropPanelBody"><span class="sectionLabel" id="exportPanelTitle">Instagram Export</span><kbd>C</kbd><span class="panelChevron" aria-hidden="true"></span></button>
-        <div id="cropPanelBody">
-          <div class="formatGrid" role="group" aria-label="Instagram crop formats">
-            <button type="button" class="formatBtn" data-format="square" aria-pressed="false"><span>Square post</span><small>1:1 · 1080 × 1080</small></button>
-            <button type="button" class="formatBtn" data-format="portrait" aria-pressed="false"><span>Portrait post ↗</span><small>4:5 · 1080 × 1350</small></button>
-            <button type="button" class="formatBtn" data-format="story" aria-pressed="false"><span>Story / Reel</span><small>9:16 · 1080 × 1920</small></button>
-            <button type="button" class="formatBtn" data-format="landscape" aria-pressed="false"><span>Landscape</span><small>1.91:1 · 1080 × 566</small></button>
-          </div>
-          <button type="button" class="formatBtn originalFormat" data-format="original" aria-pressed="true"><span>Original size / no crop</span><small id="sourceDimensions">—</small></button>
-          <div class="outputRow"><span>Output dimensions</span><output id="outputDimensions" aria-live="polite">Upload to see size</output></div>
-          <p class="socialHint" id="cropHint">Pick a format. Drag the crop frame to keep your subject in view.</p>
-          <div class="cropTools"><button type="button" class="toolBtn" id="cropPreviewBtn" aria-pressed="false">Reposition crop</button><button type="button" class="toolBtn" id="centerCropBtn">Center</button></div>
-          <label class="fieldLabel" for="exportFileType" id="frameFormatLabel">Photo format</label>
-          <select id="exportFileType" class="socialSelect"><option value="jpeg">JPG / smaller, ready for Instagram</option><option value="png">PNG / lossless</option></select>
-          <div id="qualityField"><div class="qualityHeading"><label class="fieldLabel" for="exportQuality" id="frameQualityLabel">JPG quality</label><output id="exportQualityValue">92%</output></div><input type="range" id="exportQuality" min="80" max="100" value="92" aria-label="JPG export quality"></div>
-          <label class="checkLabel" id="photoComparisonField"><input type="checkbox" id="exportComparison">Export a before / after pair</label>
-          <div id="comparisonOptions" hidden><label class="fieldLabel" for="comparisonFormat">Side-by-side layout</label><select id="comparisonFormat" class="socialSelect"><option value="square">Square / 1:1 · 1080 × 1080</option><option value="landscape" selected>Landscape / 2:1 · 2160 × 1080</option><option value="story">Story / 9:16 · 1080 × 1920</option></select><label class="checkLabel"><input type="checkbox" id="comparisonLabels" checked>Before / After labels</label></div>
-          <button type="button" class="toolBtn" id="splitPreviewBtn" aria-pressed="false">◧ Before / after split preview</button>
-          <button type="button" class="actionBtn primary" id="exportPhotoBtn"><span id="exportPhotoLabel">⤓ Export JPG</span><span aria-hidden="true">↗</span></button>
-          <button type="button" class="actionBtn" id="exportZipBtn" disabled><span>⤓ Carousel ZIP</span><span id="zipCount">0 photos</span></button>
-          <p id="exportStatus" class="socialHint" role="status" aria-live="polite">Private by design. Your photos never leave this browser.</p>
+        <div class="sidebarTabs" id="sidebarTabs" role="tablist" aria-label="Editor sections">
+          <button type="button" class="sidebarTab active" id="looksTab" role="tab" aria-selected="true" aria-controls="looksPanel" data-tab="looks">Looks</button>
+          <button type="button" class="sidebarTab" id="adjustTab" role="tab" aria-selected="false" aria-controls="adjustPanel" data-tab="adjust">Adjust</button>
+          <button type="button" class="sidebarTab" id="exportTab" role="tab" aria-selected="false" aria-controls="exportTabPanel" data-tab="export">Export</button>
         </div>
-      </section>
-      <section id="videoTrimPanel" class="socialPanel" aria-label="Reels video trim" hidden>
-        <div class="sectionLabel">Reels / Trim</div>
-        <div class="trimSummary"><span>Selected clip</span><output id="trimDuration">0.0s</output></div>
-        <div class="trimQuick" role="group" aria-label="Auto trim for Reels"><button type="button" class="toolBtn" data-trim="15" aria-pressed="false">15s</button><button type="button" class="toolBtn" data-trim="30" aria-pressed="false">30s</button><button type="button" class="toolBtn" data-trim="60" aria-pressed="false">60s</button></div>
-        <div id="trimTimeline" role="img" aria-label="Selected video segment"><div id="trimSelection"></div><div id="trimPlayhead"></div></div>
-        <div class="trimRow"><label for="trimIn">In</label><output class="trimValue" id="trimInValue">0.0s</output><input type="range" id="trimIn" min="0" max="60" step="0.01" value="0" aria-label="Trim in point"><input type="number" id="trimInNumber" min="0" max="60" step="0.1" value="0" aria-label="In point in seconds"></div>
-        <div class="trimRow"><label for="trimOut">Out</label><output class="trimValue" id="trimOutValue">60.0s</output><input type="range" id="trimOut" min="0" max="60" step="0.01" value="60" aria-label="Trim out point"><input type="number" id="trimOutNumber" min="0" max="60" step="0.1" value="60" aria-label="Out point in seconds"></div>
-        <div class="inlineActions"><button type="button" class="toolBtn" id="setTrimInBtn">Set in at playhead</button><button type="button" class="toolBtn" id="setTrimOutBtn">Set out at playhead</button></div>
-        <p class="socialHint">Preview loops your selection. Maximum 60s. Choose Story / Reel above for a draggable 9:16 crop. Video encoding needs an internet connection.</p>
-      </section>
+        <div class="sidebarViews" id="sidebarViews">
+          <section class="sidebarPanel active" id="looksPanel" data-panel="looks" role="tabpanel" aria-labelledby="looksTab">
+            <div class="panelHeading"><span class="sectionLabel">Looks</span><button type="button" class="textAction" id="resetOriginalBtn">Reset to original</button></div>
       <div>
-        <div class="sectionLabel">Looks</div>
+        <div class="sectionLabel">Popular looks</div>
         <div id="presetChips" role="group" aria-label="Featured presets"></div>
+        <section class="savedLooks" aria-label="Saved looks"><div class="savedHeading"><span class="sectionLabel">Saved</span></div><div id="savedPresetChips" class="savedPresetGrid" role="group" aria-label="Saved presets"></div><p id="savedPresetsEmpty" class="savedEmpty">Saved looks appear here.</p><button type="button" class="textAction" id="savePresetBtn">+ Save current look</button><button type="button" id="deletePresetBtn" hidden>Delete selected saved preset</button></section>
         <label class="presetSelectLabel" for="presetSelect">More presets <span id="presetCount">26 looks</span></label>
         <div class="presetSelectWrap"><span id="presetSelectSwatch" aria-hidden="true"></span><select id="presetSelect"><option value="">Choose a look</option></select></div>
         <div class="presetActions"><button type="button" class="toolBtn" id="presetCompareBtn" disabled>Compare</button><button type="button" class="toolBtn" id="presetApplyBtn" disabled>Apply preset</button><button type="button" class="toolBtn" id="presetUndoBtn" hidden>Undo</button></div>
-        <button type="button" id="savePresetBtn">+ Save current as preset</button>
-        <button type="button" id="deletePresetBtn" hidden>Delete selected saved preset</button>
-      </div>
-
-      <section id="settingsTools" class="socialPanel" aria-label="Copy and share settings">
+      </div><section id="settingsTools" class="socialPanel" aria-label="Copy and share settings">
         <button type="button" id="settingsToolsToggle" class="panelHeading" aria-expanded="false" aria-controls="settingsToolsBody"><span class="sectionLabel">Copy / paste & share</span><span class="panelChevron" aria-hidden="true"></span></button>
         <div id="settingsToolsBody" hidden>
           <div class="inlineActions"><button type="button" class="toolBtn" id="copySettingsBtn">Copy settings</button><button type="button" class="toolBtn" id="pasteSettingsBtn">Paste settings</button></div>
@@ -769,13 +903,14 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
           <p class="socialHint" id="settingsStatus" role="status" aria-live="polite">Copy on this browser, paste in another session. Links carry settings, never images.</p>
         </div>
       </section>
-
-      <div id="effectsWrap">
-        <div class="sectionLabel">Adjustments</div>
-        <p class="sectionHint">0 is neutral · <span class="darkHint">white subtracts · red adds</span><span class="lightHint">black subtracts · red adds</span>. Open an effect for finer controls.</p>
-
-        <!-- OVERALL COLOR -->
-        <div class="effectGroup open" data-group="color">
+          </section>
+          <section class="sidebarPanel" id="adjustPanel" data-panel="adjust" role="tabpanel" aria-labelledby="adjustTab" hidden>
+            <div id="effectsWrap">
+              <div class="sectionLabel adjustTitle">Adjust</div>
+              <p class="sectionHint">0 is neutral · <span class="darkHint">white subtracts · red adds</span><span class="lightHint">black subtracts · red adds</span>. Open an effect for finer controls.</p>
+              <details class="adjustCluster" data-cluster="basic" open>
+                <summary><span>Basic</span><span class="clusterSummary" data-summary="basic">Exposure · Contrast · Saturation · Temperature</span></summary>
+                <div class="clusterContents"><div class="adjustSectionHeading">Color &amp; Light</div><div class="effectGroup open" data-group="color">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="true" aria-controls="colorControls"><i style="background:var(--text)"></i> Color & Light <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="color" role="switch" aria-checked="true" aria-label="Color & Light effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="color" hidden aria-label="Reset Color & Light section" title="Reset Color & Light">↺</button></div>
@@ -793,15 +928,16 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
             <div class="subRow"><div class="subHead"><div class="subLabel">Shadow Tone <span>teal → plum</span></div><div class="subVal" id="valShadowTone">0</div></div><input class="subSlider" type="range" id="sliderShadowTone" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Highlight Tone <span>ice → amber</span></div><div class="subVal" id="valHighlightTone">0</div></div><input class="subSlider" type="range" id="sliderHighlightTone" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Highlight Tint <span>green → magenta</span></div><div class="subVal" id="valHighlightTint">0</div></div><input class="subSlider" type="range" id="sliderHighlightTint" min="-100" max="100" value="0"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div>
-            <div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div>
+
+
               </div>
             </details>
           </div>
-        </div>
-
-        <!-- BLOOM -->
-        <div class="effectGroup" data-group="bloom">
+        </div></div>
+              </details>
+              <details class="adjustCluster" data-cluster="creative">
+                <summary><span>Creative</span><span class="clusterSummary" data-summary="creative">Bloom · Hallation · Anamorphic · Film Grain · Vignette</span></summary>
+                <div class="clusterContents"><div class="adjustSectionHeading">Glow &amp; texture</div><div class="effectGroup" data-group="bloom">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="bloomControls"><i style="background:var(--accent)"></i> Bloom <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="bloom" role="switch" aria-checked="true" aria-label="Bloom effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="bloom" hidden aria-label="Reset Bloom section" title="Reset Bloom">↺</button></div>
@@ -815,10 +951,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
             <div class="subRow"><div class="subHead"><div class="subLabel">Blend <span>strong add → screen</span></div><div class="subVal" id="valBloomBlend">0</div></div><input class="subSlider" type="range" id="sliderBloomBlend" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Anamorphic <button type="button" class="infoTip" aria-label="About Anamorphic" aria-expanded="false" data-tip="Stretches lens glow into wider horizontal streaks.">i</button><span>vertical → horizontal</span></div><div class="subVal" id="valBloomAnam">0</div></div><input class="subSlider" type="range" id="sliderBloomAnam" min="-100" max="100" value="0"></div>
           </div>
-        </div>
-
-        <!-- HALLATION -->
-        <div class="effectGroup" data-group="hallation">
+        </div><div class="effectGroup" data-group="hallation">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="hallationControls"><i style="background:var(--accent2)"></i> Hallation <span class="expand" aria-hidden="true"></span></button>
             <button type="button" class="infoTip" aria-label="About Hallation" aria-expanded="false" data-tip="A warm red-orange glow that gathers around bright edges.">i</button>
@@ -833,10 +966,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
             <div class="subRow"><div class="subHead"><div class="subLabel">Falloff <span>edge fade</span></div><div class="subVal" id="valHallFalloff">0</div></div><input class="subSlider" type="range" id="sliderHallFalloff" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Saturation <span>bleed color</span></div><div class="subVal" id="valHallSat">0</div></div><input class="subSlider" type="range" id="sliderHallSat" min="-100" max="100" value="0"></div>
           </div>
-        </div>
-
-        <!-- GRAIN -->
-        <div class="effectGroup" data-group="grain">
+        </div><div class="effectGroup" data-group="grain">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="grainControls"><i style="background:var(--text-dim)"></i> Film Grain <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="grain" role="switch" aria-checked="true" aria-label="Film Grain effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="grain" hidden aria-label="Reset Film Grain section" title="Reset Film Grain">↺</button></div>
@@ -851,10 +981,11 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
             <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>blur grain</span></div><div class="subVal" id="valGrainSoft">0</div></div><input class="subSlider" type="range" id="sliderGrainSoft" min="-100" max="100" value="0"></div>
             <div id="grainSeedRow"><span>Static grain pattern<br>per photo</span><button type="button" id="randomizeGrainBtn">↻ Randomize</button></div>
           </div>
-        </div>
-
-        <!-- DITHER -->
-        <div class="effectGroup" data-group="dither">
+        </div><div class="creativeVignette"><div class="adjustSectionHeading">Vignette</div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div></div></div>
+              </details>
+              <details class="adjustCluster" data-cluster="technical">
+                <summary><span>Technical</span><span class="clusterSummary" data-summary="technical">Dither / Halftone · Sharpening</span></summary>
+                <div class="clusterContents"><div class="adjustSectionHeading">Pattern &amp; detail</div><div class="effectGroup" data-group="dither">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="ditherControls"><i style="background:var(--text-dim)"></i> Dither <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="dither" role="switch" aria-checked="true" aria-label="Dither effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="dither" hidden aria-label="Reset Dither section" title="Reset Dither">↺</button></div>
@@ -936,10 +1067,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
               <p class="maskHint">Background dithering begins when a subject is protected. People are selected automatically; brush over anything else you want to keep clear. Tap Done painting on the preview to pan again.</p>
             </div>
           </div>
-        </div>
-
-        <!-- SHARPEN -->
-        <div class="effectGroup" data-group="sharpen">
+        </div><div class="effectGroup" data-group="sharpen">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="sharpenControls"><i style="background:var(--text)"></i> Sharpening <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="sharpen" role="switch" aria-checked="true" aria-label="Sharpening effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="sharpen" hidden aria-label="Reset Sharpening section" title="Reset Sharpening">↺</button></div>
@@ -951,11 +1079,10 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
             <div class="subRow"><div class="subHead"><div class="subLabel">Detail Boost</div><div class="subVal" id="valSharpDetail">0</div></div><input class="subSlider" type="range" id="sliderSharpDetail" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Luma Protect <span>shadow guard</span></div><div class="subVal" id="valSharpLuma">0</div></div><input class="subSlider" type="range" id="sliderSharpLuma" min="-100" max="100" value="0"></div>
           </div>
-        </div>
-
-      </div>
-
-      <section id="videoCaptionPanel" class="socialPanel" aria-label="Text and captions">
+        </div></div>
+              </details>
+            </div>
+<section id="videoCaptionPanel" class="socialPanel" aria-label="Text and captions">
         <div class="sectionLabel">Text &amp; Captions</div>
         <label class="checkLabel"><input type="checkbox" id="captionEnabled">Show on this clip</label>
         <label class="fieldLabel" for="captionText">Caption text</label>
@@ -971,38 +1098,79 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <button type="button" class="toolBtn" id="captionKeyframeBtn">◇ Add position keyframe at playhead</button>
         <p class="socialHint">Drag the caption on the preview to position it. One caption layer for this clip.</p>
       </section>
-      <section id="videoExportPanel" class="socialPanel" aria-label="Video export">
+          </section>
+          <section class="sidebarPanel exportTabPanel" id="exportTabPanel" data-panel="export" role="tabpanel" aria-labelledby="exportTab" hidden>
+<section id="exportPanel" class="socialPanel" aria-label="Instagram export">
+        <button type="button" id="cropPanelToggle" class="panelHeading" aria-expanded="true" aria-controls="cropPanelBody"><span class="sectionLabel" id="exportPanelTitle">Photo export</span><kbd>C</kbd><span class="panelChevron" aria-hidden="true"></span></button>
+        <div id="cropPanelBody">
+          <div class="formatGrid" role="group" aria-label="Instagram crop formats">
+            <button type="button" class="formatBtn" data-format="square" aria-pressed="false"><span>Square post</span><small>1:1 · 1080 × 1080</small></button>
+            <button type="button" class="formatBtn" data-format="portrait" aria-pressed="false"><span>Portrait post ↗</span><small>4:5 · 1080 × 1350</small></button>
+            <button type="button" class="formatBtn" data-format="story" aria-pressed="false"><span>Story / Reel</span><small>9:16 · 1080 × 1920</small></button>
+            <button type="button" class="formatBtn" data-format="landscape" aria-pressed="false"><span>Landscape</span><small>1.91:1 · 1080 × 566</small></button>
+          </div>
+          <button type="button" class="formatBtn originalFormat" data-format="original" aria-pressed="true"><span>Original size / no crop</span><small id="sourceDimensions">—</small></button>
+          <div class="outputRow"><span>Output dimensions</span><output id="outputDimensions" aria-live="polite">Upload to see size</output></div>
+          <p class="socialHint" id="cropHint">Pick a format. Drag the crop frame to keep your subject in view.</p>
+          <div class="cropTools"><button type="button" class="toolBtn" id="cropPreviewBtn" aria-pressed="false">Reposition crop</button><button type="button" class="toolBtn" id="centerCropBtn">Center</button></div>
+          <label class="fieldLabel" for="exportFileType" id="frameFormatLabel">Photo format</label>
+          <select id="exportFileType" class="socialSelect sourceControl" aria-hidden="true" tabindex="-1"><option value="jpeg">JPG / smaller, ready for Instagram</option><option value="png">PNG / lossless</option></select>
+          <div class="formatPills" role="group" aria-label="Photo export format"><button type="button" class="choicePill active" data-photo-type="jpeg" aria-pressed="true">JPG</button><button type="button" class="choicePill" data-photo-type="png" aria-pressed="false">PNG</button></div>
+          <div id="qualityField"><div class="qualityHeading"><label class="fieldLabel" for="exportQuality" id="frameQualityLabel">JPG quality</label><output id="exportQualityValue">92%</output></div><input type="range" id="exportQuality" min="80" max="100" value="92" aria-label="JPG export quality"></div>
+          <details class="exportExtras"><summary>More photo options</summary>
+          <label class="checkLabel" id="photoComparisonField"><input type="checkbox" id="exportComparison">Export a before / after pair</label>
+          <div id="comparisonOptions" hidden><label class="fieldLabel" for="comparisonFormat">Side-by-side layout</label><select id="comparisonFormat" class="socialSelect"><option value="square">Square / 1:1 · 1080 × 1080</option><option value="landscape" selected>Landscape / 2:1 · 2160 × 1080</option><option value="story">Story / 9:16 · 1080 × 1920</option></select><label class="checkLabel"><input type="checkbox" id="comparisonLabels" checked>Before / After labels</label></div>
+          <button type="button" class="toolBtn" id="splitPreviewBtn" aria-pressed="false">◧ Before / after split preview</button>
+          </details>
+          <button type="button" class="actionBtn primary" id="exportPhotoBtn"><span id="exportPhotoLabel">⤓ Export JPG</span><span aria-hidden="true">↗</span></button>
+
+          <p id="exportStatus" class="socialHint" role="status" aria-live="polite">Private by design. Your photos never leave this browser.</p>
+        </div>
+      </section><section id="videoTrimPanel" class="socialPanel" aria-label="Reels video trim" hidden>
+        <div class="sectionLabel">Video Trim</div>
+        <div class="trimSummary"><span id="videoTrimSummary">Exporting 0:00 → 0:00 (0s)</span><output id="trimDuration">0.0s</output></div>
+        <div class="trimQuick" role="group" aria-label="Auto trim for Reels"><button type="button" class="toolBtn" data-trim="15" aria-pressed="false">15s</button><button type="button" class="toolBtn" data-trim="30" aria-pressed="false">30s</button><button type="button" class="toolBtn" data-trim="60" aria-pressed="false">60s</button></div>
+        <div id="trimTimeline" role="img" aria-label="Selected video segment"><div id="trimSelection"></div><div id="trimPlayhead"></div></div>
+        <div class="trimRow"><label for="trimIn">In</label><output class="trimValue" id="trimInValue">0.0s</output><input type="range" id="trimIn" min="0" max="60" step="0.01" value="0" aria-label="Trim in point"><input type="number" id="trimInNumber" min="0" max="60" step="0.1" value="0" aria-label="In point in seconds"></div>
+        <div class="trimRow"><label for="trimOut">Out</label><output class="trimValue" id="trimOutValue">60.0s</output><input type="range" id="trimOut" min="0" max="60" step="0.01" value="60" aria-label="Trim out point"><input type="number" id="trimOutNumber" min="0" max="60" step="0.1" value="60" aria-label="Out point in seconds"></div>
+        <div class="inlineActions"><button type="button" class="toolBtn" id="setTrimInBtn">Set in at playhead</button><button type="button" class="toolBtn" id="setTrimOutBtn">Set out at playhead</button></div>
+        <p class="socialHint">Preview loops your selection. Maximum 60s. Video exports preserve the source aspect ratio. Encoding needs an internet connection.</p>
+      </section><section id="videoExportPanel" class="socialPanel" aria-label="Video export">
         <div class="sectionLabel">Video Export</div>
-        <label class="fieldLabel" for="videoFrameFormat">Frame format</label>
-        <select id="videoFrameFormat" class="socialSelect"><option value="original">Original aspect</option><option value="story" selected>Story / Reel · 9:16</option><option value="portrait">Portrait · 4:5</option><option value="square">Square · 1:1</option><option value="landscape">Landscape · 1.91:1</option></select>
-        <label class="fieldLabel" for="videoResolution">Resolution</label>
-        <select id="videoResolution" class="socialSelect"><option value="original">Original</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option></select>
         <label class="fieldLabel" for="videoContainer">Format</label>
-        <select id="videoContainer" class="socialSelect"><option value="mp4">MP4</option><option value="webm">WEBM</option></select>
+        <select id="videoContainer" class="socialSelect sourceControl" aria-hidden="true" tabindex="-1"><option value="mp4">MP4</option><option value="webm">WEBM</option></select>
+        <div class="formatPills" role="group" aria-label="Video export format"><button type="button" class="choicePill active" data-video-format="mp4" aria-pressed="true">MP4</button><button type="button" class="choicePill" data-video-format="webm" aria-pressed="false">WebM</button></div>
         <label class="fieldLabel" for="videoQuality">Quality</label>
-        <select id="videoQuality" class="socialSelect"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>
-        <label class="fieldLabel" for="videoExportRange">Export range</label>
-        <select id="videoExportRange" class="socialSelect"><option value="trimmed" selected>Trimmed only</option><option value="full">Full video</option></select>
+        <select id="videoQuality" class="socialSelect sourceControl" aria-hidden="true" tabindex="-1"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>
+        <div class="qualityPills" role="group" aria-label="Video quality"><button type="button" class="choicePill" data-video-quality="low" aria-pressed="false">Low</button><button type="button" class="choicePill active" data-video-quality="medium" aria-pressed="true">Medium</button><button type="button" class="choicePill" data-video-quality="high" aria-pressed="false">High</button></div>
+        <label class="fieldLabel" for="videoResolution">Resolution</label>
+        <select id="videoResolution" class="socialSelect"><option value="original">Original</option><option value="1080">1080p</option><option value="720">720p</option></select>
+        <details class="exportExtras videoAdvanced"><summary>More video options</summary>
+        <input type="hidden" id="videoFrameFormat" value="original">
+        <input type="hidden" id="videoExportRange" value="trimmed">
         <label class="checkLabel"><input type="checkbox" id="keepVideoAudio" checked>Keep source audio</label>
         <p id="longVideoWarning" class="socialHint" hidden>For best performance, trim to under 60s before exporting</p>
-        <button type="button" class="actionBtn primary" id="processVideoBtn" style="display:none">⤓ Export</button>
+        </details>
+        <button type="button" class="actionBtn primary" id="processVideoBtn" style="display:none">⤓ Export Video</button>
         <p id="videoExportStatus" class="socialHint" role="status" aria-live="polite">Ready to export this video.</p>
       </section>
-      <div id="actions">
-        <button class="actionBtn" id="beforeAfterBtn">◑ Toggle Before / After <kbd style="margin-left:auto;opacity:.6">Space</kbd></button>
+            <details class="exportExtras"><summary>More export actions</summary><div id="actions">
+        <button type="button" id="beforeAfterBtn" hidden>◑ Toggle Before / After <kbd style="margin-left:auto;opacity:.6">Space</kbd></button>
         <button class="actionBtn primary" id="downloadBtn">⤓ Original-size PNG <kbd style="margin-left:auto">D</kbd></button>
-      </div>
-      <div id="shortcuts">
+      </div></details>
+          </section>
+        </div>
+<div id="shortcuts">
         <div class="kbdRow"><span>Before / After</span><kbd>Space</kbd></div>
         <div class="kbdRow"><span>Reset all</span><kbd>R</kbd></div>
         <div class="kbdRow"><span>Download</span><kbd>D</kbd></div>
         <div class="kbdRow"><span>Expand all</span><kbd>E</kbd></div>
         <div class="kbdRow"><span>Crop / export panel</span><kbd>C</kbd></div>
       </div>
-      </div>
+</div>
     </aside>
     <section id="editorTimeline" hidden aria-label="Video trim timeline">
-      <div class="timelineHeader"><span class="timelineTitle">Clip / Trim</span><output id="trimRangeReadout">Trimmed: 0:00 – 0:00 = 0s</output><div class="trimQuick" role="group" aria-label="Quick trim length"><button type="button" class="toolBtn" data-trim="15">15s</button><button type="button" class="toolBtn" data-trim="30">30s</button><button type="button" class="toolBtn" data-trim="60">60s</button></div></div>
+      <div class="timelineHeader"><span class="timelineTitle">Timeline</span><output id="trimRangeReadout">Exporting 0:00 → 0:00 (0s)</output><div class="timelineTimecodes"><span>IN <output id="timelineInTime">0:00</output></span><span>PLAYHEAD <output id="timelinePlayheadTime">0:00</output></span><span>OUT <output id="timelineOutTime">0:00</output></span></div></div>
       <div id="timelineTrack" role="group" aria-label="Video clip timeline. Drag the end handles to trim and the playhead to scrub.">
         <div id="timelineFilmstrip" aria-hidden="true"></div>
         <div id="timelineSelection"></div>
@@ -1011,6 +1179,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
         <button type="button" id="trimEndHandle" class="timelineHandle" role="slider" aria-label="Trim end" aria-valuemin="0" aria-valuemax="60" aria-valuenow="60"><span></span></button>
         <div id="timelinePlayhead" aria-hidden="true"></div>
       </div>
+      <div id="audioWaveform" role="img" aria-label="Audio waveform"></div>
     </section>
   </div>
 </div>
@@ -1118,12 +1287,13 @@ syncThemeButton();
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl2', {preserveDrawingBuffer:true, antialias:false, premultipliedAlpha:false});
 if(!gl){ alert('WebGL 2 not supported'); return; }
-const $ = id => document.getElementById(id);
+const detachedWorkspaceElements=new Map();
+const $ = id => document.getElementById(id) || detachedWorkspaceElements.get(id) || null;
 const social = window.FilmSocial;
 const dropZone=$('dropZone'), canvasWrap=$('canvasWrap'), fileInput=$('fileInput'), beforeLabel=$('beforeLabel'), toastEl=$('toast');
 let videoEl=$('videoEl');
 const zoomControls=$('zoomControls'), zoomOutBtn=$('zoomOutBtn'), zoomResetBtn=$('zoomResetBtn'), zoomInBtn=$('zoomInBtn');
-const progressWrap=$('videoProgress'), progressFill=$('progressFill'), progressText=$('progressText'), progressPct=$('progressPct');
+const progressWrap=$('exportProgress'), progressFill=$('progressFill'), progressText=$('progressText'), progressPct=$('progressPct');
 
 // all sliders
 const ids = [
@@ -1142,7 +1312,7 @@ const ditherPaletteShadow=$('ditherPaletteShadow'), ditherPaletteHighlight=$('di
 
 let sourceTexture=null, fboComposite=null, fboSharpened=null, fboBloomExtract=null, fboBloomBlurH=null, fboBloomBlurV=null, fboBloomBlurH2=null, fboBloomBlurV2=null, fboHallExtract=null, fboHallBlurH=null, fboHallBlurV=null;
 let floydTexture=null, floydLastKey=null, subjectMaskRevision=0;
-let isVideo=false, showOriginal=false, hasContent=false, animId=null;
+let isVideo=false, showOriginal=false, hasContent=false, animId=null, currentWorkspaceMode='empty';
 const MIN_PREVIEW_ZOOM=0.5, MAX_PREVIEW_ZOOM=5;
 let previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null;
 const effectEnabled={color:true,bloom:true,hallation:true,grain:true,dither:true,sharpen:true};
@@ -1152,7 +1322,7 @@ function effectValue(group,value,neutral=0){ return effectEnabled[group]?value:n
 // Effects are shared across the carousel; framing and subject masks belong to a photo.
 let photos=[], activePhotoIndex=-1, currentPhoto=null, nextPhotoId=1;
 let videoSourceFile=null, videoObjectUrl=null, mediaBusy=false, exportBusy=false, cancelRequested=false, encodingVideo=false;
-let exportOptions={...social.DEFAULT_EXPORT}, cropEditing=false, cropDrag=null, splitPreview=false;
+let exportOptions={...social.DEFAULT_EXPORT}, photoExportOptions={...social.DEFAULT_EXPORT}, cropEditing=false, cropDrag=null, splitPreview=false;
 let videoCrop={x:0.5,y:0.5}, videoTrim={start:0,end:0};
 let captionPosition={x:0.5,y:0.82}, captionDrag=null, captionKeyframes=[];
 let videoRotation=0, videoFrameCanvas=null, videoFrameContext=null, videoGrainSeed=randomGrainSeed();
@@ -1982,6 +2152,7 @@ function updateFloydTexture(timeMs,dither,backgroundOnly,strength){
 }
 const ERROR_DIFFUSION_ALGORITHMS=new Set(['floyd-steinberg','floyd-steinberg-serpentine','stucki','burkes','atkinson','jarvis-judice-ninke','sierra','two-row-sierra']);
 function renderDitherPass(timeMs,strength,backgroundOnly){
+  if(typeof isVideo!=='undefined'&&isVideo)strength=0;
   const dither=getDitherSettings(), algorithms={'floyd-steinberg':0,'floyd-steinberg-serpentine':0,stucki:0,burkes:0,atkinson:0,'jarvis-judice-ninke':0,sierra:0,'two-row-sierra':0,bayer4:1,bayer8:2,halftone:3,none:4,halftone4:5,halftone8:6};
   let floydReady=0, appliedStrength=strength;
   if(ERROR_DIFFUSION_ALGORITHMS.has(dither.algorithm) && Math.abs(strength)>0.001){
@@ -2037,7 +2208,12 @@ function startLoop(){
     animId=requestAnimationFrame(loop);
     if(exportBusy) return;
     if(isVideo && videoEl && !videoEl.paused && videoEl.readyState>=2){
-      if(videoEl.currentTime>=videoTrim.end || videoEl.currentTime<videoTrim.start){ videoEl.currentTime=videoTrim.start; return; }
+      if(videoEl.currentTime<videoTrim.start){videoEl.currentTime=videoTrim.start;return;}
+      if(videoEl.currentTime>=videoTrim.end){
+        if($('videoLoopToggle').getAttribute('aria-pressed')==='true')videoEl.currentTime=videoTrim.start;
+        else{videoEl.pause();videoEl.currentTime=videoTrim.end;updateVideoPlayback();}
+        return;
+      }
       try{ uploadVideoTexture(); }catch(e){}
     }
     render(isVideo ? videoEl.currentTime*1000 : t);
@@ -2154,7 +2330,7 @@ function clearSubjectMask(forVideo=false){
 }
 function setDitherScope(value){
   ditherScope=value==='background' && !isVideo ? 'background' : 'full';
-  document.querySelector(`input[name="ditherScope"][value="${ditherScope}"]`).checked=true;
+  const scopeInput=document.querySelector(`input[name="ditherScope"][value="${ditherScope}"]`); if(scopeInput)scopeInput.checked=true;
   if(ditherScope==='full'){ maskPaintMode=null; maskStroke=null; }
   updateMaskTools(); updateSectionIndicators();
   if(ditherScope==='background' && photoForMask && !autoSubjectMask && !maskManuallyCleared && !maskAutoFailed && !maskDetectionPending) detectPerson();
@@ -2349,7 +2525,10 @@ function uploadPhoto(item,img,resetView=true){
   if(canvas.width!==w || canvas.height!==h || !fboSharpened){ canvas.width=w; canvas.height=h; recreateFBOs(w,h); }
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
+  const returningFromVideo=isVideo;
   isVideo=false; hasContent=true; currentPhoto=item;
+  if(returningFromVideo)exportOptions={...photoExportOptions};else photoExportOptions={...exportOptions};
+  setWorkspaceMode('photo');
   restorePhotoMask(item,source,w,h);
   dropZone.style.display='none'; canvasWrap.style.display='flex';
   if(resetView) resetPreviewZoom(); else updatePreviewZoom();
@@ -2412,7 +2591,7 @@ async function handleFiles(fileList,{append=false}={}){
         if(token!==fileLoadId){ URL.revokeObjectURL(item.thumbUrl); return; }
         if(replacing){
           // Keep the old collection until at least one new photo has decoded successfully.
-          unloadVideo(); clearPhotos(); isVideo=false; hasContent=false;
+          unloadVideo(); clearPhotos(); hasContent=false;
           ++maskRequestId; maskDetectionPending=false; replacing=false;
         }
         photos.push(item); imported++;
@@ -2453,7 +2632,7 @@ async function seekElementTo(element,time){
 async function renderVideoFilmstrip(token){
   const element=videoEl, duration=element.duration, original=element.currentTime, strip=$('timelineFilmstrip');
   strip.replaceChildren();
-  const samples=8, frameCanvas=document.createElement('canvas'); frameCanvas.width=120; frameCanvas.height=68;
+  const samples=18, frameCanvas=document.createElement('canvas'); frameCanvas.width=120; frameCanvas.height=68;
   const ctx=frameCanvas.getContext('2d');
   try{
     for(let i=0;i<samples;i++){
@@ -2471,6 +2650,32 @@ async function renderVideoFilmstrip(token){
       uploadVideoTexture(); render(element.currentTime*1000); updateVideoPlayback();
     }
   }
+}
+async function renderAudioWaveform(file,token){
+  const root=$('audioWaveform'); root.replaceChildren();
+  const bars=180; let levels=null, context=null;
+  try{
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    if(!AudioContextClass)throw new Error('Web Audio unavailable');
+    context=new AudioContextClass();
+    const buffer=await context.decodeAudioData(await file.arrayBuffer());
+    if(token!==fileLoadId)return;
+    const channels=Array.from({length:buffer.numberOfChannels},(_,i)=>buffer.getChannelData(i));
+    const windowSize=Math.max(1,Math.floor(buffer.length/bars)); levels=new Float32Array(bars);
+    for(let i=0;i<bars;i++){
+      const from=i*windowSize,to=Math.min(buffer.length,from+windowSize);let energy=0,samples=0;
+      for(const channel of channels)for(let j=from;j<to;j+=4){energy+=channel[j]*channel[j];samples++;}
+      levels[i]=samples?Math.sqrt(energy/samples):0;
+    }
+  }catch(error){console.info('Audio waveform is unavailable for this codec',error.message);}
+  finally{if(context)try{await context.close();}catch(error){}}
+  if(token!==fileLoadId)return;
+  for(let i=0;i<bars;i++){
+    const bar=document.createElement('span');bar.className='audioWaveBar';
+    const level=levels?Math.max(.08,Math.min(.96,levels[i]*3.8)):.08;
+    bar.style.setProperty('--wave-height',`${level*100}%`);root.appendChild(bar);
+  }
+  root.setAttribute('aria-label',levels?'Audio waveform amplitude across the full clip':'Audio waveform unavailable; silent baseline shown');
 }
 async function handleVideoFile(file){
   const token=++fileLoadId, incoming=document.createElement('video'), url=URL.createObjectURL(file);
@@ -2493,12 +2698,14 @@ async function handleVideoFile(file){
     $('longVideoWarning').hidden=dur<=60; $('videoExportStatus').textContent='Ready to export this video.';
     videoRotation=0; videoGrainSeed=randomGrainSeed();
     canvas.width=w; canvas.height=h; recreateFBOs(w,h); uploadVideoTexture();
-    isVideo=true; hasContent=true; videoCrop={x:0.5,y:0.5}; videoTrim=social.trimRange(dur,0,Math.min(dur,60));
+    if(!isVideo && hasContent)photoExportOptions={...exportOptions};
+    isVideo=true; hasContent=true; setWorkspaceMode('video'); videoCrop={x:0.5,y:0.5}; videoTrim=social.trimRange(dur,0,Math.min(dur,60));
+    exportOptions={...exportOptions,format:'original',comparison:false}; cropEditing=false;
     clearSubjectMask(true); setDitherScope('full');
-    exportOptions.format='story'; exportOptions.comparison=false; cropEditing=true;
+    exportOptions.format='original'; exportOptions.comparison=false; cropEditing=false;
     dropZone.style.display='none'; canvasWrap.style.display='flex'; resetPreviewZoom();
     $('processVideoBtn').style.display='flex'; $('downloadBtn').innerHTML='⤓ Original-size frame PNG';
-    updateTrimUI(); renderCaptionKeyframeMarkers(); await renderVideoFilmstrip(token); if(token!==fileLoadId) return;
+    updateTrimUI(); renderCaptionKeyframeMarkers(); await Promise.all([renderVideoFilmstrip(token),renderAudioWaveform(file,token)]); if(token!==fileLoadId) return;
     await videoEl.play().catch(()=>{}); startLoop();
     showToast(dur>60?`${dur.toFixed(1)}s video — first 60s selected. Adjust the trim below.`:'Video loaded — drag crop and set trim points',5000);
   }catch(error){
@@ -2523,7 +2730,7 @@ $('removePhotoBtn').addEventListener('click',async()=>{
   if(photos.length) await activatePhoto(Math.min(index,photos.length-1));
   else{
     ++fileLoadId; hasContent=false; if(animId!==null){ cancelAnimationFrame(animId); animId=null; }
-    clearSubjectMask(); dropZone.style.display='flex'; canvasWrap.style.display='none'; renderPhotoStrip(); updateSocialUI();
+    setWorkspaceMode('empty'); clearSubjectMask(); dropZone.style.display='flex'; canvasWrap.style.display='none'; renderPhotoStrip(); updateSocialUI();
   }
 });
 $('applyAllBtn').addEventListener('click',()=>{
@@ -2670,7 +2877,7 @@ function userChangedSliders(){
   cancelPresetAnimation();
   selectedPresetName=null;
   activePresetName=null; syncPresetSelection();
-  updateFromSliders(); updateSliderUI(); floydLastKey=null;
+  updateFromSliders(); updateSliderUI(); floydLastKey=null; updateClusterSummaries();
   if(hasContent) render(performance.now());
 }
 function updateDitherControlVisibility(){
@@ -2994,6 +3201,9 @@ function syncPresetSelection(){
     chip.classList.toggle('active',active);
     chip.setAttribute('aria-pressed',String(active));
   });
+  document.querySelectorAll('#savedPresetChips .chip').forEach(chip=>{
+    const active=chip.textContent===activePresetName;chip.classList.toggle('active',active);chip.setAttribute('aria-pressed',String(active));
+  });
   const currentSelection=typeof selectedPresetName==='undefined'?null:selectedPresetName;
   $('presetSelect').value=currentSelection && !featuredPresetNames.includes(currentSelection) ? currentSelection : activePresetName && !featuredPresetNames.includes(activePresetName) ? activePresetName : '';
   if(typeof selectedPresetName!=='undefined' && !selectedPresetName) selectedPresetName=activePresetName;
@@ -3004,8 +3214,8 @@ function syncPresetSelection(){
   if(compareButton) compareButton.disabled=!swatchName||!swatch||!hasContent; if(applyButton) applyButton.disabled=!swatchName||!swatch;
 }
 function renderChips(){
-  const chips=$('presetChips'), select=$('presetSelect');
-  chips.replaceChildren(); select.replaceChildren();
+  const chips=$('presetChips'), select=$('presetSelect'), savedCards=$('savedPresetChips'), savedEmpty=$('savedPresetsEmpty');
+  chips.replaceChildren(); select.replaceChildren(); savedCards?.replaceChildren();
   availablePresets=new Map([...Object.entries(builtInPresets),...Object.entries(igPresets).map(([name,values])=>['ig:'+name,values])]);
   customPresets.forEach(cp=>availablePresets.set(cp.name,cp.values));
   customPresetDither=new Map(customPresets.filter(cp=>cp.dither).map(cp=>[cp.name,social.normalizeDitherSettings(cp.dither)]));
@@ -3017,6 +3227,18 @@ function renderChips(){
   }
   for(const [name,values] of availablePresets){
     const isCustom=customPresets.some(p=>p.name===name);
+    if(isCustom && savedCards){
+      const card=document.createElement('button'); card.type='button'; card.className='chip custom'; card.textContent=name;
+      const curve=document.createElement('span'); curve.className='presetColorSwatch'; curve.setAttribute('aria-hidden','true'); if(curve.style) curve.style.background=presetSwatchGradient(values); card.appendChild(curve);
+      card.setAttribute('aria-pressed','false'); card.title='Right-click to delete';
+      card.addEventListener('pointerenter',()=>startPresetCompare(name,values,customPresetDither.get(name)));
+      card.addEventListener('pointerleave',()=>stopPresetCompare());
+      card.addEventListener('focus',()=>startPresetCompare(name,values,customPresetDither.get(name)));
+      card.addEventListener('blur',()=>stopPresetCompare());
+      card.addEventListener('click',()=>{stopPresetCompare();applyPreset(name,values,customPresetDither.get(name));});
+      card.addEventListener('contextmenu',e=>{e.preventDefault();deleteCustomPreset(name);});
+      savedCards.appendChild(card);
+    }
     if(featuredPresetNames.includes(name)){
       const chip=document.createElement('button'); chip.type='button';
       chip.className='chip'+(isCustom?' custom':'');
@@ -3046,6 +3268,7 @@ function renderChips(){
     group.appendChild(option); moreCount++;
   }
   $('presetCount').textContent=`${moreCount} ${moreCount===1?'look':'looks'}`;
+  if(savedEmpty) savedEmpty.hidden=customPresets.length>0;
   if(activePresetName && !availablePresets.has(activePresetName)) activePresetName=null;
   if(typeof selectedPresetName!=='undefined' && selectedPresetName && !availablePresets.has(selectedPresetName)) selectedPresetName=activePresetName;
   syncPresetSelection();
@@ -3067,7 +3290,7 @@ function applyPreset(name, values, ditherOptions=null, options={}){
     const p=Math.min((now-t0)/dur,1), e=ease(p);
     const cur={};
     for(const k of ids){ cur[k]=start[k]+(target[k]-start[k])*e; }
-    setValues(cur); render(now);
+    setValues(cur); if(typeof updateClusterSummaries==='function') updateClusterSummaries(); render(now);
     presetFrame=p<1 ? requestAnimationFrame(step) : null;
   }
   presetFrame=requestAnimationFrame(step);
@@ -3162,7 +3385,7 @@ function updateWorkspaceUI(){
   $('videoPlaybackControls').hidden=!isVideo || !hasContent;
   $('editorTimeline').hidden=!isVideo || !hasContent;
   $('grainSpeedRow').hidden=!isVideo || !hasContent;
-  $('backToDropBtn').disabled=!hasContent || mediaBusy || exportBusy;
+  $('backToDropBtn').hidden=!hasContent; $('backToDropBtn').disabled=!hasContent || mediaBusy || exportBusy;
   $('exportPanelTitle').textContent=isVideo?'Reel Framing':'Instagram Export';
   $('frameFormatLabel').textContent=isVideo?'Frame capture format':'Photo format';
   $('frameQualityLabel').textContent=isVideo?'Frame capture quality':'JPG quality';
@@ -3175,6 +3398,8 @@ function backToDropZone(){
   if(isVideo) unloadVideo();
   clearPhotos();
   currentPhoto=null; activePhotoIndex=-1; isVideo=false; hasContent=false;
+  if(typeof setWorkspaceMode==='function')setWorkspaceMode('empty');
+  if(typeof selectSidebarTab==='function'){activeSidebarTab='looks';userSelectedSidebarTab=false;selectSidebarTab('looks');}
   showOriginal=false; splitPreview=false; cropEditing=false; maskPaintMode=null;
   $('captionEnabled').checked=false; $('captionText').value=''; captionPosition={x:0.5,y:0.82}; captionKeyframes=[];
   beforeLabel.classList.remove('show');
@@ -3193,7 +3418,7 @@ $('sidebarCollapseToggle').addEventListener('click',()=>{
   requestAnimationFrame(()=>{if(isVideo) updateCaptionOverlay();});
 });
 function updateSocialUI(){
-  updateWorkspaceUI();
+  updateWorkspaceUI(); updateClusterSummaries();
   const locked=mediaBusy||exportBusy, ratio=social.cropRatio(exportOptions);
   $('rotateMediaBtn').disabled=!hasContent||locked;
   $('randomizeGrainBtn').disabled=!hasContent||locked;
@@ -3210,6 +3435,7 @@ function updateSocialUI(){
   $('exportFileType').value=exportOptions.type; $('exportQuality').value=exportOptions.quality;
   $('videoFrameFormat').value=exportOptions.format;
   $('exportQualityValue').textContent=`${exportOptions.quality}%`; $('exportQuality').setAttribute('aria-valuetext',`${exportOptions.quality} percent`);
+  syncExportChoicePills();
   $('qualityField').hidden=exportOptions.type==='png';
   $('exportComparison').checked=exportOptions.comparison; $('exportComparison').disabled=isVideo||exportBusy;
   $('comparisonOptions').hidden=!exportOptions.comparison;
@@ -3228,12 +3454,13 @@ function updateSocialUI(){
   $('downloadBtn').disabled=!hasContent||locked;
   $('processVideoBtn').disabled=!isVideo||!hasContent||locked;
   if(isVideo){
-    const range=$('videoExportRange').value, seconds=range==='full'?videoEl.duration:videoTrim.end-videoTrim.start;
-    $('processVideoBtn').textContent=`⤓ Export ${range==='full'?'full video':`${seconds.toFixed(1)}s trimmed`} · ${$('videoContainer').value.toUpperCase()}`;
-    $('hdrDownloadBtn').title=`Export ${range==='full'?'the full video':`the selected ${seconds.toFixed(1)}s clip`}`;
+    const range='trimmed'; $('videoExportRange').value=range; const seconds=videoTrim.end-videoTrim.start;
+    $('processVideoBtn').textContent=`⤓ Export Video · ${seconds.toFixed(1)}s · ${$('videoContainer').value.toUpperCase()}`;
+    $('hdrDownloadBtn').title=`Export the selected ${seconds.toFixed(1)}s clip`;
   }
   $('addPhotosBtn').disabled=photos.length>=social.MAX_PHOTOS||locked;
   $('removePhotoBtn').disabled=!photos.length||locked; $('applyAllBtn').disabled=!photos.length||locked;
+  if(!isVideo)photoExportOptions={...exportOptions};
   $('mainArea').classList.toggle('hasPhotos',photos.length>0&&!isVideo);
   document.querySelectorAll('.photoThumb').forEach(btn=>{ btn.disabled=locked; });
   updateCropOverlay(); updateSplitDivider();
@@ -3311,6 +3538,17 @@ $('cropPreviewBtn').addEventListener('click',()=>{
 $('centerCropBtn').addEventListener('click',()=>{ Object.assign(getCropPosition(),{x:0.5,y:0.5}); updateCropOverlay(); });
 $('exportFileType').addEventListener('change',e=>{ exportOptions.type=e.target.value; updateSocialUI(); });
 $('exportQuality').addEventListener('input',e=>{ exportOptions.quality=Number(e.target.value); updateSocialUI(); });
+function syncExportChoicePills(){
+  const type=$('exportFileType').value, videoFormat=$('videoContainer').value, quality=Number($('exportQuality').value);
+  document.querySelectorAll('[data-photo-type]').forEach(button=>{const active=button.dataset.photoType===type;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+  document.querySelectorAll('[data-video-format]').forEach(button=>{const active=button.dataset.videoFormat===videoFormat;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+  document.querySelectorAll('[data-photo-quality]').forEach(button=>{const active=button.dataset.photoQuality===(quality<87?'low':quality<97?'medium':'high');button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+  document.querySelectorAll('[data-video-quality]').forEach(button=>{const active=button.dataset.videoQuality===$('videoQuality').value;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+}
+document.querySelectorAll('[data-photo-type]').forEach(button=>button.addEventListener('click',()=>{$('exportFileType').value=button.dataset.photoType;$('exportFileType').dispatchEvent(new Event('change',{bubbles:true}));}));
+document.querySelectorAll('[data-photo-quality]').forEach(button=>button.addEventListener('click',()=>{$('exportQuality').value=({low:80,medium:92,high:100})[button.dataset.photoQuality];$('exportQuality').dispatchEvent(new Event('input',{bubbles:true}));}));
+document.querySelectorAll('[data-video-format]').forEach(button=>button.addEventListener('click',()=>{$('videoContainer').value=button.dataset.videoFormat;$('videoContainer').dispatchEvent(new Event('change',{bubbles:true}));}));
+document.querySelectorAll('[data-video-quality]').forEach(button=>button.addEventListener('click',()=>{$('videoQuality').value=button.dataset.videoQuality;$('videoQuality').dispatchEvent(new Event('change',{bubbles:true}));}));
 $('exportComparison').addEventListener('change',e=>{
   exportOptions.comparison=e.target.checked; cropEditing=hasContent&&social.cropRatio(exportOptions)!==null;
   if(cropEditing){ setMaskPaintMode(null); resetPreviewZoom(); }
@@ -3591,7 +3829,7 @@ function settingsSnapshot(){
 function restoreSettings(snapshot){
   const data=social.sanitizeSettings(snapshot,ids,Object.keys(effectEnabled));
   cancelPresetAnimation(); setValues(data.values); setEffectStates(data.effects); setDitherSettings(data.dither); setDitherScope(data.scope);
-  exportOptions={...data.export}; if(isVideo) exportOptions.comparison=false;
+  photoExportOptions={...data.export}; exportOptions=isVideo?{...data.export,format:'original',comparison:false}:{...data.export};
   const candidate=availablePresets.get(data.preset);
   activePresetName=candidate && ids.every(id=>Number(candidate[id]??0)===data.values[id])?data.preset:null;
   selectedPresetName=activePresetName; syncPresetSelection(); cropEditing=hasContent&&social.cropRatio(exportOptions)!==null&&!maskPaintMode;
@@ -3659,8 +3897,10 @@ function updateTimelineVisuals(){
     const el=$(id); el.setAttribute('aria-valuemax',String(dur)); el.setAttribute('aria-valuenow',String(value)); el.setAttribute('aria-valuetext',social.timeLabel(value));
   }
   const lengthText=Math.abs(length-Math.round(length))<.05?`${Math.round(length)}s`:`${length.toFixed(1)}s`;
-  $('trimRangeReadout').textContent=`Trimmed: ${clockLabel(start)} – ${clockLabel(end)} = ${lengthText}`;
+  $('trimRangeReadout').textContent=`Exporting ${clockLabel(start)} → ${clockLabel(end)} (${lengthText})`;
   $('trimDuration').textContent=`${length.toFixed(1)}s`;
+  $('timelineInTime').textContent=clockLabel(start); $('timelinePlayheadTime').textContent=clockLabel(now); $('timelineOutTime').textContent=clockLabel(end);
+  $('videoTrimSummary').textContent=`Exporting ${clockLabel(start)} → ${clockLabel(end)} (${lengthText})`;
 }
 function updateTrimUI(){
   if(!isVideo || !Number.isFinite(videoEl.duration)) return;
@@ -3683,8 +3923,9 @@ function updateVideoPlayback(){
   const now=Math.min(videoEl.duration,Math.max(0,videoEl.currentTime));
   $('videoSeek').value=now; $('videoSeek').setAttribute('aria-valuetext',social.timeLabel(now));
   $('videoTime').textContent=`${clockLabel(now)} / ${clockLabel(videoEl.duration)}`;
-  $('videoPlayBtn').textContent=videoEl.paused?'Play':'Pause';
+  $('videoPlayBtn').textContent=videoEl.paused?'▶':'Ⅱ';
   $('videoPlayBtn').setAttribute('aria-label',videoEl.paused?'Play video':'Pause video');
+  document.querySelectorAll('[data-playback-rate]').forEach(button=>{const active=Number(button.dataset.playbackRate)===videoEl.playbackRate;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
   updateTimelineVisuals(); updateCaptionOverlay();
 }
 function changeTrim(start,end,changed){
@@ -3737,6 +3978,9 @@ function toggleVideoPlayback(){
   else videoEl.pause(); updateVideoPlayback();
 }
 $('videoPlayBtn').addEventListener('click',toggleVideoPlayback);
+$('videoSkipStart').addEventListener('click',()=>{if(!isVideo)return;videoEl.currentTime=videoTrim.start;updateVideoPlayback();});
+$('videoSkipEnd').addEventListener('click',()=>{if(!isVideo)return;videoEl.currentTime=videoTrim.end;updateVideoPlayback();});
+document.querySelectorAll('[data-playback-rate]').forEach(button=>button.addEventListener('click',()=>{$('videoSpeed').value=button.dataset.playbackRate;$('videoSpeed').dispatchEvent(new Event('change',{bubbles:true}));}));
 $('videoMuteBtn').addEventListener('click',()=>{
   if(!isVideo) return; videoEl.muted=!videoEl.muted;
   $('videoMuteBtn').setAttribute('aria-pressed',String(videoEl.muted)); $('videoMuteBtn').setAttribute('aria-label',videoEl.muted?'Unmute video':'Mute video');
@@ -3747,7 +3991,7 @@ $('videoLoopToggle').addEventListener('click',()=>{
   const enabled=$('videoLoopToggle').getAttribute('aria-pressed')!=='true';
   $('videoLoopToggle').setAttribute('aria-pressed',String(enabled)); $('videoLoopToggle').setAttribute('aria-label',enabled?'Loop enabled':'Loop disabled');
 });
-$('videoSpeed').addEventListener('change',e=>{ videoEl.playbackRate=Number(e.target.value)||1; });
+$('videoSpeed').addEventListener('change',e=>{ videoEl.playbackRate=Number(e.target.value)||1; document.querySelectorAll('[data-playback-rate]').forEach(button=>{const active=Number(button.dataset.playbackRate)===videoEl.playbackRate;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));}); });
 $('videoContainer').addEventListener('change',updateSocialUI);
 $('videoFrameFormat').addEventListener('change',e=>{
   exportOptions.format=e.target.value; exportOptions.comparison=false; cropEditing=isVideo&&e.target.value!=='original';
@@ -3877,7 +4121,7 @@ async function loadFFmpeg(){
     ff.on('progress',({progress})=>{
       if(!encodingVideo || !Number.isFinite(progress)) return;
       const pct=Math.max(parseInt(progressPct.textContent)||0,Math.round(encoderProgressBase+social.clamp(progress,0,1)*encoderProgressSpan));
-      progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Processing… ${pct}%`;
+      progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Encoding… ${pct}%`;
     });
     progressText.textContent='Loading video engine…';
     const loadTimer=setTimeout(()=>ff.terminate(),60000);
@@ -3914,13 +4158,13 @@ function videoOutputSize(options,position,resolution){
 }
 async function processVideo(){
   if(!isVideo || !hasContent || exportBusy || mediaBusy){ showToast('Upload video first'); return; }
-  const range=$('videoExportRange').value;
-  const trim=range==='full'?{start:0,end:videoEl.duration}:social.trimRange(videoEl.duration,videoTrim.start,videoTrim.end);
+  const range='trimmed'; $('videoExportRange').value=range;
+  const trim=social.trimRange(videoEl.duration,videoTrim.start,videoTrim.end);
   const dur=trim.end-trim.start, fps=24, total=Math.max(1,Math.ceil(dur*fps));
   const container=$('videoContainer').value, quality=$('videoQuality').value;
   const keepAudio=$('keepVideoAudio').checked&&!!videoSourceFile, options={...exportOptions,comparison:false}, position={...videoCrop};
   const outputSize=videoOutputSize(options,position,$('videoResolution').value);
-  const rangeTitle=range==='full'?'full video':`${dur.toFixed(1)}s trimmed`;
+  const rangeTitle=`${dur.toFixed(1)}s trimmed`;
   const view=beginExport(`Exporting ${rangeTitle} · ${container.toUpperCase()}`), files=new Set(), segments=[];
   progressWrap.classList.add('loading'); progressText.textContent='Loading video engine…';
   // Two-second sections bound raw-frame memory, even for 60s full-HD clips with heavy grain.
@@ -3935,7 +4179,7 @@ async function processVideo(){
   };
   try{
     ff=await loadFFmpeg(); checkExportCancelled();
-    progressWrap.classList.remove('loading'); progressText.textContent='Processing… 0%';
+    progressWrap.classList.remove('loading'); progressText.textContent='Encoding… 0%';
     progressFill.style.width='0%'; progressPct.textContent='0%';
     if(keepAudio){
       // WORKERFS reads slices of the original Blob without duplicating a long upload in WASM RAM.
@@ -3965,12 +4209,12 @@ async function processVideo(){
         }else uploadVideoTexture();
         const output=makeExportCanvas(options,position,true,outputSize), blob=await canvasBlob(output,'image/jpeg',0.98);
         checkExportCancelled(); await writeFile(`frame_${String(j).padStart(4,'0')}.jpg`,new Uint8Array(await blob.arrayBuffer()));
-        const pct=Math.round((i+1)/total*90); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Processing… ${pct}%`; // Frame ${i+1}/${total} is represented by the percentage above.
+        const pct=Math.round((i+1)/total*90); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Encoding… ${pct}%`; // Frame ${i+1}/${total} is represented by the percentage above.
         await new Promise(resolve=>setTimeout(resolve,0));
       }
       checkExportCancelled(); encodingVideo=true;
       encoderProgressBase=chunkStart/total*90; encoderProgressSpan=count/total*90;
-      progressText.textContent=`Processing… ${progressPct.textContent}`;
+      progressText.textContent=`Encoding… ${progressPct.textContent}`;
       const segment=`part_${String(part).padStart(4,'0')}.${container}`;
       files.add(segment);
       await exec(social.videoArgs({fps,duration:count/fps,container,quality,audio:false,output:segment}));
@@ -3979,16 +4223,15 @@ async function processVideo(){
     }
     await writeFile('segments.txt',new TextEncoder().encode(segments.map(name=>`file '${name}'`).join('\n')));
     checkExportCancelled(); encodingVideo=true; encoderProgressBase=90; encoderProgressSpan=8;
-    progressText.textContent=`Processing… ${progressPct.textContent}`;
+    progressText.textContent=`Encoding… ${progressPct.textContent}`;
     const outputName='output.'+container; files.add(outputName);
     await exec(social.muxVideoArgs({start:trim.start,duration:dur,container,audio:keepAudio,source:audioSource}));
-    encodingVideo=false; checkExportCancelled(); progressFill.style.width='100%'; progressPct.textContent='100%'; progressText.textContent='Processing… 100%';
+    encodingVideo=false; checkExportCancelled(); progressFill.style.width='100%'; progressPct.textContent='100%'; progressText.textContent='Download ready'; $('progressTitle').textContent='Download ready';
     const data=await readFile(outputName), out=new Blob([data],{type:container==='mp4'?'video/mp4':'video/webm'});
-    const trimRange=`${social.timeLabel(trim.start)} – ${social.timeLabel(trim.end)} (${dur.toFixed(1)}s)`;
-    // The modal's final Download action calls downloadBlob(out, name) only after review.
-    requestDownload(out,`${social.safeFilename(videoSourceFile?.name||'reel')}-${dur.toFixed(1)}s.${container}`,{format:container.toUpperCase(),resolution:`${outputSize.width} × ${outputSize.height}`,range:trimRange});
-    $('videoExportStatus').textContent=`${dur.toFixed(1)}s ${container.toUpperCase()} · ${outputSize.width} × ${outputSize.height} ready to download${keepAudio?' with source audio (if present)':''}.`;
-    showReadyConfirmation();
+    const filename=`${social.safeFilename(videoSourceFile?.name||'reel')}-${dur.toFixed(1)}s.${container}`;
+    downloadBlob(out,filename);
+    $('videoExportStatus').textContent=`Download ready · ${dur.toFixed(1)}s ${container.toUpperCase()} · ${outputSize.width} × ${outputSize.height}. Download started automatically.`;
+    showToast('Download ready — saving video',2600);
   }catch(error){
     if(cancelRequested || error.name==='AbortError') showToast('Video export cancelled');
     else{ console.error(error); $('videoExportStatus').textContent=`${error.message} Try a shorter clip or the other video format.`; showToast('Video export failed — try a shorter clip or the other format',6000); }
@@ -4005,8 +4248,100 @@ async function processVideo(){
 }
 $('processVideoBtn').addEventListener('click',processVideo);
 
+
+// Looks / Adjust / Export are views over the same existing editor controls.
+let activeSidebarTab='looks', userSelectedSidebarTab=false;
+function selectSidebarTab(name){
+  if(!['looks','adjust','export'].includes(name))return;
+  activeSidebarTab=name;
+  document.querySelectorAll('.sidebarTab').forEach(button=>{
+    const active=button.dataset.tab===name;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));
+  });
+  document.querySelectorAll('.sidebarPanel').forEach(panel=>{
+    const active=panel.dataset.panel===name;panel.classList.toggle('active',active);panel.hidden=!active;
+  });
+  $('sidebarSheetHandle').querySelector('.sheetHandleText').textContent=name.toUpperCase();
+}
+document.querySelectorAll('.sidebarTab').forEach(button=>button.addEventListener('click',()=>{userSelectedSidebarTab=true;selectSidebarTab(button.dataset.tab);}));
+function updateClusterSummaries(){
+  const groups={
+    basic:[['Exposure','Exposure'],['Contrast','Contrast'],['Saturation','Saturation'],['Temperature','Temperature'],['Vibrance','Vibrance'],['Fade','Fade'],['ShadowTone','Shadow'],['HighlightTone','Highlights'],['HighlightTint','Tint']],
+    creative:[['Bloom','Bloom'],['Hall','Hallation'],['Grain','Grain'],['BloomAnam','Anamorphic'],['VignStrength','Vignette'],['VignSize','Vignette size']],
+    technical:[['Dither','Dither'],['Sharp','Sharpening']]
+  };
+  for(const [name,items] of Object.entries(groups)){
+    const target=document.querySelector(`[data-summary="${name}"]`);if(!target)continue;
+    const active=items.filter(([id])=>(currentWorkspaceMode!=='video'||!['Dither','Hall','BloomAnam','VignStrength','VignSize'].includes(id))&&sliders[id]&&Number(sliders[id].value)!==0).map(([id,label])=>`${label} ${Number(sliders[id].value)>0?'+':''}${sliders[id].value}`);
+    target.textContent=active.length?active.join(' · '):'No active adjustments';
+  }
+}
+Object.values(sliders).forEach(slider=>slider&&slider.addEventListener('input',updateClusterSummaries));
+$('resetOriginalBtn').addEventListener('click',()=>{
+  if(exportBusy||mediaBusy)return;
+  ids.forEach(id=>sliders[id].value=0);setDitherScope('full');setDitherSettings(social.DEFAULT_DITHER);
+  for(const [name,on] of Object.entries(effectEnabled))if(!on){effectEnabled[name]=true;const toggle=document.querySelector(`[data-toggle="${name}"]`);if(toggle){toggle.setAttribute('aria-checked','true');toggle.querySelector('.toggleText').textContent='ON';toggle.closest('.effectGroup').classList.remove('effectOff');}}
+  activePresetName=null;selectedPresetName=null;syncPresetSelection();userChangedSliders();updateSectionIndicators();updateClusterSummaries();updateSocialUI();showToast('Reset to original');
+});
+
+// Mobile header overflow: all original actions remain available in the ··· menu.
+const mobileMenuButton=$('mobileMenuBtn'),headerMenu=$('headerMenuItems');
+mobileMenuButton.addEventListener('click',()=>{const open=headerMenu.classList.toggle('open');mobileMenuButton.setAttribute('aria-expanded',String(open));});
+function closeHeaderMenu(){headerMenu.classList.remove('open');mobileMenuButton.setAttribute('aria-expanded','false');}
+document.addEventListener('pointerdown',event=>{if(!headerMenu.contains(event.target)&&event.target!==mobileMenuButton)closeHeaderMenu();});
+headerMenu.querySelectorAll('button').forEach(button=>button.addEventListener('click',event=>{if(event.currentTarget!==mobileMenuButton)closeHeaderMenu();}));
+
+// Route the existing header Export action into its new tab before its original photo handler runs.
+$('hdrDownloadBtn').addEventListener('click',()=>{if(!isVideo){userSelectedSidebarTab=true;selectSidebarTab('export');}},true);
+
+// Hold-to-compare is momentary; releasing or cancelling always restores the edited preview.
+const holdCompareButton=$('holdCompareBtn');
+function setHoldCompare(held){
+  if(!hasContent)return;
+  showOriginal=held;beforeLabel.textContent=held?'BEFORE — original':'AFTER';beforeLabel.classList.toggle('show',held);
+  holdCompareButton.setAttribute('aria-pressed',String(held));updateSplitDivider();render(performance.now());
+}
+holdCompareButton.addEventListener('pointerdown',event=>{if(event.button!==undefined&&event.button!==0)return;event.preventDefault();holdCompareButton.setPointerCapture(event.pointerId);setHoldCompare(true);});
+['pointerup','pointercancel','lostpointercapture'].forEach(type=>holdCompareButton.addEventListener(type,()=>setHoldCompare(false)));
+holdCompareButton.addEventListener('keydown',event=>{if(event.key===' '||event.key==='Enter'){event.preventDefault();setHoldCompare(true);}});
+holdCompareButton.addEventListener('keyup',event=>{if(event.key===' '||event.key==='Enter')setHoldCompare(false);});
+
+// Photo and video UI roots are parked in DocumentFragments outside their active mode.
+// ID lookup falls back to parked nodes so the shared renderer/state handlers stay stable.
+const workspaceModeSlots=[];
+function parkWorkspaceNode(node,mode){
+  if(!node || workspaceModeSlots.some(slot=>slot.node===node))return;
+  const anchor=document.createComment(`${mode}-workspace:${node.id||node.dataset.group||node.className}`), fragment=document.createDocumentFragment();
+  node.parentNode.insertBefore(anchor,node);
+  if(node.id) detachedWorkspaceElements.set(node.id,node);
+  node.querySelectorAll('[id]').forEach(element=>detachedWorkspaceElements.set(element.id,element));
+  fragment.appendChild(node); workspaceModeSlots.push({node,mode,anchor,fragment});
+}
+function setWorkspaceMode(mode){
+  if(!['empty','photo','video'].includes(mode))return;
+  currentWorkspaceMode=mode;
+  for(const slot of workspaceModeSlots){
+    const shouldMount=slot.mode===mode;
+    if(shouldMount && slot.node.parentNode===slot.fragment){slot.anchor.parentNode?.replaceChild(slot.node,slot.anchor);}
+    else if(!shouldMount && slot.node.isConnected){slot.node.parentNode.replaceChild(slot.anchor,slot.node);slot.fragment.appendChild(slot.node);}
+  }
+  $('app').dataset.workspace=mode; $('sidebar').hidden=mode==='empty';
+  if(mode!=='empty')setEffectStates(effectEnabled);
+  if(mode==='photo')setDitherScope(ditherScope);
+  updateClusterSummaries();
+}
+function initializeWorkspaceModes(){
+  for(const id of ['exportPanel','actions','carouselStrip'])parkWorkspaceNode($(id),'photo');
+  for(const id of ['videoPlaybackControls','videoCaptionPanel','videoTrimPanel','videoExportPanel','editorTimeline','grainSpeedRow'])parkWorkspaceNode($(id),'video');
+  parkWorkspaceNode($('captionOverlay'),'video');
+      parkWorkspaceNode(document.querySelector('#effectsWrap [data-group="dither"]'),'photo');
+      parkWorkspaceNode(document.querySelector('#effectsWrap [data-group="hallation"]'),'photo');
+      parkWorkspaceNode($('sliderBloomAnam').closest('.subRow'),'photo');
+      parkWorkspaceNode($('grainSeedRow'),'photo');
+      parkWorkspaceNode(document.querySelector('.creativeVignette'),'photo');
+      setWorkspaceMode('empty');
+}
 // init
-setupSliderNumberEditing(); updateFromSliders(); updateSliderUI(); updateSocialUI(); restoreSharedLook(); render(performance.now());
+setupSliderNumberEditing(); updateFromSliders(); updateSliderUI(); updateSocialUI(); restoreSharedLook(); render(performance.now()); initializeWorkspaceModes();
 window.addEventListener('dragover',e=> e.preventDefault());
 window.addEventListener('drop',e=>{ if(e.dataTransfer.files.length){ e.preventDefault(); handleFiles(e.dataTransfer.files); } });
 console.log('Film Lab — Instagram tools · 44 signed controls — WebGL2', gl.getParameter(gl.VERSION));

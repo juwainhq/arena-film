@@ -15,7 +15,10 @@ test('the existing upload landing routes image and video files without a reload'
   assert.match(script, /function handleFiles\(fileList/);
   assert.match(script, /const images=files\.filter\(isPhotoFile\), videos=files\.filter\(isVideoFile\)/);
   assert.match(script, /isVideo=false; hasContent=true; currentPhoto=item/);
-  assert.match(script, /isVideo=true; hasContent=true; videoCrop=/);
+  assert.match(script, /isVideo=true; hasContent=true; setWorkspaceMode\('video'\); videoCrop=/);
+  const replacement=script.match(/if\(replacing\)\{([\s\S]*?)\n        \}/)[1];
+  assert.doesNotMatch(replacement, /isVideo=false/); // uploadPhoto must see Video Mode to restore the saved photo-export options
+  assert.match(script, /hasContent=false; if\(animId!==null\)[\s\S]*?setWorkspaceMode\('empty'\)/);
   assert.doesNotMatch(script, /location\.reload\(/);
 });
 
@@ -47,31 +50,50 @@ test('workspace state shows subtle top-bar mode and only exposes video controls 
   assert.equal(elements.backToDropBtn.disabled,true);
 });
 
-test('video workspace uses a left effects rail, centered preview and bottom filmstrip timeline', () => {
-  assert.match(styles, /#app\[data-workspace="video"\] #content \{ display: grid; grid-template-columns: minmax\(265px,315px\) minmax\(0,1fr\); grid-template-rows: minmax\(0,1fr\) 148px;/);
-  assert.match(styles, /#app\[data-workspace="video"\] #sidebar \{ grid-column: 1; grid-row: 1 \/ 3;/);
-  assert.match(styles, /#app\[data-workspace="video"\] #editorTimeline \{ grid-column: 2; grid-row: 2;/);
+test('video workspace places the canvas and playback above a full-width timeline with the sidebar on the right', () => {
+  assert.match(styles, /#app\[data-workspace="video"\] #content \{ display: grid; grid-template-columns: minmax\(0,1fr\) 390px; grid-template-rows: minmax\(0,1fr\) 120px;/);
+  assert.match(styles, /#app\[data-workspace="video"\] #sidebar \{ grid-column: 2; grid-row: 1 \/ 3;/);
+  assert.match(styles, /#app\[data-workspace="video"\] #editorTimeline \{ grid-column: 1; grid-row: 2;/);
+  assert.match(styles, /\.timelineHeader \{ display: flex; align-items: center; \}/);
+  assert.match(styles, /#timelineTrack \{ position: relative; display: block; flex: 1 1 auto;/);
+  assert.match(styles, /#timelineFilmstrip img \{ flex: 1 1 0;[^}]*object-fit: cover/);
+  assert.match(styles, /\.timelineKeyframeMarker \{ position: absolute/);
+  assert.match(styles, /#app\[data-workspace="video"\] #sidebarViews > \.sidebarPanel\.active #videoExportPanel \{ display: flex; \}/);
   assert.match(html, /id="videoPlaybackControls" hidden/);
-  for(const id of ['videoPlayBtn','videoTime','videoSeek','videoVolume','videoMuteBtn','videoLoopToggle','videoSpeed']) assert.match(html,new RegExp(`id="${id}"`));
-  for(const speed of ['0.25','0.5','1','1.5','2']) assert.match(html,new RegExp(`<option value="${speed}"`));
+  for(const id of ['videoSkipStart','videoPlayBtn','videoSkipEnd','videoTime','videoSeek','videoVolume','videoMuteBtn','videoLoopToggle','videoSpeed']) assert.match(html,new RegExp(`id="${id}"`));
+  for(const speed of ['0.5','1','1.5','2']) assert.match(html,new RegExp(`data-playback-rate="${speed}"`));
   assert.match(html, /id="timelineFilmstrip"/);
+  assert.match(html, /id="audioWaveform"/);
   assert.match(html, /id="timelineSelection"/);
   assert.match(html, /id="trimStartHandle"[\s\S]*?id="trimEndHandle"/);
   assert.match(html, /id="timelinePlayhead"/);
-  assert.match(html, /id="trimRangeReadout">Trimmed:/);
+  assert.match(html, /id="timelineInTime"[\s\S]*?id="timelinePlayheadTime"[\s\S]*?id="timelineOutTime"/);
   assert.match(script, /function renderVideoFilmstrip\(token\)/);
+  assert.match(script, /async function renderAudioWaveform\(file,token\)/);
   assert.match(script, /function updateTimelineVisuals\(\)/);
   assert.match(script, /function timeAtTimelinePointer\(e\)/);
   assert.match(script, /timelineTrack'\)\.addEventListener\('pointermove'/);
   assert.match(script, /if\(e\.code==='Space'\)[\s\S]*?isVideo\?toggleVideoPlayback\(\):toggleBeforeAfter\(\)/);
+  assert.match(script, /if\(videoEl\.currentTime>=videoTrim\.end\)\{[\s\S]*?videoLoopToggle'\)\.getAttribute\('aria-pressed'\)==='true'[\s\S]*?videoEl\.pause\(\);videoEl\.currentTime=videoTrim\.end/);
 });
 
-test('video sidebar filters to the requested effects and provides basic per-clip captions', () => {
-  assert.match(html, /id="sidebarCollapseToggle"/);
-  assert.match(script, /sidebarCollapseToggle'\)\.addEventListener\('click'/);
-  for(const group of ['color','bloom','hallation','grain','sharpen']) assert.match(html,new RegExp(`data-group="${group}"`));
-  assert.match(styles, /#app\[data-workspace="video"\] #effectsWrap \.effectGroup\[data-group="dither"\] \{ display: none !important; \}/);
-  assert.match(styles, /#app\[data-workspace="video"\] #sidebarControls > #videoCaptionPanel,[\s\S]*?#videoExportPanel \{ display: flex !important; \}/);
+test('workspace mounting physically parks controls that do not belong to the active file type', () => {
+  assert.match(script, /const \$ = id => document\.getElementById\(id\) \|\| detachedWorkspaceElements\.get\(id\)/);
+  assert.match(script, /function parkWorkspaceNode\(node,mode\)/);
+  assert.match(script, /fragment\.appendChild\(node\); workspaceModeSlots\.push/);
+  assert.match(script, /function setWorkspaceMode\(mode\)/);
+  assert.match(script, /for\(const id of \['exportPanel','actions','carouselStrip'\]\)parkWorkspaceNode\(\$\(id\),'photo'\)/);
+  assert.match(script, /for\(const id of \['videoPlaybackControls','videoCaptionPanel','videoTrimPanel','videoExportPanel','editorTimeline','grainSpeedRow'\]\)parkWorkspaceNode\(\$\(id\),'video'\)/);
+  assert.match(script, /parkWorkspaceNode\(document\.querySelector\('#effectsWrap \[data-group="dither"\]'\),'photo'\)/);
+  assert.match(script, /parkWorkspaceNode\(document\.querySelector\('#effectsWrap \[data-group="hallation"\]'\),'photo'\)/);
+  assert.match(script, /parkWorkspaceNode\(\$\('sliderBloomAnam'\)\.closest\('\.subRow'\),'photo'\)/);
+  assert.match(script, /parkWorkspaceNode\(\$\('grainSeedRow'\),'photo'\)/);
+  assert.match(script, /parkWorkspaceNode\(document\.querySelector\('\.creativeVignette'\),'photo'\)/);
+  assert.match(script, /function initializeWorkspaceModes\(\)[\s\S]*?setWorkspaceMode\('empty'\)/);
+  assert.match(script, /uploadPhoto\(item,img,resetView=true\)[\s\S]*?setWorkspaceMode\('photo'\)/);
+  assert.match(script, /isVideo=true; hasContent=true; setWorkspaceMode\('video'\)/);
+  assert.doesNotMatch(script, /#effectsWrap \.effectGroup\[data-group="dither"\] \{ display: none !important;/);
+  assert.match(script, /if\(typeof isVideo!==\x27undefined\x27&&isVideo\)strength=0/);
   assert.match(html, /Text &amp; Captions/);
   for(const id of ['captionText','captionFont','captionSize','captionColor','captionEnabled','captionOverlay','captionKeyframeBtn','captionKeyframeMarkers']) assert.match(html,new RegExp(`id="${id}"`));
   assert.match(script, /function drawVideoCaption\(ctx,output/);
@@ -82,16 +104,25 @@ test('video sidebar filters to the requested effects and provides basic per-clip
   assert.match(html, /Show on this clip/);
 });
 
-test('video export settings include size, container, quality, range, warning, ETA and ffmpeg progress', () => {
+test('video export UI exposes only trimmed output, requested sizes, formats and quality with live encoding status', () => {
   for(const id of ['videoResolution','videoContainer','videoQuality','videoExportRange','processVideoBtn','longVideoWarning','progressEta']) assert.match(html,new RegExp(`id="${id}"`));
-  for(const value of ['original','1080','720','480']) assert.match(html,new RegExp(`<option value="${value}"`));
-  assert.match(html, /For best performance, trim to under 60s before exporting/);
-  assert.match(script, /range==='full'\?\{start:0,end:videoEl\.duration\}:social\.trimRange/);
+  for(const value of ['original','1080','720']) assert.match(html,new RegExp(`<option value="${value}"`));
+  assert.doesNotMatch(html, /<option value="480">480p/);
+  assert.doesNotMatch(html, /<option value="full">Full video/);
+  assert.match(html, /id="videoExportRange" value="trimmed"/);
+  const exportPanel=html.match(/<section id="videoExportPanel"[\s\S]*?<\/section>/)[0];
+  assert.ok(exportPanel.indexOf('id="videoResolution"')<exportPanel.indexOf('<details'), 'resolution stays visible without expanding More video options');
+  assert.match(exportPanel, /data-video-format="mp4"[\s\S]*?data-video-quality="high"[\s\S]*?id="videoResolution"/);
+  assert.match(html, /id="processVideoBtn"[^>]*>⤓ Export Video/);
+  assert.match(html, /Download ready/);
+  assert.match(script, /const range='trimmed';[\s\S]*?social\.trimRange\(videoEl\.duration,videoTrim\.start,videoTrim\.end\)/);
   assert.match(script, /function videoOutputSize\(options,position,resolution\)/);
   assert.match(script, /social\.videoArgs\(\{fps,duration:count\/fps,container,quality,audio:false,output:segment\}\)/);
   assert.match(script, /ff\.on\('progress'/);
   assert.match(script, /setInterval\(updateExportEta,1000\)/);
-  assert.match(script, /downloadBlob\(out,/);
+  assert.match(script, /progressText\.textContent=`Encoding… \$\{pct\}%`/);
+  assert.match(script, /downloadBlob\(out,filename\)/);
+  assert.match(script, /Download started automatically/);
 });
 
 test('caption position keyframes interpolate across the clip and video output presets retain aspect ratio', () => {

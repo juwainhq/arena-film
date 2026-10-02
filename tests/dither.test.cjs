@@ -32,6 +32,7 @@ test('Dither uses an independent post-composite pass with all requested modes an
   assert.match(script,/const progDither=createProgram\(vsSrc, fsDither\)/);
   assert.match(script,/gl\.bindFramebuffer\(gl\.FRAMEBUFFER,fboComposite\.fbo\);[\s\S]*?const backgroundOnly=ditherScope/);
   assert.match(script,/renderDitherPass\(timeMs,ditherStrength,backgroundOnly\)/);
+  assert.match(script,/function renderDitherPass\(timeMs,strength,backgroundOnly\)\{\s*if\(typeof isVideo!==\x27undefined\x27&&isVideo\)strength=0;/);
   for (const uniform of ['u_image','u_original','u_subjectMask','u_floydResult','u_strength','u_algorithm','u_colorMode','u_paletteSize','u_downscale','u_threshold','u_dotSize','u_angle']) {
     assert.match(ditherShader,new RegExp(`uniform [^;]*\\b${uniform}\\b`),`${uniform} declared`);
   }

@@ -47,7 +47,7 @@ test('header uses the portfolio navigation gutters and type while keeping mobile
 test('both themes cover the editor with legible negative sliders and native color schemes', () => {
   assert.match(styles, /:root \{\s*color-scheme: dark;[^}]*--bg: #000;[^}]*--negative: #e8e8e8;/);
   assert.match(styles, /:root\[data-theme="light"\] \{\s*color-scheme: light;[^}]*--bg: #fff;[^}]*--text: #111;[^}]*--negative: #333;/);
-  for (const selector of ['header', '#mainArea', '#glCanvas', '#beforeLabel', '#videoProgress', '#toast']) {
+  for (const selector of ['header', '#mainArea', '#glCanvas', '#beforeLabel', '#exportProgress', '#toast']) {
     assert.match(styles, new RegExp(`${selector} \\{[^}]*background: var\\(--bg\\);`), selector);
   }
   assert.match(mainScript, /var\(--slider-center\)[\s\S]*?var\(--slider-track\)/);
