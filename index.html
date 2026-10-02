@@ -865,6 +865,87 @@ body[data-mode="empty"] #app #timeline-module { flex: none; width: 100%; height:
   #timeline-selected-duration { display: none; }
 }
 
+/* Keep shortcut keycaps out of sidebar section flows; the footer is their only inline home. */
+#shortcuts,#cropPanelToggle > kbd,#downloadBtn > kbd,#beforeAfterBtn > kbd { display: none !important; }
+#shortcut-footer { position: fixed; left: 18px; bottom: 10px; z-index: 18; display: none; align-items: center; flex-wrap: wrap; gap: 6px 16px; max-width: calc(100vw - 36px); padding: 6px 9px; overflow: hidden; border: 1px solid var(--panel-border); background: var(--bg); color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .08em; white-space: nowrap; pointer-events: none; }
+#shortcut-footer span { display: flex; gap: 5px; }
+#shortcut-footer b { color: var(--text-dim); font-weight: 500; }
+body[data-mode="photo"] #shortcut-footer { display: flex; }
+@media (max-width: 600px) {
+  #shortcut-footer { left: 8px; bottom: 8px; gap: 8px; max-width: calc(100vw - 16px); font-size: 7px; }
+}
+
+/* Multi-clip editor styling is namespaced to mtl- classes; legacy timeline nodes remain mounted. */
+body[data-mode="photo"] #app #content #multi-timeline { display: none !important; }
+#multi-timeline { display: none; }
+#multi-timeline[hidden] { display: none !important; }
+body[data-mode="video"] #app #content #multi-timeline:not([hidden]) { display: flex; }
+#app[data-workspace="video"] #content { grid-template-rows: minmax(0,1fr) 238px; }
+#app[data-workspace="video"] #timeline-module,#app[data-workspace="video"] #editorTimeline { display: none !important; }
+#app[data-workspace="video"] #multi-timeline { grid-column: 1; grid-row: 2; min-width: 0; min-height: 0; flex-direction: column; gap: 4px; padding: 6px 14px 8px; overflow: hidden; border-top: 1px solid var(--panel-border); background: var(--bg); }
+.mtl-media-row { display: flex; flex: none; align-items: center; gap: 8px; min-height: 39px; overflow: hidden; }
+.mtl-media-heading { display: flex; flex: none; align-items: center; gap: 8px; width: 108px; color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .1em; }
+.mtl-media-heading button,.mtl-toolbar button { min-height: 23px; padding: 3px 7px; border: 1px solid var(--panel-border); background: transparent; color: var(--text); font: 9px 'JetBrains Mono',monospace; cursor: pointer; white-space: nowrap; }
+.mtl-media-heading button:hover,.mtl-toolbar button:hover,.mtl-toolbar button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-bg); }
+.mtl-media-pool { display: flex; flex: 1; align-items: center; gap: 5px; min-width: 0; height: 37px; overflow-x: auto; scrollbar-width: thin; }
+.mtl-media-card { display: flex; flex: none; align-items: center; gap: 5px; width: 124px; height: 31px; padding: 3px; border: 1px solid var(--panel-border); background: var(--soft-bg); color: var(--text-dim); font: 8px 'JetBrains Mono',monospace; cursor: grab; }
+.mtl-media-card img { width: 38px; height: 23px; object-fit: cover; background: #151515; }
+.mtl-media-card span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mtl-media-card[aria-pressed="true"] { border-color: var(--accent); color: var(--text); }
+.mtl-toolbar { display: flex; flex: none; align-items: center; flex-wrap: wrap; gap: 4px; min-height: 26px; }
+.mtl-toolbar button:disabled { opacity: .38; cursor: not-allowed; }
+.mtl-tool-spacer { flex: 1; }
+.mtl-toolbar output { margin: 0 4px; color: var(--text-dim); font: 8px 'JetBrains Mono',monospace; white-space: nowrap; }
+.mtl-ruler-scroll { flex: none; height: 16px; margin-left: 58px; overflow: hidden; }
+.mtl-ruler { position: relative; height: 16px; }
+.mtl-ruler-tick { position: absolute; top: 0; height: 14px; border-left: 1px solid var(--panel-border); color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; }
+.mtl-ruler-tick span { position: absolute; top: 1px; left: 3px; white-space: nowrap; }
+.mtl-scroll { position: relative; flex: 1 1 auto; min-height: 92px; overflow: auto hidden; scrollbar-width: thin; scrollbar-color: var(--text-dim2) transparent; touch-action: pan-x; user-select: none; }
+.mtl-canvas { position: relative; min-width: 100%; height: 100%; }
+.mtl-track { position: relative; display: grid; grid-template-columns: 58px minmax(0,1fr); align-items: stretch; min-height: 30px; border-top: 1px solid var(--panel-border); }
+.mtl-video-row { height: 42%; min-height: 39px; }
+.mtl-overlay-row { height: 34%; min-height: 31px; }
+.mtl-audio-row { height: 24%; min-height: 23px; }
+.mtl-track-name { display: flex; align-items: center; padding-left: 6px; color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; letter-spacing: .09em; }
+.mtl-track-content { position: relative; min-width: 0; height: 100%; overflow: hidden; background: var(--soft-bg); border-left: 1px solid var(--panel-border); }
+.mtl-clip { position: absolute; top: 2px; bottom: 2px; overflow: hidden; border: 1px solid rgba(255,255,255,.45); background: #222; color: #fff; cursor: grab; }
+.mtl-clip.mtl-selected { border: 2px solid var(--accent); box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
+.mtl-clip img { width: 100%; height: 100%; object-fit: cover; opacity: .8; pointer-events: none; }
+.mtl-clip-name { position: absolute; inset: 2px 10px auto 5px; overflow: hidden; color: #fff; font: 7px 'JetBrains Mono',monospace; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 4px #000; pointer-events: none; }
+.mtl-trim-handle { position: absolute; z-index: 3; top: 0; bottom: 0; width: 8px; min-height: 0; padding: 0; border: 0; background: rgba(0,0,0,.72); cursor: ew-resize; touch-action: none; }
+.mtl-trim-left { left: 0; border-right: 2px solid var(--accent); }
+.mtl-trim-right { right: 0; border-left: 2px solid var(--accent); }
+.mtl-gap { position: absolute; top: 0; bottom: 0; background: rgba(0,0,0,.7); pointer-events: none; }
+.mtl-transition { position: absolute; z-index: 5; top: 50%; width: 18px; height: 18px; min-height: 0; padding: 0; transform: translate(-50%,-50%); border: 1px solid var(--accent); border-radius: 50%; background: var(--bg); color: var(--accent); font-size: 10px; cursor: pointer; }
+.mtl-wave { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 1px; overflow: hidden; opacity: .7; pointer-events: none; }
+.mtl-wave i { flex: 1 1 0; min-width: 1px; max-width: 4px; background: var(--text-dim); }
+.mtl-playhead { position: absolute; z-index: 8; top: 0; bottom: 0; width: 1px; background: var(--accent); box-shadow: 0 0 3px #000; pointer-events: none; }
+.mtl-playhead::before { position: absolute; top: 0; left: -4px; width: 9px; height: 8px; content: ''; background: var(--accent); clip-path: polygon(0 0,100% 0,50% 100%); }
+.mtl-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; pointer-events: none; }
+.mtl-empty[hidden] { display: none !important; }
+.mtl-transition-popover,.mtl-context-menu { position: absolute; z-index: 20; display: flex; flex-direction: column; gap: 3px; min-width: 150px; padding: 7px; border: 1px solid var(--panel-border); background: var(--bg); box-shadow: 0 10px 34px var(--shadow); }
+.mtl-transition-popover[hidden],.mtl-context-menu[hidden] { display: none !important; }
+.mtl-transition-popover b { padding: 3px; color: var(--text-dim2); font: 7px 'JetBrains Mono',monospace; letter-spacing: .1em; }
+.mtl-transition-popover button,.mtl-context-menu button { min-height: 24px; padding: 3px 6px; border: 1px solid transparent; background: transparent; color: var(--text); font: 8px 'JetBrains Mono',monospace; text-align: left; cursor: pointer; }
+.mtl-transition-popover button:hover,.mtl-transition-popover button[aria-pressed="true"],.mtl-context-menu button:hover { border-color: var(--panel-border); color: var(--accent); }
+.mtl-preview-overlay { position: absolute; z-index: 9; inset: 0; display: grid; place-items: center; overflow: hidden; pointer-events: none; }
+.mtl-preview-overlay img,.mtl-preview-overlay video { width: 100%; height: 100%; object-fit: contain; }
+.mtl-preview-overlay[hidden] { display: none !important; }
+body[data-mode="video"] #shortcut-footer { display: none; }
+@media (max-width: 767px) {
+  #app[data-workspace="video"] #mainArea { inset: 0 0 290px; padding: 8px 12px 4px; }
+  #app[data-workspace="video"] #videoPlaybackControls { bottom: 0; }
+  #app[data-workspace="video"] #multi-timeline { position: absolute; z-index: 13; right: 0; bottom: 52px; left: 0; display: flex; width: 100%; height: 238px; padding: 5px 8px 7px; }
+  .mtl-media-heading { width: 96px; gap: 4px; font-size: 7px; }
+  .mtl-media-card { width: 102px; }
+  .mtl-toolbar { gap: 3px; }
+  .mtl-toolbar button { min-height: 22px; padding: 2px 4px; font-size: 8px; }
+  .mtl-toolbar output { font-size: 7px; }
+  .mtl-video-row { min-height: 35px; }
+  .mtl-overlay-row { min-height: 29px; }
+  .mtl-audio-row { min-height: 22px; }
+}
+
 </style>
 </head>
 <body data-mode="empty">
@@ -1292,7 +1373,26 @@ body[data-mode="empty"] #app #timeline-module { flex: none; width: 100%; height:
         </div>
       </div>
     </section>
+    <section id="multi-timeline" class="video-only mtl-shell" hidden aria-label="Multi-clip editing timeline">
+      <div class="mtl-media-row"><div class="mtl-media-heading"><span>MEDIA POOL</span><button type="button" id="mtl-add-clip">＋ Add clip</button><input type="file" id="mtl-file-input" accept="image/*,video/*" multiple hidden></div><div id="mtl-media-pool" class="mtl-media-pool" aria-label="Imported media clips"></div></div>
+      <div class="mtl-toolbar" role="toolbar" aria-label="Multi-clip timeline tools">
+        <button type="button" data-mtl-action="cut">✂ Cut</button><button type="button" data-mtl-action="delete">▣ Delete</button><button type="button" data-mtl-action="undo" disabled>↩ Undo</button><button type="button" data-mtl-action="redo" disabled>↪ Redo</button><span class="mtl-tool-spacer"></span><button type="button" data-mtl-action="zoom-out" aria-label="Zoom out">−</button><output id="mtl-zoom-label">1.0×</output><button type="button" data-mtl-action="zoom-in" aria-label="Zoom in">+</button><output id="mtl-timecode">0:00 / 0:00</output><output id="mtl-selection-status">Select a clip</output>
+      </div>
+      <div id="mtl-ruler-scroll" class="mtl-ruler-scroll"><div id="mtl-ruler" class="mtl-ruler"></div></div>
+      <div id="mtl-scroll" class="mtl-scroll" tabindex="0" aria-label="Multi-track timeline. Drag clips to arrange, resize their edges, or right-click for clip actions.">
+        <div id="mtl-canvas" class="mtl-canvas">
+          <div class="mtl-track mtl-video-row"><span class="mtl-track-name">VIDEO</span><div id="mtl-main-track" class="mtl-track-content" data-track="main"></div></div>
+          <div class="mtl-track mtl-overlay-row"><span class="mtl-track-name">OVERLAY</span><div id="mtl-overlay-track" class="mtl-track-content" data-track="overlay"></div></div>
+          <div class="mtl-track mtl-audio-row"><span class="mtl-track-name">AUDIO</span><div id="mtl-audio-track" class="mtl-track-content" role="img" aria-label="Audio waveform"></div></div>
+          <div id="mtl-playhead" class="mtl-playhead" aria-hidden="true"></div>
+          <div id="mtl-empty" class="mtl-empty">Add clips to the media pool, then drag them onto a track.</div>
+          <div id="mtl-transition-popover" class="mtl-transition-popover" hidden><b>TRANSITION</b><button type="button" data-mtl-transition="none">None</button><button type="button" data-mtl-transition="dissolve">Dissolve</button><button type="button" data-mtl-transition="fade-to-black">Fade to black</button><button type="button" data-mtl-transition="fade-from-black">Fade from black</button></div>
+          <div id="mtl-context-menu" class="mtl-context-menu" hidden><button type="button" data-mtl-context="delete">Delete</button><button type="button" data-mtl-context="duplicate">Duplicate</button><button type="button" data-mtl-context="split">Split here</button></div>
+        </div>
+      </div>
+    </section>
   </div>
+  <div id="shortcut-footer" aria-label="Keyboard shortcuts"><span>SPACE <b>PLAY / PAUSE</b></span><span>R <b>RESET</b></span><span>D <b>EXPORT</b></span><span>E <b>EXPAND</b></span><span>C <b>CROP</b></span></div>
 </div>
 <div id="shortcutsOverlay" class="modalOverlay" hidden>
   <section class="modalCard shortcutsDialog" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
@@ -2825,6 +2925,7 @@ async function handleVideoFile(file){
     $('processVideoBtn').style.display='flex'; $('downloadBtn').innerHTML='⤓ Original-size frame PNG';
     updateTrimUI(); renderCaptionKeyframeMarkers(); await Promise.all([renderVideoFilmstrip(token),renderAudioWaveform(file,token)]); if(token!==fileLoadId) return;
     window.filmLabTimeline?.setVideo(dur,videoTrim.start,videoTrim.end);
+    window.multiTimeline?.adoptFirstVideo(file,videoEl,videoObjectUrl,dur,videoTrim);
     await videoEl.play().catch(()=>{}); startLoop();
     showToast(dur>60?`${dur.toFixed(1)}s video — first 60s selected. Adjust the trim below.`:'Video loaded — drag crop and set trim points',5000);
   }catch(error){
@@ -4282,17 +4383,28 @@ function videoOutputSize(options,position,resolution){
   if(width%2) width++; if(height%2) height++;
   return {width,height};
 }
-async function processVideo(){
+async function exportMultiClip(clips){
+  const plan=window.multiTimeline?.getExportPlan?.(clips);
+  if(!plan?.segments?.length){ showToast('Add at least one video clip to the timeline'); return; }
+  const bridge=window.filmLabTimelineBridge, originalSource=bridge?.activeSource||bridge?.sourceUrl, video=bridge?.videoElement, originalTrim=bridge?.trim;
+  const originalTime=video?.currentTime||0, wasPlaying=!!video && !video.paused;
+  try{ return await processVideo(plan); }
+  finally{ if(originalSource && bridge?.restorePreviewState) try{ await bridge.restorePreviewState(originalSource,originalTime,wasPlaying,originalTrim); }catch(error){ console.warn('Could not restore the original preview',error); } }
+}
+window.exportMultiClip=exportMultiClip;
+async function processVideo(multiClipPlan=null){
   if(!isVideo || !hasContent || exportBusy || mediaBusy){ showToast('Upload video first'); return; }
+  if(!multiClipPlan && window.multiTimeline?.isReady?.()) return exportMultiClip(window.multiTimeline.clips);
   const range='trimmed'; $('videoExportRange').value=range;
   const trim=social.trimRange(videoEl.duration,videoTrim.start,videoTrim.end);
-  const proposedPlan=window.filmLabTimeline?.getExportPlan?.();
+  const proposedPlan=multiClipPlan||window.filmLabTimeline?.getExportPlan?.();
   const editPlan=proposedPlan?.segments?.length?proposedPlan:{segments:[{start:trim.start,end:trim.end,transition:'none'}],duration:trim.end-trim.start,transitionSeconds:.5};
   const dur=editPlan.duration, fps=24, total=Math.max(1,Math.ceil(dur*fps));
   const container=$('videoContainer').value, quality=$('videoQuality').value;
   const audioRequested=$('keepVideoAudio').checked&&!!videoSourceFile;
   const audioContinuous=editPlan.segments.every((segment,index,list)=>index===list.length-1||(segment.transition==='none'&&Math.abs(segment.end-list[index+1].start)<0.001));
-  const keepAudio=audioRequested&&audioContinuous, options={...exportOptions,comparison:false}, position={...videoCrop};
+  const mainSegments=editPlan.segments.filter(segment=>!segment.gap);
+  const keepAudio=audioRequested&&(editPlan.multiClip?mainSegments.length===1&&mainSegments[0].start===0&&mainSegments[0].source===videoObjectUrl:audioContinuous), options={...exportOptions,comparison:false}, position={...videoCrop};
   const outputSize=videoOutputSize(options,position,$('videoResolution').value);
   const rangeTitle=`${dur.toFixed(1)}s edited`;
   const view=beginExport(`Exporting ${rangeTitle} · ${container.toUpperCase()}`), files=new Set(), segments=[];
@@ -4307,7 +4419,8 @@ async function processVideo(){
     lastFFmpegLog=''; const code=ff.exec?await ff.exec(args):await ff.run(...args);
     if(typeof code==='number' && code!==0) throw new Error(`Video encoding failed (${code}).`);
   };
-  const uploadFrame=async(time)=>{
+  const uploadFrame=async(time,source=null)=>{
+    if(source && window.filmLabTimelineBridge?.ensureVideoSource) await window.filmLabTimelineBridge.ensureVideoSource(source);
     await seekVideo(time); checkExportCancelled();
     if(useWebCodecs){
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
@@ -4346,20 +4459,39 @@ async function processVideo(){
       for(let j=0;j<count;j++){
         checkExportCancelled();
         const i=chunkStart+j, outputTime=i/fps;
-        const framePlan=window.filmLabTimeline?.mapOutputTime?.(outputTime,editPlan)||{sourceTime:trim.start+outputTime,blackAlpha:0};
-        const currentSegment=editPlan.segments.find(segment=>framePlan.sourceTime>=segment.start-.001&&framePlan.sourceTime<=segment.end+.001)||editPlan.segments[editPlan.segments.length-1];
-        const t=Math.min(currentSegment.end-0.0001,Math.max(currentSegment.start,framePlan.sourceTime));
-        await uploadFrame(t);
-        let output=makeExportCanvas(options,position,true,outputSize);
-        if(Number.isFinite(framePlan.blendTime)){
-          const nextSegment=editPlan.segments.find(segment=>framePlan.blendTime>=segment.start-.001&&framePlan.blendTime<=segment.end+.001)||editPlan.segments[editPlan.segments.length-1];
-          await uploadFrame(Math.min(nextSegment.end-0.0001,Math.max(nextSegment.start,framePlan.blendTime)));
-          const incoming=makeExportCanvas(options,position,true,outputSize); output=composeTimelineFrame(output,incoming,framePlan.blend||0,0);
+        const framePlan=window.filmLabTimeline?.mapOutputTime?.(outputTime,editPlan);
+        const multiFramePlan=editPlan.multiClip?window.multiTimeline?.mapOutputTime?.(outputTime,editPlan):null;
+        const mapped=multiFramePlan||framePlan||{sourceTime:trim.start+outputTime,blackAlpha:0};
+        const currentSegment=editPlan.multiClip?editPlan.segments[mapped.clipIndex]:editPlan.segments.find(segment=>mapped.sourceTime>=segment.start-.001&&mapped.sourceTime<=segment.end+.001);
+        let output;
+        if(mapped.gap||mapped.blackFrame||!currentSegment){
+          output=document.createElement('canvas'); output.width=outputSize.width; output.height=outputSize.height;
+          const blackContext=output.getContext('2d'); blackContext.fillStyle='#000'; blackContext.fillRect(0,0,output.width,output.height);
+        }else{
+          const source=editPlan.multiClip?(mapped.source||currentSegment.source):null;
+          const lower=editPlan.multiClip?(currentSegment.trimStart??0):currentSegment.start;
+          const upper=editPlan.multiClip?(currentSegment.trimEnd??currentSegment.end):currentSegment.end;
+          const t=Math.min(upper-0.0001,Math.max(lower,mapped.sourceTime));
+          await uploadFrame(t,source);
+          output=makeExportCanvas(options,position,true,outputSize);
+          if(Number.isFinite(mapped.blendTime)){
+            const blendSource=editPlan.multiClip?mapped.blendSource:null;
+            const blendClip=editPlan.multiClip?editPlan.segments.find(segment=>!segment.gap&&segment.source===blendSource&&mapped.blendTime>=segment.trimStart-.001&&mapped.blendTime<=segment.trimEnd+.001):editPlan.segments.find(segment=>mapped.blendTime>=segment.start-.001&&mapped.blendTime<=segment.end+.001);
+            const blendLower=editPlan.multiClip?(blendClip?.trimStart??0):(blendClip?.start??0);
+            const blendUpper=editPlan.multiClip?(blendClip?.trimEnd??mapped.blendTime+.001):(blendClip?.end??mapped.blendTime+.001);
+            await uploadFrame(Math.min(blendUpper-0.0001,Math.max(blendLower,mapped.blendTime)),blendSource);
+            const incoming=makeExportCanvas(options,position,true,outputSize); output=composeTimelineFrame(output,incoming,mapped.blend||0,0);
+          }
         }
-        if(framePlan.blackAlpha>0) output=composeTimelineFrame(output,null,0,framePlan.blackAlpha);
+        if(mapped.blackAlpha>0) output=composeTimelineFrame(output,null,0,mapped.blackAlpha);
+        if(editPlan.multiClip && window.multiTimeline?.renderOverlays) output=await window.multiTimeline.renderOverlays(output,outputTime,editPlan);
         const blob=await canvasBlob(output,'image/jpeg',0.98);
         checkExportCancelled(); await writeFile(`frame_${String(j).padStart(4,'0')}.jpg`,new Uint8Array(await blob.arrayBuffer()));
-        const pct=Math.round((i+1)/total*90); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Encoding… ${pct}%`; // Frame ${i+1}/${total} is represented by the percentage above.
+        const pct=Math.round((i+1)/total*90); progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%';
+        const segmentIndex=editPlan.multiClip&&!mapped.gap?editPlan.segments.filter((segment,index)=>index<=mapped.clipIndex&&!segment.gap).length:0;
+        const segmentCount=editPlan.multiClip?editPlan.segments.filter(segment=>!segment.gap).length:0;
+        const segmentLabel=segmentCount?(mapped.gap?'Gap':`Segment ${segmentIndex}/${segmentCount}`):'';
+        progressText.textContent=`${segmentLabel?segmentLabel+' · ':''}Frame ${i+1}/${total} · Encoding… ${pct}%`;
         await new Promise(resolve=>setTimeout(resolve,0));
       }
       checkExportCancelled(); encodingVideo=true;
@@ -4375,7 +4507,7 @@ async function processVideo(){
     checkExportCancelled(); encodingVideo=true; encoderProgressBase=90; encoderProgressSpan=8;
     progressText.textContent=`Encoding… ${progressPct.textContent}`;
     const outputName='output.'+container; files.add(outputName);
-    await exec(social.muxVideoArgs({start:editPlan.segments[0]?.start??trim.start,duration:dur,container,audio:keepAudio,source:audioSource}));
+    await exec(social.muxVideoArgs({start:editPlan.multiClip?(mainSegments[0]?.trimStart??0):(editPlan.segments[0]?.start??trim.start),duration:dur,container,audio:keepAudio,source:audioSource}));
     encodingVideo=false; checkExportCancelled(); progressFill.style.width='100%'; progressPct.textContent='100%'; progressText.textContent='Download ready'; $('progressTitle').textContent='Download ready';
     const data=await readFile(outputName), out=new Blob([data],{type:container==='mp4'?'video/mp4':'video/webm'});
     const filename=`${social.safeFilename(videoSourceFile?.name||'reel')}-${dur.toFixed(1)}s.${container}`;
@@ -4470,8 +4602,41 @@ function initializeWorkspaceModes(){ setWorkspaceMode('empty'); }
 // Narrow bridge keeps the standalone timeline module away from renderer and encoder internals.
 window.filmLabTimelineBridge={
   get trim(){ return {...videoTrim}; },
-  setTrim(start,end){ if(isVideo && Number.isFinite(videoEl.duration)) changeTrim(start,end,start<videoTrim.start?'start':'end'); }
+  get videoElement(){ return videoEl; },
+  get sourceUrl(){ return videoObjectUrl; },
+  get activeSource(){ return videoEl?.currentSrc||videoEl?.src||videoObjectUrl; },
+  get sourceFile(){ return videoSourceFile; },
+  get exporting(){ return exportBusy; },
+  setTrim(start,end){ if(isVideo && Number.isFinite(videoEl.duration)) changeTrim(start,end,start<videoTrim.start?'start':'end'); },
+  setTimelineTrim(start,end){
+    if(!isVideo || !Number.isFinite(videoEl.duration)) return;
+    videoTrim=social.trimRange(videoEl.duration,start,end);
+    if(videoEl.currentTime<videoTrim.start || videoEl.currentTime>=videoTrim.end) videoEl.currentTime=videoTrim.start;
+    updateTrimUI(); window.filmLabTimeline?.syncBaseTrim(videoTrim);
+  },
+  async ensureVideoSource(src){
+    if(!isVideo || !src) throw new Error('No active video preview');
+    if((videoEl.currentSrc===src || videoEl.src===src) && videoEl.readyState>=2) return;
+    videoEl.pause();
+    await waitForVideoData(videoEl,src);
+    const width=videoEl.videoWidth, height=videoEl.videoHeight;
+    if(!(width>0 && height>0 && videoEl.duration>0)) throw new Error('Could not decode this timeline clip');
+    if(canvas.width!==width || canvas.height!==height || !fboSharpened){ canvas.width=width; canvas.height=height; recreateFBOs(width,height); }
+    uploadVideoTexture(); updateVideoPlayback();
+  },
+  async restorePreviewState(src,time,playing,trim=null){
+    if(src) await this.ensureVideoSource(src);
+    if(isVideo && Number.isFinite(videoEl.duration)){
+      videoTrim=social.trimRange(videoEl.duration,trim?.start??0,trim?.end??Math.min(videoEl.duration,60)); updateTrimUI();
+      videoEl.currentTime=Math.max(0,Math.min(videoEl.duration-.02,Number(time)||0));
+      if(playing) await videoEl.play().catch(()=>{}); else videoEl.pause();
+      uploadVideoTexture(); updateVideoPlayback(); render(performance.now());
+    }
+  },
+  play(){ if(videoEl?.paused) videoEl.play().catch(()=>{}); },
+  pause(){ videoEl?.pause(); }
 };
+window.addEventListener('film-lab-toast',event=>{ if(event.detail) showToast(String(event.detail),5000); });
 // init
 setupSliderNumberEditing(); updateFromSliders(); updateSliderUI(); updateSocialUI(); restoreSharedLook(); render(performance.now()); initializeWorkspaceModes();
 window.addEventListener('dragover',e=> e.preventDefault());
@@ -4484,5 +4649,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 else startFilmLab();
 </script>
 <script src="./timeline-module.js"></script>
+<script src="./multi-timeline.js"></script>
 </body>
 </html>

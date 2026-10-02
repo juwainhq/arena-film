@@ -8,6 +8,7 @@ const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
 const script = html.split('<script>')[1].split('</script>')[0];
 const styles = html.split('<style>')[1].split('</style>')[0];
 const timeline = readFileSync(resolve(__dirname, '../timeline-module.js'), 'utf8');
+const multiTimeline = readFileSync(resolve(__dirname, '../multi-timeline.js'), 'utf8');
 
 test('the existing upload landing routes image and video files without a reload', () => {
   assert.match(html, /id="dropZone"/);
@@ -150,6 +151,49 @@ test('timeline output mapping covers concatenated cuts, dissolves, and black fad
   assert.deepEqual(JSON.parse(JSON.stringify(state.map(1.75,fadeOut))),{sourceTime:1.75,blackAlpha:.5});
   const fadeIn={transitionSeconds:.5,segments:[{start:0,end:2,transition:'fade-from-black'},{start:3,end:5,transition:'none'}]};
   assert.deepEqual(JSON.parse(JSON.stringify(state.map(2.25,fadeIn))),{sourceTime:3.25,blackAlpha:.5});
+});
+
+test('multi-clip editor is additive, multi-track, and keeps the first-upload video element for preview', () => {
+  assert.match(html, /<section id="multi-timeline" class="video-only mtl-shell"/);
+  for (const id of ['mtl-add-clip','mtl-file-input','mtl-media-pool','mtl-main-track','mtl-overlay-track','mtl-audio-track','mtl-playhead','mtl-ruler','mtl-context-menu','mtl-transition-popover']) assert.match(html,new RegExp(`id="${id}"`));
+  for (const action of ['cut','delete','undo','redo','zoom-in','zoom-out']) assert.match(html,new RegExp(`data-mtl-action="${action}"`));
+  for (const action of ['delete','duplicate','split']) assert.match(html,new RegExp(`data-mtl-context="${action}"`));
+  assert.match(html, /src="\.\/multi-timeline\.js"/);
+  assert.match(multiTimeline, /\/\/ === MULTI-TIMELINE MODULE ===/);
+  assert.match(multiTimeline, /function addDropHandlers\(track, trackName\)/);
+  assert.match(multiTimeline, /function onClipPointerDown\(event\)/);
+  assert.match(multiTimeline, /function splitClip\(clip, at\)/);
+  assert.match(multiTimeline, /function getExportPlan\(clips = state\.clips\)/);
+  assert.match(multiTimeline, /function mapOutputTime\(outputTime, plan\)/);
+  assert.match(multiTimeline, /function renderOverlays\(outputCanvas, time, plan = null\)/);
+  assert.match(multiTimeline, /bridge\(\)\.ensureVideoSource\?\.\(media\.src\)/);
+  assert.doesNotMatch(multiTimeline, /videoElement\.replaceWith|videoEl\.replaceWith/);
+  assert.match(script, /window\.multiTimeline\?\.adoptFirstVideo\(file,videoEl,videoObjectUrl,dur,videoTrim\)/);
+  assert.match(script, /async function exportMultiClip\(clips\)/);
+  assert.match(script, /window\.multiTimeline\?\.isReady\?\.\(\)/);
+  assert.match(script, /multiFramePlan=editPlan\.multiClip\?window\.multiTimeline\?\.mapOutputTime/);
+  assert.match(script, /window\.multiTimeline\.renderOverlays\(output,outputTime,editPlan\)/);
+  assert.match(script, /Segment \$\{segmentIndex\}\/\$\{segmentCount\}/);
+  assert.match(html, /id="shortcut-footer"/);
+  assert.match(styles, /#shortcuts,#cropPanelToggle > kbd,#downloadBtn > kbd/);
+  assert.match(styles, /#shortcut-footer \{ position: fixed/);
+  assert.match(styles, /\.mtl-clip\.mtl-selected/);
+  assert.match(styles, /#app\[data-workspace="video"\] #timeline-module,#app\[data-workspace="video"\] #editorTimeline \{ display: none !important; \}/);
+  assert.match(html, /<section id="timeline-module" class="video-only"/);
+});
+
+test('multi-timeline export mapping preserves clip trims, gap black frames, and dissolve/fade timing', () => {
+  const mapper=multiTimeline.match(/function mapOutputTime\(outputTime, plan\) \{[\s\S]*?\n  \}/)[0];
+  const state=vm.createContext({});
+  vm.runInContext(`${mapper}\nthis.map=mapOutputTime;`,state);
+  const a={index:0,start:0,end:2,trimStart:1,trimEnd:3,source:'a.mp4',transition:'dissolve'};
+  const b={index:1,start:2,end:4,trimStart:4,trimEnd:6,source:'b.mp4',transition:'none'};
+  a.next=b;
+  assert.deepEqual(JSON.parse(JSON.stringify(state.map(1.75,{duration:4,segments:[a,b]}))),{sourceTime:2.75,source:'a.mp4',blendTime:4.25,blendSource:'b.mp4',blend:0.5,clipIndex:0,blackAlpha:0});
+  const gap={index:1,start:2,end:3,gap:true,blackFrame:true};
+  assert.equal(state.map(2.5,{duration:3,segments:[{index:0,start:0,end:2,trimStart:0,trimEnd:2,source:'a.mp4'},gap]}).gap,true);
+  const fade={index:0,start:0,end:2,trimStart:0,trimEnd:2,source:'a.mp4',transition:'fade-to-black'};
+  assert.equal(state.map(1.75,{duration:2,segments:[fade]}).blackAlpha,0.5);
 });
 
 test('FFmpeg stays dormant until video upload and export progress opens only on export', () => {
