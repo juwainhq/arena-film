@@ -162,6 +162,17 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 #presetSelect:hover { background: var(--soft-bg); border-color: var(--text); }
 #presetSelect:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
 #presetSelect option,#presetSelect optgroup { background: var(--bg); color: var(--text); }
+.presetSelectWrap.previewOpen { z-index: 30; }
+.presetHoverMenu { position: absolute; z-index: 40; top: 100%; left: 0; right: 0; max-height: min(340px,45vh); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); box-shadow: 0 18px 38px var(--shadow); }
+.presetHoverMenu[hidden] { display: none !important; }
+.presetHoverMenu.opensUp { top: auto; bottom: 100%; }
+.presetHoverGroup { position: sticky; top: 0; z-index: 1; padding: 8px 11px 5px; background: var(--bg); color: var(--text-dim2); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.presetHoverOption { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 40px; padding: 9px 11px; border: 0; border-bottom: 1px solid var(--panel-border); background: transparent; color: var(--text-dim); font: 500 10px var(--display); letter-spacing: .07em; text-align: left; cursor: pointer; }
+.presetHoverOption:hover,.presetHoverOption[aria-selected="true"] { background: var(--soft-bg); color: var(--text); }
+.presetHoverOption:focus-visible { outline: 1px solid var(--accent); outline-offset: -2px; }
+/* Contain the swatch's decorative curve so it cannot stretch across the open menu. */
+.presetHoverOption .presetColorSwatch { position: relative; width: 42px; height: 9px; margin-left: auto; overflow: hidden; }
+.presetHoverOption .presetColorSwatch::after { content: none; }
 .chip { position: relative; width: 100%; padding: 13px 0; border: 0; border-bottom: 1px solid var(--panel-border); border-radius: 0; background: transparent; color: var(--text-dim); font-size: 10px; font-weight: 500; letter-spacing: .08em; text-align: left; text-transform: uppercase; white-space: nowrap; cursor: pointer; user-select: none; transition: color .25s, border-color .25s; }
 .chip:hover { color: var(--text); border-bottom-color: var(--border-hover); }
 .chip:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; }
@@ -244,6 +255,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 .maskButtons button[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: var(--accent-bg); }
 .maskButtons button:disabled { opacity: .45; cursor: not-allowed; }
 #canvasWrap.maskPainting #glCanvas { cursor: crosshair; touch-action: none; }
+#canvasWrap.maskBgEditing #glCanvas { cursor: crosshair; touch-action: none; }
 #maskDoneBtn { display: none; position: absolute; top: 0; right: 0; z-index: 7; padding: 9px 12px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
 #canvasWrap.maskPainting #maskDoneBtn { display: block; }
 #maskDoneBtn:hover,#maskDoneBtn:focus-visible { border-color: var(--accent); color: var(--accent); }
@@ -610,6 +622,45 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 .sidebarTab:hover { color: var(--text); background: var(--soft-bg); }
 .sidebarTab.active { background: var(--text); color: var(--inverse); }
 .sidebarTab:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+
+#maskPanel { gap: 0; }
+.maskBackgroundDetails { border-top: 1px solid var(--panel-border); border-bottom: 1px solid var(--panel-border); }
+.maskBackgroundDetails > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; list-style: none; color: var(--text); font: 600 11px Inter,system-ui,sans-serif; letter-spacing: .16em; text-transform: uppercase; cursor: pointer; }
+.maskBackgroundDetails > summary::-webkit-details-marker { display: none; }
+.maskBackgroundDetails > summary::after { content: '＋'; color: var(--text-dim2); font: 14px 'JetBrains Mono',monospace; }
+.maskBackgroundDetails[open] > summary::after { content: '−'; }
+.maskBgSummaryHint { margin-left: auto; color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .08em; }
+.maskBgTopline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 2px 0 12px; }
+.maskBgTopline .sectionLabel { margin: 0; }
+.maskBgAiStatus { display: flex; align-items: center; gap: 9px; min-height: 40px; margin: 0 0 9px; padding: 8px 10px; border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 10px; line-height: 1.5; }
+.maskBgAiStatus .engineSpinner { flex: none; width: 13px; height: 13px; }
+.maskBgStatus,.maskBgHint,.maskBgPrivacy { color: var(--text-dim2); font-size: 9px; line-height: 1.65; }
+.maskBgStatus { min-height: 28px; margin: 8px 0 9px; }
+.maskBgHint { margin: 6px 0 8px; }
+.maskBgPrivacy { margin-top: 10px; text-align: center; letter-spacing: .04em; }
+.maskBgButtonRow { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.maskBgButtonRow .toolBtn { width: 100%; min-width: 0; min-height: 38px; margin: 0; padding: 8px 6px; font-size: 9px; }
+.maskBgButtonRow .toolBtn[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: var(--accent-bg); }
+.maskBgDone { width: 100%; min-height: 36px; margin: 7px 0 0; }
+.maskBgRangeRow { margin: 10px 0 2px; }
+.maskBgRangeRow > label,.maskBgControl > label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 2px; color: var(--text-dim); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; }
+.maskBgRangeRow output,.maskBgControl output { color: var(--text); font: 9px 'JetBrains Mono',monospace; white-space: nowrap; }
+.maskBgRangeRow .subSlider,.maskBgControl .subSlider { margin-top: 1px; }
+.maskBgInvertLabel { min-height: 34px; margin-top: 2px; font-size: 10px; }
+.maskBgDivider { display: flex; align-items: center; gap: 10px; margin: 15px 0 9px; color: var(--text-dim2); font: 600 8px 'JetBrains Mono',monospace; letter-spacing: .16em; }
+.maskBgDivider::before,.maskBgDivider::after { content: ''; flex: 1; height: 1px; background: var(--panel-border); }
+.maskBgModeGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+.maskBgModeGrid label { display: flex; align-items: center; justify-content: center; min-height: 34px; gap: 5px; padding: 5px; border: 1px solid var(--panel-border); color: var(--text-dim); font-size: 8px; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; }
+.maskBgModeGrid label:has(input:checked) { border-color: var(--text); color: var(--text); background: var(--soft-bg); }
+.maskBgModeGrid input { width: 11px; height: 11px; accent-color: var(--accent); }
+.maskBgControl { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.maskBgControl[hidden] { display: none !important; }
+.maskBgControl > input[type="color"],.maskBgColorPair input[type="color"] { width: 100%; height: 35px; padding: 3px; border: 1px solid var(--panel-border); background: var(--bg); }
+.maskBgColorPair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+#chooseMaskBgImageBtn { width: 100%; min-height: 38px; margin: 0; }
+.maskBgImageName { overflow: hidden; color: var(--text-dim2); font: 9px 'JetBrains Mono',monospace; text-overflow: ellipsis; white-space: nowrap; }
+.maskBgApply { min-height: 42px; margin-top: 13px; }
+.maskBgApply:disabled { opacity: .48; cursor: not-allowed; }
 .sidebarViews { display: flex; flex-direction: column; min-height: 0; }
 .sidebarPanel { display: none; flex-direction: column; gap: 17px; min-width: 0; }
 .sidebarPanel.active { display: flex; }
@@ -1023,6 +1074,70 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
   .mtl-track-name { font-size: 7px; }
 }
 
+/* Additive media import and responsive refinements. The canvas and source media stay mounted. */
+.dropPickers { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; width: min(640px,100%); margin-top: 24px; }
+.dropPickerBtn { display: flex; min-width: 0; min-height: 64px; flex-direction: column; justify-content: center; align-items: flex-start; gap: 6px; padding: 11px 13px; border: 1px solid var(--panel-border); border-radius: 0; background: transparent; color: var(--text); text-align: left; cursor: pointer; transition: background .2s,border-color .2s,color .2s; }
+.dropPickerBtn:hover,.dropPickerBtn:focus-visible { border-color: var(--border-strong); background: var(--soft-bg); }
+.dropPickerBtn:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+.dropPickerBtn > span { font-size: 10px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; }
+.dropPickerBtn > small { color: var(--text-dim2); font: 8px 'JetBrains Mono',monospace; letter-spacing: .06em; }
+#mediaLoading { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px; background: var(--bg); }
+.mediaLoadingCard { display: flex; width: min(360px,100%); flex-direction: column; gap: 12px; padding: 22px; border: 1px solid var(--panel-border); background: var(--panel); }
+.mediaLoadingEyebrow { color: var(--text-dim2); font: 9px 'JetBrains Mono',monospace; letter-spacing: .16em; }
+.mediaLoadingCard > b { font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.mediaLoadingCard > p { color: var(--text-dim2); font-size: 10px; line-height: 1.5; }
+.mediaSkeleton { display: flex; height: 46px; gap: 6px; overflow: hidden; }
+.mediaSkeleton span { flex: 1; border: 1px solid var(--panel-border); background: linear-gradient(100deg,var(--soft-bg) 20%,var(--soft-hover) 45%,var(--soft-bg) 70%); background-size: 220% 100%; animation: mediaSkeletonSweep 1.5s ease-in-out infinite; }
+.mediaSkeleton span:nth-child(2) { animation-delay: .16s; }
+.mediaSkeleton span:nth-child(3) { animation-delay: .32s; }
+@keyframes mediaSkeletonSweep { to { background-position: -220% 0; } }
+#videoEngineStatus { display: flex; flex: none; align-items: center; justify-content: center; gap: 8px; min-height: 22px; margin: 0 auto; color: var(--text-dim2); font: 9px 'JetBrains Mono',monospace; letter-spacing: .04em; }
+.engineSpinner { width: 10px; height: 10px; border: 1px solid var(--panel-border); border-top-color: var(--accent); border-radius: 50%; animation: engineSpin .8s linear infinite; }
+#videoEngineStatus[data-state="ready"] .engineSpinner { border-color: var(--accent); animation: none; }
+#videoEngineStatus[data-state="error"] { color: var(--text); }
+@keyframes engineSpin { to { transform: rotate(360deg); } }
+#app[data-workspace="video"] #videoPlaybackControls { display: flex; flex: none; flex-direction: column; align-items: stretch; justify-content: center; gap: 0; width: min(100%,1080px); min-height: 70px; margin: 0 auto; padding: 4px 0 0; border-top: 1px solid var(--panel-border); }
+.videoPlaybackActions { display: flex; min-width: 0; min-height: 36px; align-items: center; gap: 7px; }
+#app[data-workspace="video"] #videoSeek { display: block; flex: none; width: 100%; min-width: 0; height: 30px; margin: 0; cursor: pointer; }
+
+/* At tablet widths, keep photo controls beside the canvas rather than stacking them. */
+@media (min-width: 768px) and (max-width: 1100px) {
+  body[data-mode="photo"] { height: 100%; overflow: hidden; }
+  body[data-mode="photo"] #app { height: 100dvh; min-height: 0; }
+  body[data-mode="photo"] #content { display: flex; flex-direction: row; min-height: 0; overflow: hidden; }
+  body[data-mode="photo"] #mainArea { flex: 1 1 auto; width: auto; height: auto; min-height: 0; padding: 24px; order: 0; }
+  body[data-mode="photo"] #sidebar { flex: 0 0 clamp(320px,38vw,392px); width: clamp(320px,38vw,392px); min-width: 320px; height: auto; max-height: none; padding: 20px 18px 22px; overflow-y: auto; order: 0; border-top: 0; border-left: 1px solid var(--panel-border); }
+  #app[data-workspace="video"] .videoPlaybackActions { overflow-x: auto; }
+  #app[data-workspace="video"] #glCanvas { max-height: calc(100% - 52px); }
+}
+@media (max-width: 767px) {
+  .dropPickers { gap: 8px; width: 100%; margin-top: 17px; }
+  .dropPickerBtn { min-height: 58px; gap: 5px; padding: 9px 9px; }
+  .dropPickerBtn > span { font-size: 9px; letter-spacing: .09em; }
+  .dropPickerBtn > small { font-size: 7px; letter-spacing: .015em; }
+  #app[data-workspace="video"] #mainArea { gap: 4px; }
+  #app[data-workspace="video"] #glCanvas { max-height: calc(100% - 42px); }
+  #app[data-workspace="video"] #videoEngineStatus { min-height: 18px; font-size: 8px; }
+  #app[data-workspace="video"] #videoPlaybackControls { position: relative; inset: auto; display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; width: 100%; min-height: 78px; margin: 0; padding: 2px 0 0; gap: 0; overflow: visible; background: transparent; border: 0; }
+  #app[data-workspace="video"] .videoPlaybackActions { min-height: 34px; gap: 5px; overflow-x: auto; }
+  #app[data-workspace="video"] .videoPlaybackActions .playbackSpeeds,
+  #app[data-workspace="video"] .videoPlaybackActions .playbackVolume,
+  #app[data-workspace="video"] .videoPlaybackActions #videoMuteBtn,
+  #app[data-workspace="video"] .videoPlaybackActions #videoLoopToggle { display: none !important; }
+  #app[data-workspace="video"] #videoSeek { width: 100%; min-width: 0; min-height: 44px; height: 44px; margin: 0; }
+  #app[data-workspace="video"] #videoSkipStart,#app[data-workspace="video"] #videoSkipEnd { min-width: 32px; min-height: 34px; }
+  #app[data-workspace="video"] #videoPlayBtn { min-width: 40px; min-height: 34px; }
+}
+@media (max-width: 380px) {
+  .dropPickers { gap: 6px; }
+  .dropPickerBtn { padding-inline: 7px; }
+  .dropPickerBtn > span { font-size: 8px; letter-spacing: .055em; }
+  .dropPickerBtn > small { font-size: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mediaSkeleton span,.engineSpinner { animation: none !important; }
+}
+
 </style>
 </head>
 <body data-mode="empty">
@@ -1056,6 +1171,10 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
         <div class="dropHero">
           <h2><span>Film</span><span>Lab.</span></h2>
           <p><span>Drop a photo or video, or <b>click to browse</b></span></p>
+          <div class="dropPickers" role="group" aria-label="Choose photo or video">
+            <button type="button" class="dropPickerBtn" id="photoPickerBtn"><span>Choose photos</span><small>JPG · PNG · HEIC · HEIF</small></button>
+            <button type="button" class="dropPickerBtn" id="videoPickerBtn"><span>Choose a video</span><small>MP4 · MOV · WEBM · M4V</small></button>
+          </div>
         </div>
         <div class="dropBottom">
           <div class="hint">JPG · PNG · HEIC · HEIF<br>UP TO 10 PHOTOS · REELS TRIM</div>
@@ -1079,20 +1198,31 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
         </div>
       </div>
       <video id="videoEl" muted playsinline></video>
+      <div id="mediaLoading" class="mediaLoading" hidden aria-live="polite">
+        <div class="mediaLoadingCard">
+          <span class="mediaLoadingEyebrow">FILM LAB / IMPORT</span>
+          <div class="mediaSkeleton" aria-hidden="true"><span></span><span></span><span></span></div>
+          <b id="mediaLoadingTitle">Preparing media</b>
+          <p id="mediaLoadingMessage">Your file stays on this device.</p>
+        </div>
       </div>
+      </div>
+      <div id="videoEngineStatus" class="videoEngineStatus video-only" role="status" aria-live="polite" hidden><span class="engineSpinner" aria-hidden="true"></span><span id="videoEngineStatusText">Loading video engine… this takes a moment</span></div>
       <div id="videoPlaybackControls" class="video-only" hidden aria-label="Video playback controls">
-        <button type="button" class="toolBtn playbackButton" id="videoSkipStart" aria-label="Skip to trim start">|◀</button>
-        <button type="button" class="toolBtn playbackButton" id="videoPlayBtn" aria-label="Play video">▶</button>
-        <button type="button" class="toolBtn playbackButton" id="videoSkipEnd" aria-label="Skip to trim end">▶|</button>
-        <output id="videoTime">0:00 / 0:23</output>
-        <div class="playbackSpeeds" role="group" aria-label="Playback speed"><button type="button" data-playback-rate="0.5" aria-pressed="false">0.5×</button><button type="button" data-playback-rate="1" class="active" aria-pressed="true">1×</button><button type="button" data-playback-rate="1.5" aria-pressed="false">1.5×</button><button type="button" data-playback-rate="2" aria-pressed="false">2×</button></div>
+        <div class="videoPlaybackActions">
+          <button type="button" class="toolBtn playbackButton" id="videoSkipStart" aria-label="Skip to trim start">|◀</button>
+          <button type="button" class="toolBtn playbackButton" id="videoPlayBtn" aria-label="Play video">▶</button>
+          <button type="button" class="toolBtn playbackButton" id="videoSkipEnd" aria-label="Skip to trim end">▶|</button>
+          <output id="videoTime">0:00 / 0:23</output>
+          <div class="playbackSpeeds" role="group" aria-label="Playback speed"><button type="button" data-playback-rate="0.5" aria-pressed="false">0.5×</button><button type="button" data-playback-rate="1" class="active" aria-pressed="true">1×</button><button type="button" data-playback-rate="1.5" aria-pressed="false">1.5×</button><button type="button" data-playback-rate="2" aria-pressed="false">2×</button></div>
+          <button type="button" class="toolBtn" id="videoMuteBtn" aria-pressed="true" aria-label="Unmute video">Unmute</button>
+          <div class="playbackVolume"><label for="videoVolume">VOL</label><input type="range" id="videoVolume" min="0" max="100" value="100" aria-label="Video volume"><output id="videoVolumeValue">100%</output></div>
+          <button type="button" class="toolBtn" id="videoLoopToggle" aria-pressed="true" aria-label="Toggle loop">Loop</button>
+          <label class="visuallyHidden" for="videoSpeed">Playback speed</label>
+          <select id="videoSpeed" class="sourceControl" aria-label="Playback speed" aria-hidden="true" tabindex="-1"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+        </div>
         <label class="visuallyHidden" for="videoSeek">Scrub video playback</label>
         <input type="range" id="videoSeek" min="0" max="60" step="0.01" value="0" aria-label="Video playback position">
-        <button type="button" class="toolBtn" id="videoMuteBtn" aria-pressed="true" aria-label="Unmute video">Unmute</button>
-        <div class="playbackVolume"><label for="videoVolume">VOL</label><input type="range" id="videoVolume" min="0" max="100" value="100" aria-label="Video volume"><output id="videoVolumeValue">100%</output></div>
-        <button type="button" class="toolBtn" id="videoLoopToggle" aria-pressed="true" aria-label="Toggle loop">Loop</button>
-        <label class="visuallyHidden" for="videoSpeed">Playback speed</label>
-        <select id="videoSpeed" class="sourceControl" aria-label="Playback speed" aria-hidden="true" tabindex="-1"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
       </div>
       <section id="carouselStrip" class="photo-only" aria-label="Carousel photos" hidden>
         <div class="stripHead"><span class="stripTitle" id="carouselCount">Carousel / 01 of 01</span><div class="stripActions"><button type="button" id="exportZipBtn" disabled>Carousel ZIP <span id="zipCount">0 photos</span></button><button type="button" id="applyAllBtn">↗ Apply to all</button><button type="button" id="addPhotosBtn">+ Add</button><button type="button" id="removePhotoBtn">Remove</button></div></div>
@@ -1115,6 +1245,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
         <div class="sidebarTabs" id="sidebarTabs" role="tablist" aria-label="Editor sections">
           <button type="button" class="sidebarTab active" id="looksTab" role="tab" aria-selected="true" aria-controls="looksPanel" data-tab="looks">Looks</button>
           <button type="button" class="sidebarTab" id="adjustTab" role="tab" aria-selected="false" aria-controls="adjustPanel" data-tab="adjust">Adjust</button>
+          <button type="button" class="sidebarTab photo-only" id="maskTab" role="tab" aria-selected="false" aria-controls="maskPanel" data-tab="mask">Mask</button>
           <button type="button" class="sidebarTab" id="exportTab" role="tab" aria-selected="false" aria-controls="exportTabPanel" data-tab="export">Export</button>
         </div>
         <div class="sidebarViews" id="sidebarViews">
@@ -1125,7 +1256,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
         <div id="presetChips" role="group" aria-label="Featured presets"></div>
         <section class="savedLooks" aria-label="Saved looks"><div class="savedHeading"><span class="sectionLabel">Saved</span></div><div id="savedPresetChips" class="savedPresetGrid" role="group" aria-label="Saved presets"></div><p id="savedPresetsEmpty" class="savedEmpty">Saved looks appear here.</p><button type="button" class="textAction" id="savePresetBtn">+ Save current look</button><button type="button" id="deletePresetBtn" hidden>Delete selected saved preset</button></section>
         <label class="presetSelectLabel" for="presetSelect">More presets <span id="presetCount">26 looks</span></label>
-        <div class="presetSelectWrap"><span id="presetSelectSwatch" aria-hidden="true"></span><select id="presetSelect"><option value="">Choose a look</option></select></div>
+        <div class="presetSelectWrap"><span id="presetSelectSwatch" aria-hidden="true"></span><select id="presetSelect"><option value="">Choose a look</option></select><div id="presetHoverMenu" class="presetHoverMenu" role="listbox" aria-label="More preset previews" hidden></div></div>
         <div class="presetActions"><button type="button" class="toolBtn" id="presetCompareBtn" disabled>Compare</button><button type="button" class="toolBtn" id="presetApplyBtn" disabled>Apply preset</button><button type="button" class="toolBtn" id="presetUndoBtn" hidden>Undo</button></div>
       </div><section id="settingsTools" class="socialPanel" aria-label="Copy and share settings">
         <button type="button" id="settingsToolsToggle" class="panelHeading" aria-expanded="false" aria-controls="settingsToolsBody"><span class="sectionLabel">Copy / paste & share</span><span class="panelChevron" aria-hidden="true"></span></button>
@@ -1142,7 +1273,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
               <div class="sectionLabel adjustTitle">Adjust</div>
               <p class="sectionHint">0 is neutral · <span class="darkHint">white subtracts · red adds</span><span class="lightHint">black subtracts · red adds</span>. Open an effect for finer controls.</p>
               <details class="adjustCluster" data-cluster="basic" open>
-                <summary><span>Basic</span><span class="clusterSummary" data-summary="basic">Exposure · Contrast · Saturation · Temperature</span></summary>
+                <summary><span>Basic</span><span class="clusterSummary" data-summary="basic">Exposure · Contrast · Saturation · Temperature · Bloom · Hallation</span></summary>
                 <div class="clusterContents"><div class="adjustSectionHeading">Color &amp; Light</div><div class="effectGroup open" data-group="color">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="true" aria-controls="colorControls"><i style="background:var(--text)"></i> Color & Light <span class="expand" aria-hidden="true"></span></button>
@@ -1166,11 +1297,9 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
               </div>
             </details>
           </div>
-        </div></div>
-              </details>
-              <details class="adjustCluster" data-cluster="creative">
-                <summary><span>Creative</span><span class="clusterSummary" data-summary="creative">Bloom · Hallation · Anamorphic · Film Grain · Vignette</span></summary>
-                <div class="clusterContents"><div class="adjustSectionHeading">Glow &amp; texture</div><div class="effectGroup" data-group="bloom">
+        </div>
+<div class="adjustSectionHeading">Bloom &amp; halation</div>
+<div class="effectGroup" data-group="bloom">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="bloomControls"><i style="background:var(--accent)"></i> Bloom <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="bloom" role="switch" aria-checked="true" aria-label="Bloom effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="bloom" hidden aria-label="Reset Bloom section" title="Reset Bloom">↺</button></div>
@@ -1184,7 +1313,8 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
             <div class="subRow"><div class="subHead"><div class="subLabel">Blend <span>strong add → screen</span></div><div class="subVal" id="valBloomBlend">0</div></div><input class="subSlider" type="range" id="sliderBloomBlend" min="-100" max="100" value="0"></div>
             <div class="subRow photo-only"><div class="subHead"><div class="subLabel">Anamorphic <button type="button" class="infoTip" aria-label="About Anamorphic" aria-expanded="false" data-tip="Stretches lens glow into wider horizontal streaks." data-tooltip="Stretches lens glow into wider horizontal streaks.">i</button><span>vertical → horizontal</span></div><div class="subVal" id="valBloomAnam">0</div></div><input class="subSlider" type="range" id="sliderBloomAnam" min="-100" max="100" value="0"></div>
           </div>
-        </div><div class="effectGroup photo-only" data-group="hallation">
+        </div>
+<div class="effectGroup photo-only" data-group="hallation">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="hallationControls"><i style="background:var(--accent2)"></i> Hallation <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="hallation" role="switch" aria-checked="true" aria-label="Hallation effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="hallation" hidden aria-label="Reset Hallation section" title="Reset Hallation">↺</button></div>
@@ -1198,7 +1328,12 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
             <div class="subRow"><div class="subHead"><div class="subLabel">Falloff <span>edge fade</span></div><div class="subVal" id="valHallFalloff">0</div></div><input class="subSlider" type="range" id="sliderHallFalloff" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Saturation <span>bleed color</span></div><div class="subVal" id="valHallSat">0</div></div><input class="subSlider" type="range" id="sliderHallSat" min="-100" max="100" value="0"></div>
           </div>
-        </div><div class="effectGroup" data-group="grain">
+        </div>
+</div>
+              </details>
+              <details class="adjustCluster" data-cluster="creative">
+                <summary><span>Creative</span><span class="clusterSummary" data-summary="creative">Film Grain · Vignette · Dither · Sharpening</span></summary>
+                <div class="clusterContents"><div class="adjustSectionHeading">Texture &amp; film</div><div class="effectGroup" data-group="grain">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="grainControls"><i style="background:var(--text-dim)"></i> Film Grain <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="grain" role="switch" aria-checked="true" aria-label="Film Grain effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="grain" hidden aria-label="Reset Film Grain section" title="Reset Film Grain">↺</button></div>
@@ -1213,11 +1348,9 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
             <div class="subRow"><div class="subHead"><div class="subLabel">Softness <span>blur grain</span></div><div class="subVal" id="valGrainSoft">0</div></div><input class="subSlider" type="range" id="sliderGrainSoft" min="-100" max="100" value="0"></div>
             <div id="grainSeedRow" class="photo-only"><span>Static grain pattern<br>per photo</span><button type="button" id="randomizeGrainBtn">↻ Randomize</button></div>
           </div>
-        </div><div class="creativeVignette photo-only" data-group="vignette"><div class="vignetteHeader"><div class="adjustSectionHeading">Vignette</div><button type="button" class="groupReset" data-reset="vignette" hidden aria-label="Reset Vignette section" title="Reset Vignette">↺</button></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div></div></div>
-              </details>
-              <details class="adjustCluster" data-cluster="technical">
-                <summary><span>Technical</span><span class="clusterSummary" data-summary="technical">Dither / Halftone · Sharpening</span></summary>
-                <div class="clusterContents"><div class="adjustSectionHeading">Pattern &amp; detail</div><div class="effectGroup photo-only" data-group="dither">
+        </div><div class="creativeVignette photo-only" data-group="vignette"><div class="vignetteHeader"><div class="adjustSectionHeading">Vignette</div><button type="button" class="groupReset" data-reset="vignette" hidden aria-label="Reset Vignette section" title="Reset Vignette">↺</button></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Strength <span>brighten → darken</span></div><div class="subVal" id="valVignStrength">0</div></div><input class="subSlider" type="range" id="sliderVignStrength" min="-100" max="100" value="0"></div><div class="subRow"><div class="subHead"><div class="subLabel">Vignette Size</div><div class="subVal" id="valVignSize">0</div></div><input class="subSlider" type="range" id="sliderVignSize" min="-100" max="100" value="0"></div></div>
+<div class="adjustSectionHeading">Print &amp; detail</div>
+<div class="effectGroup photo-only" data-group="dither">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="ditherControls"><i style="background:var(--text-dim)"></i> Dither <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="dither" role="switch" aria-checked="true" aria-label="Dither effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="dither" hidden aria-label="Reset Dither section" title="Reset Dither">↺</button></div>
@@ -1299,7 +1432,8 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
               <p class="maskHint">Background dithering begins when a subject is protected. People are selected automatically; brush over anything else you want to keep clear. Tap Finish mask on the preview to resume panning.</p>
             </div>
           </div>
-        </div><div class="effectGroup" data-group="sharpen">
+        </div>
+<div class="effectGroup" data-group="sharpen">
           <div class="effectHeader">
             <button type="button" class="effectTitle" aria-expanded="false" aria-controls="sharpenControls"><i style="background:var(--text)"></i> Sharpening <span class="expand" aria-hidden="true"></span></button>
             <div class="effectHeadRight"><button type="button" class="effectToggle" data-toggle="sharpen" role="switch" aria-checked="true" aria-label="Sharpening effect"><span class="toggleTrack" aria-hidden="true"><span class="toggleThumb"></span></span><span class="toggleText" aria-hidden="true">ON</span></button><button type="button" class="groupReset" data-reset="sharpen" hidden aria-label="Reset Sharpening section" title="Reset Sharpening">↺</button></div>
@@ -1311,8 +1445,10 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
             <div class="subRow"><div class="subHead"><div class="subLabel">Detail Boost</div><div class="subVal" id="valSharpDetail">0</div></div><input class="subSlider" type="range" id="sliderSharpDetail" min="-100" max="100" value="0"></div>
             <div class="subRow"><div class="subHead"><div class="subLabel">Luma Protect <span>shadow guard</span></div><div class="subVal" id="valSharpLuma">0</div></div><input class="subSlider" type="range" id="sliderSharpLuma" min="-100" max="100" value="0"></div>
           </div>
-        </div></div>
+        </div>
+</div>
               </details>
+
             </div>
 <section id="videoCaptionPanel" class="socialPanel video-only" aria-label="Text and captions">
         <div class="sectionLabel">Text &amp; Captions</div>
@@ -1330,6 +1466,71 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
         <button type="button" class="toolBtn" id="captionKeyframeBtn">◇ Add position keyframe at playhead</button>
         <p class="socialHint">Drag the caption on the preview to position it. One caption layer for this clip.</p>
       </section>
+          </section>
+          <section class="sidebarPanel photo-only" id="maskPanel" data-panel="mask" role="tabpanel" aria-labelledby="maskTab" hidden>
+            <details class="maskBackgroundDetails" id="maskBackgroundDetails" open>
+              <summary><span>Mask &amp; Background</span><span class="maskBgSummaryHint">PHOTO ONLY</span></summary>
+              <div class="maskBgTopline"><span class="sectionLabel">Background removal</span><button type="button" class="textAction" id="resetMaskBackgroundBtn">Reset</button></div>
+              <div id="maskBgAiStatus" class="maskBgAiStatus" role="status" aria-live="polite" hidden><span class="engineSpinner" aria-hidden="true"></span><span id="maskBgAiStatusText">Loading AI model… this may take a moment</span></div>
+              <button type="button" class="actionBtn primary" id="autoRemoveBackgroundBtn"><span>✦ Auto remove background</span><span aria-hidden="true">↗</span></button>
+              <p class="maskBgStatus" id="maskBgStatus" role="status" aria-live="polite">Choose automatic removal or refine the mask by hand. Everything runs on this device.</p>
+              <div class="maskBgButtonRow">
+                <button type="button" class="toolBtn" id="magicSelectBtn" aria-pressed="false">✧ Magic select</button>
+                <button type="button" class="toolBtn" id="undoMaskBgBtn" disabled>↶ Undo</button>
+              </div>
+              <p class="maskBgHint">Magic select: click the area you want to keep. Paint and erase to refine it.</p>
+              <div class="maskBgButtonRow">
+                <button type="button" class="toolBtn" id="maskBgPaintBtn" aria-pressed="false">Paint / keep</button>
+                <button type="button" class="toolBtn" id="maskBgEraseBtn" aria-pressed="false">Erase / remove</button>
+              </div>
+              <button type="button" class="toolBtn maskBgDone" id="finishMaskBgEditBtn" hidden>✓ Finish mask editing</button>
+              <div class="maskBgRangeRow">
+                <label for="maskBgBrushSize">Brush size <output id="maskBgBrushSizeValue">48 px</output></label>
+                <input class="subSlider" type="range" id="maskBgBrushSize" min="4" max="140" value="48">
+              </div>
+              <div class="maskBgRangeRow">
+                <label for="maskBgMagicTolerance">Magic tolerance <output id="maskBgMagicToleranceValue">34</output></label>
+                <input class="subSlider" type="range" id="maskBgMagicTolerance" min="1" max="100" value="34">
+              </div>
+              <div class="maskBgRangeRow">
+                <label for="maskBgFeather">Feather <output id="maskBgFeatherValue">6 px</output></label>
+                <input class="subSlider" type="range" id="maskBgFeather" min="0" max="40" value="6">
+              </div>
+              <div class="maskBgRangeRow">
+                <label for="maskBgExpand">Expand / contract <output id="maskBgExpandValue">0 px</output></label>
+                <input class="subSlider" type="range" id="maskBgExpand" min="-32" max="32" value="0">
+              </div>
+              <label class="checkLabel maskBgInvertLabel"><input type="checkbox" id="maskBgInvert">Invert mask</label>
+
+              <div class="maskBgDivider"><span>BACKGROUND</span></div>
+              <div class="maskBgModeGrid" role="radiogroup" aria-label="Background replacement">
+                <label><input type="radio" name="maskBgMode" value="transparent" checked><span>Transparent</span></label>
+                <label><input type="radio" name="maskBgMode" value="color"><span>Color</span></label>
+                <label><input type="radio" name="maskBgMode" value="blur"><span>Blur</span></label>
+                <label><input type="radio" name="maskBgMode" value="image"><span>Image</span></label>
+                <label><input type="radio" name="maskBgMode" value="gradient"><span>Gradient</span></label>
+              </div>
+              <div class="maskBgControl" id="maskBgColorControl" hidden>
+                <label for="maskBgColor">Background color</label><input type="color" id="maskBgColor" value="#101014">
+              </div>
+              <div class="maskBgControl" id="maskBgBlurControl" hidden>
+                <label for="maskBgBlur">Background blur <output id="maskBgBlurValue">24 px</output></label>
+                <input class="subSlider" type="range" id="maskBgBlur" min="0" max="80" value="24">
+              </div>
+              <div class="maskBgControl" id="maskBgImageControl" hidden>
+                <input type="file" id="maskBgImageInput" accept="image/*" hidden>
+                <button type="button" class="toolBtn" id="chooseMaskBgImageBtn">Choose a background image…</button>
+                <span id="maskBgImageName" class="maskBgImageName">No image selected</span>
+              </div>
+              <div class="maskBgControl" id="maskBgGradientControl" hidden>
+                <label>Gradient colors</label>
+                <div class="maskBgColorPair"><input type="color" id="maskBgGradientStart" value="#11131a" aria-label="Gradient start color"><input type="color" id="maskBgGradientEnd" value="#d62828" aria-label="Gradient end color"></div>
+                <label for="maskBgGradientAngle">Gradient angle <output id="maskBgGradientAngleValue">45°</output></label>
+                <input class="subSlider" type="range" id="maskBgGradientAngle" min="0" max="360" value="45">
+              </div>
+              <button type="button" class="actionBtn primary maskBgApply" id="applyMaskBackgroundBtn"><span>Apply to canvas</span><span aria-hidden="true">↗</span></button>
+              <p class="maskBgPrivacy">Local processing · no uploads · transparent exports are PNG.</p>
+            </details>
           </section>
           <section class="sidebarPanel exportTabPanel" id="exportTabPanel" data-panel="export" role="tabpanel" aria-labelledby="exportTab" hidden>
 <section id="exportPanel" class="socialPanel photo-only" aria-label="Instagram export">
@@ -1504,6 +1705,8 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
   </section>
 </div>
 <input type="file" id="fileInput" accept="image/*,.heic,.heif,image/heic,image/heif,video/*" multiple hidden>
+<input type="file" id="photoPickerInput" accept="image/*,.heic,.heif,image/heic,image/heif" multiple hidden>
+<input type="file" id="videoPickerInput" accept="video/*,.mp4,.mov,.webm,.m4v" hidden>
 <input type="file" id="addPhotoInput" accept="image/*,.heic,.heif,image/heic,image/heif" multiple hidden>
 <div id="cursorDot" class="cursor-fx cursor-fx-dot" aria-hidden="true"></div>
 <div id="cursorRing" class="cursor-fx cursor-fx-ring" aria-hidden="true"></div>
@@ -1602,10 +1805,12 @@ const ditherAlgorithmSelect=$('ditherAlgorithm'), ditherDownscaleSelect=$('dithe
 const ditherColorModeSelect=$('ditherColorMode'), ditherPaletteSizeSelect=$('ditherPaletteSize');
 const ditherPaletteShadow=$('ditherPaletteShadow'), ditherPaletteHighlight=$('ditherPaletteHighlight');
 
-let sourceTexture=null, fboComposite=null, fboSharpened=null, fboBloomExtract=null, fboBloomBlurH=null, fboBloomBlurV=null, fboBloomBlurH2=null, fboBloomBlurV2=null, fboHallExtract=null, fboHallBlurH=null, fboHallBlurV=null;
+let sourceTexture=null, fboComposite=null, fboSharpened=null, fboDithered=null, fboBloomExtract=null, fboBloomBlurH=null, fboBloomBlurV=null, fboBloomBlurH2=null, fboBloomBlurV2=null, fboHallExtract=null, fboHallBlurH=null, fboHallBlurV=null;
+let maskBgTexture=null, maskBgBackgroundTexture=null;
 let floydTexture=null, floydLastKey=null, subjectMaskRevision=0;
 const appState={mode:'empty'};
 let isVideo=false, showOriginal=false, hasContent=false, animId=null;
+let renderAtFullResolution=false, sliderRenderTimer=null, lastPreviewRenderKey=null, photoTextureRevision=0, lastUploadedVideoFrameKey=null;
 const MIN_PREVIEW_ZOOM=0.5, MAX_PREVIEW_ZOOM=5;
 let previewZoom=1, previewPanX=0, previewPanY=0, previewDrag=null, pinchZoom=null;
 let lastCanvasTouchTap=0, suppressTouchPickerUntil=0;
@@ -1951,6 +2156,11 @@ uniform float u_grainStrength; uniform float u_grainSize; uniform float u_grainS
 uniform float u_time; uniform vec2 u_resolution;
 uniform float u_exposure; uniform float u_contrast; uniform float u_saturation; uniform float u_temperature; uniform float u_vignStrength; uniform float u_vignSize;
 uniform float u_vibrance; uniform float u_fade; uniform float u_shadowTone; uniform float u_highlightTone; uniform float u_highlightTint;
+uniform sampler2D u_maskBackground; uniform sampler2D u_backgroundImage;
+uniform int u_maskEnabled; uniform int u_backgroundMode; uniform int u_maskInvert;
+uniform vec2 u_maskTexelSize;
+uniform float u_maskFeatherPixels; uniform float u_maskExpandPixels; uniform float u_backgroundBlurPixels; uniform float u_gradientAngle;
+uniform vec3 u_backgroundColor; uniform vec3 u_gradientStart; uniform vec3 u_gradientEnd;
 out vec4 outColor;
 float grainHash(vec2 p,float seed){
   p=fract(p*vec2(123.34,345.45)+vec2(seed*0.013,seed*0.071));
@@ -1963,6 +2173,10 @@ float grainValueNoise(vec2 p,float seed){
   float a=grainHash(cell,seed), b=grainHash(cell+vec2(1.0,0.0),seed);
   float c=grainHash(cell+vec2(0.0,1.0),seed), d=grainHash(cell+vec2(1.0,1.0),seed);
   return mix(mix(a,b,local.x),mix(c,d,local.x),local.y)*2.0-1.0;
+}
+float sampleKeepMask(vec2 uv){
+  float value=texture(u_maskBackground,clamp(uv,vec2(0.0),vec2(1.0))).r;
+  return u_maskInvert==1?1.0-value:value;
 }
 void main(){
   vec4 base=texture(u_base, v_texCoord);
@@ -2077,6 +2291,55 @@ void main(){
   vign=clamp(vign,0.0,1.5);
   col*=vign;
 
+  if(u_maskEnabled==1){
+    vec2 maskUv=clamp(v_texCoord,vec2(0.0),vec2(1.0));
+    float keep=sampleKeepMask(maskUv);
+    if(abs(u_maskExpandPixels)>0.5){
+      vec2 o=u_maskTexelSize*abs(u_maskExpandPixels);
+      float n0=sampleKeepMask(maskUv+vec2(-o.x,0.0));
+      float n1=sampleKeepMask(maskUv+vec2(o.x,0.0));
+      float n2=sampleKeepMask(maskUv+vec2(0.0,-o.y));
+      float n3=sampleKeepMask(maskUv+vec2(0.0,o.y));
+      float n4=sampleKeepMask(maskUv+vec2(-o.x,-o.y));
+      float n5=sampleKeepMask(maskUv+vec2(o.x,-o.y));
+      float n6=sampleKeepMask(maskUv+vec2(-o.x,o.y));
+      float n7=sampleKeepMask(maskUv+vec2(o.x,o.y));
+      if(u_maskExpandPixels>0.0) keep=max(keep,max(max(max(n0,n1),max(n2,n3)),max(max(n4,n5),max(n6,n7))));
+      else keep=min(keep,min(min(min(n0,n1),min(n2,n3)),min(min(n4,n5),min(n6,n7))));
+    }
+    if(u_maskFeatherPixels>0.5){
+      vec2 f=u_maskTexelSize*u_maskFeatherPixels;
+      float soft=sampleKeepMask(maskUv)*0.28;
+      soft+=(sampleKeepMask(maskUv+vec2(-f.x,0.0))+sampleKeepMask(maskUv+vec2(f.x,0.0)))*0.09;
+      soft+=(sampleKeepMask(maskUv+vec2(0.0,-f.y))+sampleKeepMask(maskUv+vec2(0.0,f.y)))*0.09;
+      soft+=(sampleKeepMask(maskUv+vec2(-f.x,-f.y))+sampleKeepMask(maskUv+vec2(f.x,-f.y))
+        +sampleKeepMask(maskUv+vec2(-f.x,f.y))+sampleKeepMask(maskUv+vec2(f.x,f.y)))*0.065;
+      keep=mix(keep,soft,clamp(u_maskFeatherPixels/18.0,0.0,1.0));
+    }
+    float keepAlpha=smoothstep(0.06,0.94,keep);
+    vec3 background=u_backgroundColor;
+    if(u_backgroundMode==3){
+      vec2 b=vec2(u_backgroundBlurPixels/max(u_resolution.x,1.0),u_backgroundBlurPixels/max(u_resolution.y,1.0));
+      vec3 blurred=texture(u_base,maskUv).rgb*0.28;
+      blurred+=(texture(u_base,maskUv+vec2(-b.x,0.0)).rgb+texture(u_base,maskUv+vec2(b.x,0.0)).rgb)*0.09;
+      blurred+=(texture(u_base,maskUv+vec2(0.0,-b.y)).rgb+texture(u_base,maskUv+vec2(0.0,b.y)).rgb)*0.09;
+      blurred+=(texture(u_base,maskUv+vec2(-b.x,-b.y)).rgb+texture(u_base,maskUv+vec2(b.x,-b.y)).rgb
+        +texture(u_base,maskUv+vec2(-b.x,b.y)).rgb+texture(u_base,maskUv+vec2(b.x,b.y)).rgb)*0.065;
+      background=blurred;
+    }else if(u_backgroundMode==4){
+      background=texture(u_backgroundImage,maskUv).rgb;
+    }else if(u_backgroundMode==5){
+      float angle=u_gradientAngle*0.017453292519943295;
+      vec2 direction=vec2(cos(angle),sin(angle));
+      vec2 centered=maskUv-vec2(0.5);
+      float extent=max(0.001,0.5*(abs(direction.x)+abs(direction.y)));
+      float gradientT=clamp(dot(centered,direction)/extent*0.5+0.5,0.0,1.0);
+      background=mix(u_gradientStart,u_gradientEnd,gradientT);
+    }
+    if(u_backgroundMode==1){ outColor=vec4(clamp(col,0.0,1.0),base.a*keepAlpha); return; }
+    outColor=vec4(mix(background,clamp(col,0.0,1.0),keepAlpha),1.0);
+    return;
+  }
   outColor=vec4(clamp(col,0.,1.),base.a);
 }`;
 
@@ -2177,17 +2440,50 @@ function bindQuad(prog){
 function createTexture(w,h){ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); return t; }
 function createFBO(w,h){ const tex=createTexture(w,h); const fbo=gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER,fbo); gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0); gl.bindFramebuffer(gl.FRAMEBUFFER,null); return {fbo,tex,width:w,height:h}; }
 function deleteFBO(f){ if(!f) return; gl.deleteFramebuffer(f.fbo); gl.deleteTexture(f.tex); }
+const MOBILE_PREVIEW_MAX_EDGE=1280;
+function getRenderDimensions(w,h){
+  const mobile=!!(window.matchMedia && window.matchMedia('(max-width: 767px)').matches);
+  const scale=renderAtFullResolution || !mobile ? 1 : Math.min(1,MOBILE_PREVIEW_MAX_EDGE/Math.max(w,h));
+  return {width:Math.max(1,Math.floor(w*scale)),height:Math.max(1,Math.floor(h*scale))};
+}
 function recreateFBOs(w,h){
-  [fboComposite,fboSharpened,fboBloomExtract,fboBloomBlurH,fboBloomBlurV,fboBloomBlurH2,fboBloomBlurV2,fboHallExtract,fboHallBlurH,fboHallBlurV].forEach(deleteFBO);
-  fboComposite=createFBO(w,h); fboSharpened=createFBO(w,h); floydLastKey=null;
-  const hw=Math.max(1,Math.floor(w/2)), hh=Math.max(1,Math.floor(h/2));
+  const renderSize=getRenderDimensions(w,h), renderWidth=renderSize.width, renderHeight=renderSize.height;
+  [fboComposite,fboSharpened,fboDithered,fboBloomExtract,fboBloomBlurH,fboBloomBlurV,fboBloomBlurH2,fboBloomBlurV2,fboHallExtract,fboHallBlurH,fboHallBlurV].forEach(deleteFBO);
+  fboComposite=createFBO(renderWidth,renderHeight); fboSharpened=createFBO(renderWidth,renderHeight);
+  fboDithered=renderWidth!==w || renderHeight!==h ? createFBO(renderWidth,renderHeight) : null; floydLastKey=null;
+  const hw=Math.max(1,Math.floor(renderWidth/2)), hh=Math.max(1,Math.floor(renderHeight/2));
   fboBloomExtract=createFBO(hw,hh); fboBloomBlurH=createFBO(hw,hh); fboBloomBlurV=createFBO(hw,hh); fboBloomBlurH2=createFBO(hw,hh); fboBloomBlurV2=createFBO(hw,hh);
   fboHallExtract=createFBO(hw,hh); fboHallBlurH=createFBO(hw,hh); fboHallBlurV=createFBO(hw,hh);
+  lastPreviewRenderKey=null;
 }
+function setFullResolutionRendering(enabled){
+  const next=!!enabled;
+  if(next===renderAtFullResolution) return;
+  renderAtFullResolution=next;
+  if(canvas.width>0 && canvas.height>0 && fboComposite){
+    const size=getRenderDimensions(canvas.width,canvas.height);
+    if(fboComposite.width!==size.width || fboComposite.height!==size.height) recreateFBOs(canvas.width,canvas.height);
+  }
+  lastPreviewRenderKey=null;
+}
+function refreshPreviewResolution(){
+  if(!hasContent || renderAtFullResolution || !canvas.width || !canvas.height || !fboComposite) return;
+  const size=getRenderDimensions(canvas.width,canvas.height);
+  if(fboComposite.width!==size.width || fboComposite.height!==size.height){ recreateFBOs(canvas.width,canvas.height); render(performance.now()); }
+}
+window.addEventListener('resize',refreshPreviewResolution);
 sourceTexture=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
 // A black mask means every pixel is background until a subject is selected.
 const subjectMaskTexture=gl.createTexture();
 gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,subjectMaskTexture);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+maskBgTexture=gl.createTexture(); gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,maskBgTexture);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([255,255,255,255]));
+maskBgBackgroundTexture=gl.createTexture(); gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D,maskBgBackgroundTexture);
 gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
 gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
 gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
@@ -2197,14 +2493,28 @@ gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParame
 gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
 gl.activeTexture(gl.TEXTURE0);
 
+function previewFrameKey(){
+  const sourceFrame=isVideo
+    ? `${videoEl?.currentSrc||videoEl?.src||'video'}:${Number(videoEl?.currentTime||0).toFixed(5)}:${videoRotation}`
+    : `${currentPhoto?.id||'photo'}:${photoTextureRevision}`;
+  return [canvas.width,canvas.height,fboComposite?.width||0,fboComposite?.height||0,sourceFrame,
+    ids.map(id=>sliders[id]?.value??'').join(','),Object.keys(effectEnabled).map(name=>effectEnabled[name]?1:0).join(''),
+    ditherScope,JSON.stringify(getDitherSettings()),subjectMaskRevision,showOriginal,splitPreview,
+    appState.mode==='photo'&&maskBgActive,maskBgRevision,maskBgImageRevision,maskBgRenderSettingsKey(),
+    isVideo?videoGrainSeed:currentPhoto?.grainSeed||0,renderAtFullResolution].join('|');
+}
 function render(timeMs){
   if(!sourceTexture || !fboSharpened || !fboComposite) return;
+  const cacheable=!exportBusy, frameKey=cacheable?previewFrameKey():null;
+  if(cacheable && frameKey===lastPreviewRenderKey) return;
   if(showOriginal){
     gl.bindFramebuffer(gl.FRAMEBUFFER,null); gl.viewport(0,0,canvas.width,canvas.height);
     gl.useProgram(progPassthrough); bindQuad(progPassthrough);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture);
     gl.uniform1i(gl.getUniformLocation(progPassthrough,'u_image'),0);
-    gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return;
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    if(cacheable) lastPreviewRenderKey=frameKey;
+    return;
   }
   // sharpen
   gl.bindFramebuffer(gl.FRAMEBUFFER,fboSharpened.fbo); gl.viewport(0,0,fboSharpened.width,fboSharpened.height);
@@ -2311,6 +2621,21 @@ function render(timeMs){
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,fboSharpened.tex); gl.uniform1i(gl.getUniformLocation(progComposite,'u_base'),0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,fboBloomBlurV2.tex); gl.uniform1i(gl.getUniformLocation(progComposite,'u_bloom'),1);
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,fboHallBlurV.tex); gl.uniform1i(gl.getUniformLocation(progComposite,'u_hallation'),2);
+  const maskBgEnabled=appState.mode==='photo' && !isVideo && !!maskBgActive && !!maskBgCanvas;
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,maskBgTexture); gl.uniform1i(gl.getUniformLocation(progComposite,'u_maskBackground'),3);
+  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D,maskBgBackgroundTexture); gl.uniform1i(gl.getUniformLocation(progComposite,'u_backgroundImage'),4);
+  gl.uniform1i(gl.getUniformLocation(progComposite,'u_maskEnabled'),maskBgEnabled?1:0);
+  const activeBackgroundMode=maskBgSettings.mode==='image'&&!maskBgImageCanvas?2:maskBgModeCode(maskBgSettings.mode);
+  gl.uniform1i(gl.getUniformLocation(progComposite,'u_backgroundMode'),maskBgEnabled?activeBackgroundMode:0);
+  gl.uniform2f(gl.getUniformLocation(progComposite,'u_maskTexelSize'),maskBgCanvas?1/maskBgCanvas.width:1,maskBgCanvas?1/maskBgCanvas.height:1);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_maskFeatherPixels'),maskBgSettings.feather);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_maskExpandPixels'),maskBgSettings.expand);
+  gl.uniform1i(gl.getUniformLocation(progComposite,'u_maskInvert'),maskBgSettings.invert?1:0);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_backgroundBlurPixels'),maskBgSettings.blur);
+  gl.uniform1f(gl.getUniformLocation(progComposite,'u_gradientAngle'),maskBgSettings.gradientAngle);
+  gl.uniform3f(gl.getUniformLocation(progComposite,'u_backgroundColor'),...hexRgb(maskBgSettings.color));
+  gl.uniform3f(gl.getUniformLocation(progComposite,'u_gradientStart'),...hexRgb(maskBgSettings.gradientStart));
+  gl.uniform3f(gl.getUniformLocation(progComposite,'u_gradientEnd'),...hexRgb(maskBgSettings.gradientEnd));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomStrength'),effectValue('bloom',params.bloom));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_hallationStrength'),effectValue('hallation',params.hallation));
   gl.uniform1f(gl.getUniformLocation(progComposite,'u_bloomTint'),params.bloomTint);
@@ -2344,6 +2669,7 @@ function render(timeMs){
   const subjectProtected=!!autoSubjectMask || maskStrokes.some(s=>s.mode==='protect');
   const ditherStrength=backgroundOnly && !subjectProtected?0:effectValue('dither',params.dither);
   renderDitherPass(timeMs,ditherStrength,backgroundOnly);
+  if(cacheable) lastPreviewRenderKey=frameKey;
 }
 
 function hexRgb(hex){
@@ -2427,9 +2753,10 @@ function errorDiffusionPixels(source,width,height,options={}){
 }
 function floydStateKey(timeMs,dither,backgroundOnly,strength){
   const frame=isVideo?Math.floor(((timeMs??videoEl.currentTime*1000)*0.001)*240):0;
-  return [canvas.width,canvas.height,isVideo?videoSourceFile?.name:'photo',currentPhoto?.id||'',frame,
+  return [canvas.width,canvas.height,fboComposite?.width||0,fboComposite?.height||0,isVideo?videoSourceFile?.name:'photo',currentPhoto?.id||'',frame,
     isVideo?videoGrainSeed:currentPhoto?.grainSeed||0,ids.map(id=>sliders[id].value).join(','),
     Object.keys(effectEnabled).map(name=>effectEnabled[name]?1:0).join(''),ditherScope,subjectMaskRevision,
+    appState.mode==='photo'&&maskBgActive,maskBgRevision,maskBgImageRevision,maskBgRenderSettingsKey(),
     strength,backgroundOnly,JSON.stringify(dither)].join('|');
 }
 function updateFloydTexture(timeMs,dither,backgroundOnly,strength){
@@ -2462,13 +2789,15 @@ function renderDitherPass(timeMs,strength,backgroundOnly){
     try{ updateFloydTexture(timeMs,dither,backgroundOnly,strength); floydReady=1; }
     catch(error){ console.error('Error-diffusion pass failed',error); appliedStrength=0; floydLastKey=null; showToast('Error diffusion unavailable for this image size',5000); }
   }
-  gl.bindFramebuffer(gl.FRAMEBUFFER,null); gl.viewport(0,0,canvas.width,canvas.height);
+  const reduced=!!fboDithered && (fboDithered.width!==canvas.width || fboDithered.height!==canvas.height);
+  const targetWidth=reduced?fboDithered.width:canvas.width, targetHeight=reduced?fboDithered.height:canvas.height;
+  gl.bindFramebuffer(gl.FRAMEBUFFER,reduced?fboDithered.fbo:null); gl.viewport(0,0,targetWidth,targetHeight);
   gl.useProgram(progDither); bindQuad(progDither);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,fboComposite.tex); gl.uniform1i(gl.getUniformLocation(progDither,'u_image'),0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.uniform1i(gl.getUniformLocation(progDither,'u_original'),1);
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,subjectMaskTexture); gl.uniform1i(gl.getUniformLocation(progDither,'u_subjectMask'),2);
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,floydTexture); gl.uniform1i(gl.getUniformLocation(progDither,'u_floydResult'),3);
-  gl.uniform2f(gl.getUniformLocation(progDither,'u_resolution'),canvas.width,canvas.height);
+  gl.uniform2f(gl.getUniformLocation(progDither,'u_resolution'),targetWidth,targetHeight);
   gl.uniform1i(gl.getUniformLocation(progDither,'u_algorithm'),algorithms[dither.algorithm]??1);
   const colors={monochrome:0,duotone:1,color:2,custom:3};
   gl.uniform1i(gl.getUniformLocation(progDither,'u_colorMode'),colors[dither.colorMode]??2);
@@ -2488,14 +2817,23 @@ function renderDitherPass(timeMs,strength,backgroundOnly){
   gl.uniform3f(gl.getUniformLocation(progDither,'u_customShadow'),...customShadow);
   gl.uniform3f(gl.getUniformLocation(progDither,'u_customHighlight'),...customHighlight);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  if(reduced){
+    gl.bindFramebuffer(gl.FRAMEBUFFER,null); gl.viewport(0,0,canvas.width,canvas.height);
+    gl.useProgram(progPassthrough); bindQuad(progPassthrough);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,fboDithered.tex);
+    gl.uniform1i(gl.getUniformLocation(progPassthrough,'u_image'),0);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
 }
 
 function uploadVideoTexture(){
   if(videoEl.readyState<2) return;
+  const frameKey=`${videoEl.currentSrc||videoEl.src||'video'}:${Number(videoEl.currentTime||0).toFixed(5)}:${videoRotation}`;
+  if(frameKey===lastUploadedVideoFrameKey) return;
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
   const rotation=((videoRotation%360)+360)%360;
-  if(!rotation){ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl); return; }
+  if(!rotation){ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl); lastUploadedVideoFrameKey=frameKey; lastPreviewRenderKey=null; return; }
   const sourceW=videoEl.videoWidth, sourceH=videoEl.videoHeight;
   const swapped=rotation===90||rotation===270, width=swapped?sourceH:sourceW, height=swapped?sourceW:sourceH;
   if(!videoFrameCanvas){ videoFrameCanvas=document.createElement('canvas'); videoFrameContext=videoFrameCanvas.getContext('2d'); }
@@ -2504,6 +2842,7 @@ function uploadVideoTexture(){
   videoFrameContext.translate(width/2,height/2); videoFrameContext.rotate(rotation*Math.PI/180);
   videoFrameContext.drawImage(videoEl,-sourceW/2,-sourceH/2,sourceW,sourceH);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoFrameCanvas);
+  lastUploadedVideoFrameKey=frameKey; lastPreviewRenderKey=null;
 }
 function startLoop(){
   if(animId!==null) cancelAnimationFrame(animId);
@@ -2535,6 +2874,418 @@ let maskCanvas=null, maskCtx=null, autoSubjectMask=null, photoForMask=null;
 let maskStrokes=[], maskStroke=null, maskPaintMode=null, maskRequestId=0;
 let maskDetectionPending=false, maskManuallyCleared=false, maskAutoFailed=false;
 let segmenterPromise=null, maskQueue=Promise.resolve(), activeMaskRequest=0, maskUploadFrame=0;
+// Photo-only Mask & Background state is separate from Dither's white-subject mask.
+let maskBgCanvas=null, maskBgCtx=null, maskBgAutoCanvas=null, maskBgStrokes=[], maskBgStroke=null;
+let maskBgActive=false, maskBgBaseValue=255, maskBgPaintMode=null, maskBgUndoStack=[], maskBgUploadFrame=0;
+let maskBgRevision=0, maskBgAutoRequestId=0, maskBgModelPromise=null, maskBgModelState='idle', maskBgSegmentationHandler=null;
+let maskBgBackgroundImage=null, maskBgImageCanvas=null, maskBgImageRevision=0, maskBgImageDataUrl='', maskBgImageName='No image selected', maskBgPresetImageRequest=0;
+const maskBgSettings={mode:'transparent',color:'#101014',blur:24,feather:6,expand:0,invert:false,gradientStart:'#11131a',gradientEnd:'#d62828',gradientAngle:45,brushSize:48,magicTolerance:34};
+const maskBgPaintBtn=$('maskBgPaintBtn'), maskBgEraseBtn=$('maskBgEraseBtn'), magicSelectBtn=$('magicSelectBtn');
+const autoRemoveBackgroundBtn=$('autoRemoveBackgroundBtn'), maskBgStatus=$('maskBgStatus');
+const maskBgAiStatus=$('maskBgAiStatus'), maskBgAiStatusText=$('maskBgAiStatusText');
+const maskBgModeRadios=[...document.querySelectorAll('input[name="maskBgMode"]')];
+let lastPresetMaskBackgroundSnapshot=null, presetCompareMaskBackgroundSnapshot=null;
+
+function maskBgPhotoReady(){ return appState.mode==='photo' && !isVideo && hasContent; }
+function maskBgModeCode(mode){ return ({transparent:1,color:2,blur:3,image:4,gradient:5})[mode]||1; }
+function maskBgRenderSettingsKey(){
+  const {mode,color,blur,feather,expand,invert,gradientStart,gradientEnd,gradientAngle}=maskBgSettings;
+  return JSON.stringify([mode,color,blur,feather,expand,invert,gradientStart,gradientEnd,gradientAngle]);
+}
+function setMaskBgStatus(message){ if(maskBgStatus) maskBgStatus.textContent=message; }
+function setMaskBgAiStatus(message,visible=true){
+  if(maskBgAiStatusText) maskBgAiStatusText.textContent=message;
+  if(maskBgAiStatus){maskBgAiStatus.hidden=!visible;const spinner=maskBgAiStatus.querySelector('.engineSpinner');if(spinner)spinner.hidden=!String(message).startsWith('Loading');}
+}
+function safeMaskBgColor(value,fallback){ return /^#[0-9a-f]{6}$/i.test(String(value||''))?String(value):fallback; }
+function normalizeMaskBgSettings(raw={}){
+  const modes=new Set(['transparent','color','blur','image','gradient']);
+  const number=(value,fallback,min,max)=>Math.max(min,Math.min(max,Number.isFinite(Number(value))?Number(value):fallback));
+  return {
+    mode:modes.has(raw.mode)?raw.mode:'transparent',
+    color:safeMaskBgColor(raw.color,'#101014'),
+    blur:number(raw.blur,24,0,80), feather:number(raw.feather,6,0,40),
+    expand:number(raw.expand,0,-32,32), invert:typeof raw.invert==='boolean'?raw.invert:false,
+    gradientStart:safeMaskBgColor(raw.gradientStart,'#11131a'),gradientEnd:safeMaskBgColor(raw.gradientEnd,'#d62828'),
+    gradientAngle:number(raw.gradientAngle,45,0,360),brushSize:number(raw.brushSize,48,4,140),
+    magicTolerance:number(raw.magicTolerance,34,1,100)
+  };
+}
+function updateMaskBgControls(){
+  const available=maskBgPhotoReady() && !!maskBgCanvas, locked=exportBusy||mediaBusy;
+  if(!maskBgPaintBtn) return;
+  document.querySelectorAll('#maskPanel input,#maskPanel button').forEach(control=>{control.disabled=!available||locked;});
+  autoRemoveBackgroundBtn.disabled=!available||locked||maskBgModelState==='loading';
+  maskBgPaintBtn.disabled=maskBgEraseBtn.disabled=magicSelectBtn.disabled=!available||locked;
+  $('undoMaskBgBtn').disabled=!available||locked||maskBgUndoStack.length===0;
+  $('resetMaskBackgroundBtn').disabled=!available||locked;
+  $('applyMaskBackgroundBtn').disabled=!available||locked||!maskBgActive;
+  $('finishMaskBgEditBtn').hidden=!maskBgPaintMode;
+  maskBgPaintBtn.setAttribute('aria-pressed',String(maskBgPaintMode==='paint'));
+  maskBgEraseBtn.setAttribute('aria-pressed',String(maskBgPaintMode==='erase'));
+  magicSelectBtn.setAttribute('aria-pressed',String(maskBgPaintMode==='magic'));
+  canvasWrap.classList.toggle('maskBgEditing',available&&!!maskBgPaintMode);
+  maskBgModeRadios.forEach(input=>{input.checked=input.value===maskBgSettings.mode;input.disabled=!available||locked;});
+  $('maskBgColorControl').hidden=maskBgSettings.mode!=='color';
+  $('maskBgBlurControl').hidden=maskBgSettings.mode!=='blur';
+  $('maskBgImageControl').hidden=maskBgSettings.mode!=='image';
+  $('maskBgGradientControl').hidden=maskBgSettings.mode!=='gradient';
+  $('maskBgColor').value=maskBgSettings.color;
+  $('maskBgBlur').value=maskBgSettings.blur; $('maskBgBlurValue').textContent=`${maskBgSettings.blur} px`;
+  $('maskBgGradientStart').value=maskBgSettings.gradientStart; $('maskBgGradientEnd').value=maskBgSettings.gradientEnd;
+  $('maskBgGradientAngle').value=maskBgSettings.gradientAngle; $('maskBgGradientAngleValue').textContent=`${maskBgSettings.gradientAngle}°`;
+  $('maskBgBrushSize').value=maskBgSettings.brushSize; $('maskBgBrushSizeValue').textContent=`${maskBgSettings.brushSize} px`;
+  $('maskBgMagicTolerance').value=maskBgSettings.magicTolerance; $('maskBgMagicToleranceValue').textContent=String(maskBgSettings.magicTolerance);
+  $('maskBgFeather').value=maskBgSettings.feather; $('maskBgFeatherValue').textContent=`${maskBgSettings.feather} px`;
+  $('maskBgExpand').value=maskBgSettings.expand; $('maskBgExpandValue').textContent=`${maskBgSettings.expand>0?'+':''}${maskBgSettings.expand} px`;
+  $('maskBgInvert').checked=maskBgSettings.invert;
+  $('maskBgImageName').textContent=maskBgImageName;
+}
+function cloneMaskBgCanvas(source){
+  if(!source) return null;
+  const clone=document.createElement('canvas'); clone.width=source.width; clone.height=source.height;
+  clone.getContext('2d').drawImage(source,0,0); return clone;
+}
+function uploadMaskBackground(){
+  if(maskBgUploadFrame){cancelAnimationFrame(maskBgUploadFrame);maskBgUploadFrame=0;}
+  if(!maskBgTexture) return;
+  maskBgRevision++;
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,maskBgTexture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  if(maskBgCanvas) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,maskBgCanvas);
+  else gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([255,255,255,255]));
+  gl.activeTexture(gl.TEXTURE0);
+  lastPreviewRenderKey=null;
+  if(hasContent) render(performance.now());
+}
+function scheduleMaskBackgroundUpload(){
+  if(!maskBgUploadFrame) maskBgUploadFrame=requestAnimationFrame(()=>{maskBgUploadFrame=0;uploadMaskBackground();});
+}
+function uploadMaskBgBackgroundImage(){
+  if(!maskBgBackgroundTexture) return;
+  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D,maskBgBackgroundTexture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  if(maskBgImageCanvas) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,maskBgImageCanvas);
+  else gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+  gl.activeTexture(gl.TEXTURE0); maskBgImageRevision++; lastPreviewRenderKey=null;
+  if(hasContent) render(performance.now());
+}
+function fitMaskBgImageToPhoto(){
+  if(!maskBgBackgroundImage||!maskBgCanvas) return;
+  const w=maskBgCanvas.width,h=maskBgCanvas.height;
+  const output=document.createElement('canvas'); output.width=w; output.height=h;
+  const ctx=output.getContext('2d'); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+  const iw=maskBgBackgroundImage.naturalWidth||maskBgBackgroundImage.width, ih=maskBgBackgroundImage.naturalHeight||maskBgBackgroundImage.height;
+  const scale=Math.max(w/iw,h/ih), dw=iw*scale, dh=ih*scale;
+  ctx.drawImage(maskBgBackgroundImage,(w-dw)/2,(h-dh)/2,dw,dh);
+  maskBgImageCanvas=output; uploadMaskBgBackgroundImage();
+}
+function maskBgSnapshot(){
+  return {canvas:cloneMaskBgCanvas(maskBgCanvas),auto:maskBgAutoCanvas,strokes:maskBgStrokes.map(stroke=>({...stroke,points:(stroke.points||[]).map(point=>({...point}))})),
+    active:maskBgActive,baseValue:maskBgBaseValue};
+}
+function pushMaskBgUndo(){
+  if(!maskBgCanvas) return;
+  maskBgUndoStack.push(maskBgSnapshot());
+  if(maskBgUndoStack.length>3) maskBgUndoStack.shift();
+  updateMaskBgControls();
+}
+function restoreMaskBgSnapshot(snapshot){
+  if(!snapshot||!snapshot.canvas) return;
+  maskBgCanvas=cloneMaskBgCanvas(snapshot.canvas); maskBgCtx=maskBgCanvas.getContext('2d');
+  maskBgAutoCanvas=snapshot.auto||null; maskBgStrokes=(snapshot.strokes||[]).map(stroke=>({...stroke,points:(stroke.points||[]).map(point=>({...point}))}));
+  maskBgActive=!!snapshot.active; maskBgBaseValue=snapshot.baseValue===0?0:255;
+  uploadMaskBackground(); updateMaskBgControls(); forceMaskBackgroundPng(); updateSocialUI();
+}
+function stampMaskBackground(x,y,radius,mode){
+  if(!maskBgCtx||!maskBgCanvas) return;
+  const px=x*maskBgCanvas.width,py=y*maskBgCanvas.height;
+  const edge=maskBgCtx.createRadialGradient(px,py,radius*.62,px,py,radius);
+  const color=mode==='erase'?'0,0,0':'255,255,255';
+  edge.addColorStop(0,`rgba(${color},1)`); edge.addColorStop(1,`rgba(${color},0)`);
+  maskBgCtx.fillStyle=edge; maskBgCtx.beginPath(); maskBgCtx.arc(px,py,radius,0,Math.PI*2); maskBgCtx.fill();
+}
+function drawMaskBgStroke(stroke,from,to){
+  const radius=stroke.radius*Math.min(maskBgCanvas.width,maskBgCanvas.height);
+  const distance=Math.hypot((to.x-from.x)*maskBgCanvas.width,(to.y-from.y)*maskBgCanvas.height);
+  const count=Math.max(1,Math.ceil(distance/Math.max(radius*.38,1)));
+  for(let i=1;i<=count;i++){const t=i/count;stampMaskBackground(from.x+(to.x-from.x)*t,from.y+(to.y-from.y)*t,radius,stroke.mode);}
+}
+function rebuildMaskBackgroundCanvas(){
+  if(!maskBgCanvas||!maskBgCtx) return;
+  maskBgCtx.globalCompositeOperation='source-over'; maskBgCtx.fillStyle=maskBgBaseValue===0?'#000':'#fff';
+  maskBgCtx.fillRect(0,0,maskBgCanvas.width,maskBgCanvas.height);
+  if(maskBgAutoCanvas) maskBgCtx.drawImage(maskBgAutoCanvas,0,0,maskBgCanvas.width,maskBgCanvas.height);
+  for(const stroke of maskBgStrokes){
+    if(stroke.mode==='magic'&&stroke.selection){maskBgCtx.drawImage(stroke.selection,0,0,maskBgCanvas.width,maskBgCanvas.height);continue;}
+    const points=stroke.points||[]; if(!points.length) continue;
+    stampMaskBackground(points[0].x,points[0].y,stroke.radius*Math.min(maskBgCanvas.width,maskBgCanvas.height),stroke.mode);
+    for(let i=1;i<points.length;i++) drawMaskBgStroke(stroke,points[i-1],points[i]);
+  }
+  uploadMaskBackground();
+}
+function ensureMaskBgBase(mode){
+  if(maskBgActive) return;
+  if(mode==='paint'||mode==='magic'){
+    maskBgAutoCanvas=null; maskBgStrokes=[]; maskBgBaseValue=0;
+    maskBgCtx.fillStyle='#000'; maskBgCtx.fillRect(0,0,maskBgCanvas.width,maskBgCanvas.height);
+  }else maskBgBaseValue=255;
+  maskBgActive=true;
+}
+function setMaskBgPaintMode(mode){
+  if(mode&&!maskBgPhotoReady()) return;
+  if(mode&&maskPaintMode) setMaskPaintMode(null);
+  maskBgPaintMode=maskBgPaintMode===mode?null:mode;
+  if(maskBgPaintMode){
+    cropEditing=false; updateSocialUI();
+    if(window.matchMedia('(max-width: 900px)').matches){
+      const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      canvas.scrollIntoView({block:'center',behavior:reduced?'auto':'smooth'});
+    }
+  }
+  updateMaskBgControls(); updateCropOverlay();
+}
+function paintMaskBackground(event){
+  if(!maskBgStroke||maskBgStroke.id!==event.pointerId||!maskBgCanvas) return;
+  const point=subjectPoint(event),previous=maskBgStroke.stroke.points.at(-1);
+  maskBgStroke.stroke.points.push(point); drawMaskBgStroke(maskBgStroke.stroke,previous,point); scheduleMaskBackgroundUpload();
+}
+function beginMaskBgStroke(event){
+  if(!maskBgPaintMode||maskBgPaintMode==='magic'||!maskBgPhotoReady()||!maskBgCanvas) return false;
+  if(event.pointerType==='mouse'&&event.button!==0) return false;
+  event.preventDefault(); pushMaskBgUndo(); ensureMaskBgBase(maskBgPaintMode);
+  const point=subjectPoint(event),stroke={mode:maskBgPaintMode,radius:maskBgSettings.brushSize/Math.min(maskBgCanvas.width,maskBgCanvas.height),points:[point]};
+  maskBgStrokes.push(stroke); maskBgStroke={id:event.pointerId,stroke};
+  canvas.setPointerCapture(event.pointerId); stampMaskBackground(point.x,point.y,stroke.radius*Math.min(maskBgCanvas.width,maskBgCanvas.height),stroke.mode);
+  uploadMaskBackground(); updateMaskBgControls(); forceMaskBackgroundPng(); updateSocialUI(); markMaskBgPresetChanged(); return true;
+}
+function magicSelectMask(point){
+  if(!maskBgPhotoReady()||!maskBgCanvas||!photoForMask) return;
+  if(maskBgStrokes.filter(stroke=>stroke.mode==='magic').length>=8){showToast('Up to eight Magic select regions per photo. Undo or reset to continue.');return;}
+  pushMaskBgUndo(); ensureMaskBgBase('magic');
+  const width=photoForMask.width,height=photoForMask.height,total=width*height;
+  const pixels=photoForMask.getContext('2d',{willReadFrequently:true}).getImageData(0,0,width,height).data;
+  const selection=document.createElement('canvas'); selection.width=width; selection.height=height;
+  const out=selection.getContext('2d').createImageData(width,height),visited=new Uint8Array(total),queue=new Int32Array(total);
+  const sx=Math.max(0,Math.min(width-1,Math.floor(point.x*width))),sy=Math.max(0,Math.min(height-1,Math.floor(point.y*height)));
+  const seed=(sy*width+sx)*4,red=pixels[seed],green=pixels[seed+1],blue=pixels[seed+2];
+  const tolerance=maskBgSettings.magicTolerance*2.8,limit=tolerance*tolerance;
+  const colorDistance=index=>{const i=index*4,dr=pixels[i]-red,dg=pixels[i+1]-green,db=pixels[i+2]-blue;return dr*dr+dg*dg+db*db;};
+  let head=0,tail=0,selected=0; queue[tail++]=sy*width+sx; visited[sy*width+sx]=1;
+  while(head<tail){
+    const index=queue[head++],pixel=index*4;
+    if(colorDistance(index)>limit) continue;
+    out.data[pixel]=out.data[pixel+1]=out.data[pixel+2]=255;out.data[pixel+3]=255;selected++;
+    const x=index%width,y=(index/width)|0;
+    const add=next=>{if(!visited[next]){visited[next]=1;if(colorDistance(next)<=limit)queue[tail++]=next;}};
+    if(x>0)add(index-1);if(x+1<width)add(index+1);if(y>0)add(index-width);if(y+1<height)add(index+width);
+  }
+  selection.getContext('2d').putImageData(out,0,0);
+  maskBgStrokes.push({mode:'magic',selection,points:[],radius:0}); maskBgActive=true;
+  rebuildMaskBackgroundCanvas(); updateMaskBgControls(); forceMaskBackgroundPng(); updateSocialUI(); markMaskBgPresetChanged();
+  setMaskBgStatus(`Magic select kept ${Math.max(1,Math.round(selected/total*100))}% of the image. Paint or erase to refine.`);
+}
+function undoMaskBackground(){
+  const snapshot=maskBgUndoStack.pop(); if(!snapshot)return;
+  restoreMaskBgSnapshot(snapshot); updateMaskBgControls(); markMaskBgPresetChanged();
+  setMaskBgStatus('Undid the last mask edit.');
+}
+function saveActiveMaskBackground(){
+  if(!currentPhoto||isVideo) return;
+  currentPhoto.maskBackground=maskBgCanvas&&(maskBgActive||maskBgAutoCanvas||maskBgStrokes.length)?{
+    canvas:maskBgCanvas,auto:maskBgAutoCanvas,strokes:maskBgStrokes,active:maskBgActive,baseValue:maskBgBaseValue,undoStack:maskBgUndoStack
+  }:null;
+}
+function restoreMaskBackgroundForPhoto(item){
+  ++maskBgAutoRequestId; maskBgStroke=null; maskBgPaintMode=null; maskBgSegmentationHandler=null;
+  const width=maskCanvas?.width||Math.max(1,Math.min(canvas.width,1024)),height=maskCanvas?.height||Math.max(1,Math.min(canvas.height,1024));
+  const saved=item?.maskBackground;
+  if(saved?.canvas){
+    if(saved.canvas.width===width&&saved.canvas.height===height) maskBgCanvas=saved.canvas;
+    else{maskBgCanvas=document.createElement('canvas');maskBgCanvas.width=width;maskBgCanvas.height=height;maskBgCanvas.getContext('2d').drawImage(saved.canvas,0,0,width,height);}
+    maskBgAutoCanvas=saved.auto||null;
+    maskBgStrokes=(saved.strokes||[]).map(stroke=>({...stroke,points:(stroke.points||[]).map(point=>({...point}))}));
+    maskBgActive=!!saved.active;maskBgBaseValue=saved.baseValue===0?0:255;maskBgUndoStack=saved.undoStack||[];
+  }else{
+    maskBgCanvas=document.createElement('canvas');maskBgCanvas.width=width;maskBgCanvas.height=height;maskBgCtx=maskBgCanvas.getContext('2d');
+    maskBgCtx.fillStyle='#fff';maskBgCtx.fillRect(0,0,width,height);
+    maskBgAutoCanvas=null;maskBgStrokes=[];maskBgActive=false;maskBgBaseValue=255;maskBgUndoStack=[];
+  }
+  maskBgCtx=maskBgCanvas.getContext('2d');
+  if(maskBgBackgroundImage) fitMaskBgImageToPhoto(); else uploadMaskBgBackgroundImage();
+  uploadMaskBackground();updateMaskBgControls();
+}
+function rotateMaskBgState(saved,degrees){
+  if(!saved) return;
+  const rotate=source=>source?rotateCanvas(source,source.width,source.height,degrees):null;
+  saved.canvas=rotate(saved.canvas);saved.auto=rotate(saved.auto);
+  saved.strokes=(saved.strokes||[]).map(stroke=>{
+    const next={...stroke,points:(stroke.points||[]).map(point=>({x:1-point.y,y:point.x}))};
+    if(stroke.selection)next.selection=rotate(stroke.selection);
+    return next;
+  });
+  saved.undoStack=[];
+}
+function clearMaskBackground(){
+  if(!maskBgCanvas||!maskBgPhotoReady()) return;
+  ++maskBgAutoRequestId;maskBgPresetImageRequest++;maskBgStroke=null;maskBgPaintMode=null;maskBgSegmentationHandler=null;
+  maskBgActive=false;maskBgAutoCanvas=null;maskBgBaseValue=255;maskBgStrokes=[];maskBgUndoStack=[];
+  maskBgSettings.mode='transparent';maskBgSettings.color='#101014';maskBgSettings.blur=24;maskBgSettings.feather=6;maskBgSettings.expand=0;maskBgSettings.invert=false;
+  maskBgSettings.gradientStart='#11131a';maskBgSettings.gradientEnd='#d62828';maskBgSettings.gradientAngle=45;maskBgSettings.brushSize=48;maskBgSettings.magicTolerance=34;
+  maskBgBackgroundImage=null;maskBgImageCanvas=null;maskBgImageDataUrl='';maskBgImageName='No image selected';
+  maskBgCtx.fillStyle='#fff';maskBgCtx.fillRect(0,0,maskBgCanvas.width,maskBgCanvas.height);
+  uploadMaskBackground();uploadMaskBgBackgroundImage();updateMaskBgControls();updateSocialUI();
+  setMaskBgStatus('Mask reset. The original photo is fully visible.');markMaskBgPresetChanged();
+}
+function applyMaskBackground(){
+  if(!maskBgPhotoReady()||!maskBgActive){showToast('Create a mask before applying a background');return;}
+  forceMaskBackgroundPng();lastPreviewRenderKey=null;render(performance.now());updateSocialUI();
+  setMaskBgStatus('Mask and background applied to the canvas.');showToast('Mask & background applied');
+}
+function setMaskBgSetting(key,value){
+  if(!maskBgPhotoReady())return;
+  maskBgSettings[key]=value;updateMaskBgControls();markMaskBgPresetChanged();
+  if(key==='mode'&&value==='transparent')forceMaskBackgroundPng(true);
+  lastPreviewRenderKey=null;if(hasContent)render(performance.now());updateSocialUI();
+}
+function markMaskBgPresetChanged(){
+  if(typeof cancelPresetAnimation==='function')cancelPresetAnimation();
+  if(typeof syncPresetSelection==='function'){activePresetName=null;selectedPresetName=null;syncPresetSelection();}
+}
+function serializeMaskBgImage(){
+  if(!maskBgBackgroundImage) return null;
+  try{
+    const iw=maskBgBackgroundImage.naturalWidth||maskBgBackgroundImage.width,ih=maskBgBackgroundImage.naturalHeight||maskBgBackgroundImage.height;
+    const scale=Math.min(1,1280/Math.max(iw,ih)),image=document.createElement('canvas');
+    image.width=Math.max(1,Math.round(iw*scale));image.height=Math.max(1,Math.round(ih*scale));
+    const ctx=image.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(maskBgBackgroundImage,0,0,image.width,image.height);
+    const data=image.toDataURL('image/jpeg',0.82);return data.length<=1000000?data:null;
+  }catch(error){return null;}
+}
+function getMaskBackgroundPresetSettings(includeImage=false){
+  const settings={...maskBgSettings};
+  if(includeImage&&maskBgBackgroundImage){const imageDataUrl=serializeMaskBgImage();if(imageDataUrl)settings.imageDataUrl=imageDataUrl;}
+  return settings;
+}
+function captureMaskBgPresetSnapshot(){
+  return {settings:{...maskBgSettings},image:maskBgBackgroundImage,imageCanvas:maskBgImageCanvas,imageDataUrl:maskBgImageDataUrl,imageName:maskBgImageName};
+}
+function restoreMaskBgPresetSnapshot(snapshot){
+  if(!snapshot)return;
+  maskBgPresetImageRequest++;
+  Object.assign(maskBgSettings,normalizeMaskBgSettings(snapshot.settings||{}));
+  maskBgBackgroundImage=snapshot.image||null;maskBgImageCanvas=snapshot.imageCanvas||null;
+  maskBgImageDataUrl=snapshot.imageDataUrl||'';maskBgImageName=snapshot.imageName||'No image selected';
+  if(maskBgBackgroundImage&&maskBgCanvas)fitMaskBgImageToPhoto();else uploadMaskBgBackgroundImage();
+  updateMaskBgControls();forceMaskBackgroundPng();lastPreviewRenderKey=null;if(hasContent)render(performance.now());
+}
+function applyMaskBackgroundPresetSettings(raw){
+  if(!raw||typeof raw!=='object'||!maskBgPhotoReady())return;
+  const request=++maskBgPresetImageRequest;
+  Object.assign(maskBgSettings,normalizeMaskBgSettings(raw));
+  const imageDataUrl=typeof raw.imageDataUrl==='string'&&/^data:image\/jpeg;base64,/i.test(raw.imageDataUrl)&&raw.imageDataUrl.length<=1000000?raw.imageDataUrl:null;
+  maskBgBackgroundImage=null;maskBgImageCanvas=null;maskBgImageDataUrl='';maskBgImageName='No image selected';uploadMaskBgBackgroundImage();
+  if(imageDataUrl){
+    const image=new Image();
+    image.onload=()=>{if(request!==maskBgPresetImageRequest)return;maskBgBackgroundImage=image;maskBgImageDataUrl=imageDataUrl;maskBgImageName='Preset background';if(maskBgCanvas)fitMaskBgImageToPhoto();updateMaskBgControls();};
+    image.onerror=()=>{if(request===maskBgPresetImageRequest){maskBgImageName='No image selected';setMaskBgStatus('Preset background image could not be restored.');updateMaskBgControls();}};image.src=imageDataUrl;
+  }else if(raw.mode==='image')setMaskBgStatus('This preset did not include an embeddable background image. Choose one on this device.');
+  updateMaskBgControls();forceMaskBackgroundPng();lastPreviewRenderKey=null;if(hasContent)render(performance.now());
+}
+function loadMaskBgImageFile(file){
+  const imageFile=!!file&&(file.type?.startsWith('image/')||/\.(png|jpe?g|webp|avif|gif|bmp)$/i.test(file.name||''));
+  if(!imageFile){showToast('Choose an image file for the background');return;}
+  const request=++maskBgPresetImageRequest,url=URL.createObjectURL(file),image=new Image();
+  image.onload=()=>{URL.revokeObjectURL(url);if(request!==maskBgPresetImageRequest)return;maskBgBackgroundImage=image;maskBgImageDataUrl='';maskBgImageName=file.name||'Background image';fitMaskBgImageToPhoto();setMaskBgStatus('Background image loaded on this device.');markMaskBgPresetChanged();updateMaskBgControls();};
+  image.onerror=()=>{URL.revokeObjectURL(url);if(request===maskBgPresetImageRequest)showToast('Could not open that background image');};image.src=url;
+}
+async function ensureMaskBgModel(){
+  if(maskBgModelState==='ready')return loadPortraitSegmenter();
+  if(maskBgModelPromise)return maskBgModelPromise;
+  maskBgModelState='loading';setMaskBgAiStatus('Loading AI model… this may take a moment',true);updateMaskBgControls();
+  maskBgModelPromise=loadPortraitSegmenter().then(segmenter=>{
+    maskBgModelState='ready';setMaskBgAiStatus('AI model ready on this device.',true);setMaskBgStatus('Local AI is ready. Choose automatic removal or refine by hand.');updateMaskBgControls();return segmenter;
+  }).catch(error=>{
+    maskBgModelState='error';maskBgModelPromise=null;setMaskBgAiStatus('Local AI model unavailable. Try Magic select or paint.',true);updateMaskBgControls();throw error;
+  });
+  return maskBgModelPromise;
+}
+function loadMaskBgModelOnOpen(){
+  if(!maskBgPhotoReady()||activeSidebarTab!=='mask'||!$('maskBackgroundDetails').open)return;
+  if(maskBgModelState==='ready'){setMaskBgAiStatus('AI model ready on this device.',true);return;}
+  ensureMaskBgModel().catch(error=>console.warn('Local background model unavailable',error));
+}
+async function autoRemoveMaskBackground(){
+  if(!maskBgPhotoReady()||!photoForMask||!maskBgCanvas)return;
+  const token=++maskBgAutoRequestId,photo=photoForMask;
+  setMaskBgAiStatus(maskBgModelState==='ready'?'AI model ready on this device.':'Loading AI model… this may take a moment',true);setMaskBgStatus('Finding the foreground on this device…');updateMaskBgControls();
+  const task=maskQueue.catch(()=>{}).then(async()=>{
+    let segmentationHandler=null;
+    try{
+      const segmenter=await ensureMaskBgModel();
+      if(token!==maskBgAutoRequestId||photo!==photoForMask)return;
+      let received=false,valid=false;
+      segmentationHandler=results=>{
+        if(token!==maskBgAutoRequestId||photo!==photoForMask||!results.segmentationMask)return;
+        const candidate=document.createElement('canvas');candidate.width=maskBgCanvas.width;candidate.height=maskBgCanvas.height;
+        const ctx=candidate.getContext('2d');ctx.drawImage(results.segmentationMask,0,0,candidate.width,candidate.height);
+        ctx.globalCompositeOperation='source-in';ctx.fillStyle='#fff';ctx.fillRect(0,0,candidate.width,candidate.height);
+        ctx.globalCompositeOperation='destination-over';ctx.fillStyle='#000';ctx.fillRect(0,0,candidate.width,candidate.height);
+        const probe=document.createElement('canvas');probe.width=32;probe.height=32;const pc=probe.getContext('2d');pc.drawImage(candidate,0,0,32,32);
+        const pixels=pc.getImageData(0,0,32,32).data;let kept=0;for(let i=0;i<pixels.length;i+=4)if(pixels[i]>128)kept++;
+        received=true;valid=kept>=4&&kept<1020;
+        if(!valid)return;
+        pushMaskBgUndo();maskBgAutoCanvas=candidate;maskBgStrokes=[];maskBgBaseValue=0;maskBgActive=true;
+        maskBgPaintMode=null;markMaskBgPresetChanged();rebuildMaskBackgroundCanvas();
+        setMaskBgStatus('Background removed. Paint to keep details, erase to remove more, or choose a new background.');
+        setMaskBgAiStatus('AI model ready on this device.',true);updateMaskBgControls();forceMaskBackgroundPng();updateSocialUI();
+      };
+      maskBgSegmentationHandler=segmentationHandler;
+      await segmenter.send({image:photo});
+      if(token!==maskBgAutoRequestId)return;
+      if(!received||!valid)throw new Error('No clear subject found in this photo');
+    }catch(error){
+      if(token===maskBgAutoRequestId){
+        console.warn('Automatic background removal unavailable',error);
+        setMaskBgStatus(`${error.message}. Try Magic select, or paint the area to keep.`);
+        if(maskBgModelState==='error')setMaskBgAiStatus('Local AI model unavailable. Try Magic select or paint.',true);
+      }
+    }finally{
+      if(segmentationHandler&&maskBgSegmentationHandler===segmentationHandler)maskBgSegmentationHandler=null;
+      if(token===maskBgAutoRequestId){if(maskBgModelState==='ready')setMaskBgAiStatus('AI model ready on this device.',true);updateMaskBgControls();}
+    }
+  });
+  maskQueue=task;return task;
+}
+
+function setMaskBgBackgroundMode(mode){
+  if(!['transparent','color','blur','image','gradient'].includes(mode))return;
+  setMaskBgSetting('mode',mode);
+  if(mode==='image'&&!maskBgBackgroundImage)setMaskBgStatus('Choose a local image for the replacement background.');
+}
+maskBgModeRadios.forEach(input=>input.addEventListener('change',()=>{if(input.checked)setMaskBgBackgroundMode(input.value);}));
+$('maskBgPaintBtn').addEventListener('click',()=>setMaskBgPaintMode('paint'));
+$('maskBgEraseBtn').addEventListener('click',()=>setMaskBgPaintMode('erase'));
+$('magicSelectBtn').addEventListener('click',()=>setMaskBgPaintMode('magic'));
+$('finishMaskBgEditBtn').addEventListener('click',()=>setMaskBgPaintMode(null));
+$('autoRemoveBackgroundBtn').addEventListener('click',autoRemoveMaskBackground);
+$('undoMaskBgBtn').addEventListener('click',undoMaskBackground);
+$('resetMaskBackgroundBtn').addEventListener('click',clearMaskBackground);
+$('applyMaskBackgroundBtn').addEventListener('click',applyMaskBackground);
+$('chooseMaskBgImageBtn').addEventListener('click',()=>{if(maskBgPhotoReady())$('maskBgImageInput').click();});
+$('maskBgImageInput').addEventListener('change',event=>{loadMaskBgImageFile(event.target.files?.[0]);event.target.value='';});
+$('maskBgColor').addEventListener('input',event=>setMaskBgSetting('color',safeMaskBgColor(event.target.value,'#101014')));
+$('maskBgBlur').addEventListener('input',event=>setMaskBgSetting('blur',Number(event.target.value)));
+$('maskBgGradientStart').addEventListener('input',event=>setMaskBgSetting('gradientStart',safeMaskBgColor(event.target.value,'#11131a')));
+$('maskBgGradientEnd').addEventListener('input',event=>setMaskBgSetting('gradientEnd',safeMaskBgColor(event.target.value,'#d62828')));
+$('maskBgGradientAngle').addEventListener('input',event=>setMaskBgSetting('gradientAngle',Number(event.target.value)));
+$('maskBgBrushSize').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.brushSize=Number(event.target.value);$('maskBgBrushSizeValue').textContent=`${maskBgSettings.brushSize} px`;markMaskBgPresetChanged();});
+$('maskBgMagicTolerance').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.magicTolerance=Number(event.target.value);$('maskBgMagicToleranceValue').textContent=String(maskBgSettings.magicTolerance);markMaskBgPresetChanged();});
+$('maskBgFeather').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.feather=Number(event.target.value);$('maskBgFeatherValue').textContent=`${maskBgSettings.feather} px`;markMaskBgPresetChanged();lastPreviewRenderKey=null;if(hasContent)render(performance.now());});
+$('maskBgExpand').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.expand=Number(event.target.value);$('maskBgExpandValue').textContent=`${maskBgSettings.expand>0?'+':''}${maskBgSettings.expand} px`;markMaskBgPresetChanged();lastPreviewRenderKey=null;if(hasContent)render(performance.now());});
+$('maskBgInvert').addEventListener('change',event=>{if(!maskBgPhotoReady())return;maskBgSettings.invert=event.target.checked;markMaskBgPresetChanged();lastPreviewRenderKey=null;if(hasContent)render(performance.now());});
+$('maskBackgroundDetails').addEventListener('toggle',()=>{if($('maskBackgroundDetails').open)loadMaskBgModelOnOpen();});
+updateMaskBgControls();
 function setMaskStatus(message){ maskStatus.textContent=message; }
 function updateMaskTools(){
   const available=!!maskCanvas && !isVideo, active=!!autoSubjectMask || maskStrokes.some(stroke=>stroke.mode==='protect');
@@ -2548,6 +3299,7 @@ function updateMaskTools(){
   eraseSubjectBtn.setAttribute('aria-pressed',String(maskPaintMode==='erase'));
 }
 function setMaskPaintMode(mode){
+  if(mode&&maskBgPaintMode) setMaskBgPaintMode(null);
   maskPaintMode=maskPaintMode===mode ? null : mode;
   updateMaskTools();
   if(maskPaintMode){
@@ -2663,6 +3415,7 @@ function loadPortraitSegmenter(){
       const segmenter=new window.SelfieSegmentation({locateFile:file=>base+file});
       segmenter.setOptions({modelSelection:0,selfieMode:false});
       segmenter.onResults(results=>{
+        if(maskBgSegmentationHandler){ maskBgSegmentationHandler(results); return; }
         if(activeMaskRequest!==maskRequestId || !maskCanvas || !results.segmentationMask) return;
         const candidate=document.createElement('canvas'); candidate.width=maskCanvas.width; candidate.height=maskCanvas.height;
         const ctx=candidate.getContext('2d');
@@ -2777,12 +3530,21 @@ function isPhotoFile(file){
 function isVideoFile(file){
   return !isHeicFile(file) && (file.type.startsWith('video/') || /\.(mp4|webm|mov|m4v)$/i.test(file.name||''));
 }
+function setMediaLoading(visible,title='Preparing media',message='Your file stays on this device.'){
+  if(typeof $!=='function') return;
+  const overlay=$('mediaLoading');
+  if(!overlay) return;
+  $('mediaLoadingTitle').textContent=title; $('mediaLoadingMessage').textContent=message;
+  overlay.hidden=!visible;
+  const stage=$('previewStage'); if(stage) stage.setAttribute('aria-busy',String(visible));
+}
 function saveActivePhotoMask(){
   if(!currentPhoto || !maskCanvas || isVideo) return;
   currentPhoto.mask=autoSubjectMask || maskStrokes.length || maskManuallyCleared || maskAutoFailed ? {
     canvas:maskCanvas, auto:autoSubjectMask, strokes:maskStrokes,
     cleared:maskManuallyCleared, failed:maskAutoFailed, status:maskStatus.textContent
   } : null;
+  saveActiveMaskBackground();
 }
 function restorePhotoMask(item,img,w,h){
   const saved=item.mask;
@@ -2828,11 +3590,14 @@ function uploadPhoto(item,img,resetView=true){
   if(canvas.width!==w || canvas.height!==h || !fboSharpened){ canvas.width=w; canvas.height=h; recreateFBOs(w,h); }
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sourceTexture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
+  photoTextureRevision++; lastPreviewRenderKey=null;
   const returningFromVideo=isVideo;
+  maskBgActive=false;maskBgPaintMode=null;maskBgStroke=null;maskBgSegmentationHandler=null;++maskBgAutoRequestId;
   isVideo=false; hasContent=true; currentPhoto=item;
   if(returningFromVideo)exportOptions={...photoExportOptions};else photoExportOptions={...exportOptions};
   setWorkspaceMode('photo');
   restorePhotoMask(item,source,w,h);
+  restoreMaskBackgroundForPhoto(item);
   dropZone.style.display='none'; canvasWrap.style.display='flex';
   if(resetView) resetPreviewZoom(); else updatePreviewZoom();
   $('processVideoBtn').style.display='none';
@@ -2860,14 +3625,15 @@ function unloadVideo(){
 async function activatePhoto(index){
   if(exportBusy || mediaBusy || !photos[index] || (index===activePhotoIndex && hasContent)) return;
   saveActivePhotoMask();
-  const token=++fileLoadId, item=photos[index]; mediaBusy=true; updateSocialUI();
+  const token=++fileLoadId, item=photos[index]; mediaBusy=true;
+  setMediaLoading(!hasContent,'Loading photo','Decoding the selected frame…'); updateSocialUI();
   try{
     const img=await decodePhoto(item);
     if(token!==fileLoadId || photos[index]!==item) return;
-    saveActivePhotoMask(); activePhotoIndex=index; uploadPhoto(item,img); renderPhotoStrip();
+    saveActivePhotoMask(); activePhotoIndex=index; uploadPhoto(item,img); setMediaLoading(false); renderPhotoStrip();
     render(performance.now()); startLoop();
   }catch(error){ console.error(error); showToast(`Could not open ${item.file.name}`,5000); }
-  finally{ if(token===fileLoadId){ mediaBusy=false; updateSocialUI(); } }
+  finally{ if(token===fileLoadId){ setMediaLoading(false); mediaBusy=false; updateSocialUI(); } }
 }
 async function handleFiles(fileList,{append=false}={}){
   if(exportBusy){ showToast('Wait for the export to finish'); return; }
@@ -2875,18 +3641,21 @@ async function handleFiles(fileList,{append=false}={}){
   const images=files.filter(isPhotoFile), videos=files.filter(isVideoFile);
   if(videos.length){
     if(append || images.length || videos.length>1){ showToast('Choose up to 10 photos, or one video at a time',5000); return; }
-    return handleVideoFile(videos[0]);
+    if(!hasContent) setMediaLoading(true,'Preparing video','Reading video metadata and the first frame…');
+    const pending=handleVideoFile(videos[0]), token=fileLoadId;
+    return pending.finally(()=>{ if(token===fileLoadId) setMediaLoading(false); });
   }
   if(!images.length){ showToast('Choose a photo or video'); return; }
   const room=social.MAX_PHOTOS-(append?photos.length:0);
   if(!room){ showToast('A carousel can contain up to 10 photos'); return; }
   const chosen=images.slice(0,room), token=++fileLoadId;
   mediaBusy=true; saveActivePhotoMask();
+  setMediaLoading(!hasContent,'Preparing photos','Decoding images and building previews…');
   let replacing=!append||isVideo, imported=0, failed=0;
   updateSocialUI();
   try{
     for(let i=0;i<chosen.length;i++){
-      const item={id:nextPhotoId++,file:chosen[i],blob:chosen[i],converted:false,rotation:0,grainSeed:randomGrainSeed(),crop:{x:0.5,y:0.5},mask:null,thumbUrl:null};
+      const item={id:nextPhotoId++,file:chosen[i],blob:chosen[i],converted:false,rotation:0,grainSeed:randomGrainSeed(),crop:{x:0.5,y:0.5},mask:null,maskBackground:null,thumbUrl:null};
       try{
         const img=await decodePhoto(item);
         if(token!==fileLoadId) return;
@@ -2898,7 +3667,7 @@ async function handleFiles(fileList,{append=false}={}){
           ++maskRequestId; maskDetectionPending=false; replacing=false;
         }
         photos.push(item); imported++;
-        if(activePhotoIndex<0){ activePhotoIndex=photos.length-1; uploadPhoto(item,img); startLoop(); }
+        if(activePhotoIndex<0){ activePhotoIndex=photos.length-1; uploadPhoto(item,img); setMediaLoading(false); startLoop(); }
         renderPhotoStrip();
       }catch(error){
         failed++; console.error('Photo import failed',item.file.name,error);
@@ -2911,7 +3680,7 @@ async function handleFiles(fileList,{append=false}={}){
       if(failed) notes.push(`${failed} could not be decoded`);
       showToast(notes.join(' · '),5000);
     }else showToast('Could not open these photos — your current media is unchanged',5000);
-  }finally{ if(token===fileLoadId){ mediaBusy=false; updateSocialUI(); } }
+  }finally{ if(token===fileLoadId){ setMediaLoading(false); mediaBusy=false; updateSocialUI(); } }
 }
 function handleFile(file){ if(file) return handleFiles([file]); }
 function waitForVideoData(element,url){
@@ -3022,10 +3791,14 @@ async function handleVideoFile(file){
   }
 }
 dropZone.addEventListener('click',()=>fileInput.click());
+$('photoPickerBtn').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); $('photoPickerInput').click(); });
+$('videoPickerBtn').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); $('videoPickerInput').click(); });
 dropZone.addEventListener('dragover',e=>{ e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop',e=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
 fileInput.addEventListener('change',e=>{ handleFiles(e.target.files); e.target.value=''; });
+$('photoPickerInput').addEventListener('change',e=>{ handleFiles(e.target.files); e.target.value=''; });
+$('videoPickerInput').addEventListener('change',e=>{ handleFiles(e.target.files); e.target.value=''; });
 $('addPhotoInput').addEventListener('change',e=>{ handleFiles(e.target.files,{append:true}); e.target.value=''; });
 $('addPhotosBtn').addEventListener('click',()=>$('addPhotoInput').click());
 $('removePhotoBtn').addEventListener('click',async()=>{
@@ -3117,6 +3890,10 @@ canvas.addEventListener('wheel',e=>{
   zoomPreviewTo(next,e.clientX,e.clientY);
 },{passive:false});
 canvas.addEventListener('pointerdown',e=>{
+  if(maskBgPaintMode==='magic' && maskBgPhotoReady() && (e.pointerType!=='mouse' || e.button===0)){
+    e.preventDefault();magicSelectMask(subjectPoint(e));return;
+  }
+  if(beginMaskBgStroke(e)) return;
   if(maskPaintMode && ditherScope==='background' && maskCanvas && !isVideo && (e.pointerType!=='mouse' || e.button===0)){
     e.preventDefault();
     const point=subjectPoint(e);
@@ -3127,7 +3904,7 @@ canvas.addEventListener('pointerdown',e=>{
     uploadSubjectMask();
     return;
   }
-  if(e.pointerType==='touch' && !maskPaintMode){
+  if(e.pointerType==='touch' && !maskPaintMode && !maskBgPaintMode){
     touchZoomPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
     try{canvas.setPointerCapture(e.pointerId);}catch(error){}
     if(touchZoomPointers.size===2){
@@ -3148,6 +3925,7 @@ canvas.addEventListener('pointermove',e=>{
   const touchPoint=touchZoomPointers.get(e.pointerId);
   if(touchPoint){ touchPoint.x=e.clientX; touchPoint.y=e.clientY; }
   if(pinchZoom && pinchZoom.ids.includes(e.pointerId)){ e.preventDefault(); updatePinchZoom(); return; }
+  if(maskBgStroke){ paintMaskBackground(e); return; }
   if(maskStroke){ paintSubject(e); return; }
   if(!previewDrag || previewDrag.id!==e.pointerId) return;
   previewPanX=previewDrag.panX+e.clientX-previewDrag.x;
@@ -3163,6 +3941,12 @@ function finishPreviewDrag(e){
     if(remaining && previewZoom>1){ const [id,point]=remaining; previewDrag={id,x:point.x,y:point.y,panX:previewPanX,panY:previewPanY}; }
     return;
   }
+  if(maskBgStroke && maskBgStroke.id===e.pointerId){
+    maskBgStroke=null;
+    if(maskBgUploadFrame) uploadMaskBackground();
+    if(canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+    updateMaskBgControls();return;
+  }
   if(maskStroke && maskStroke.id===e.pointerId){
     maskStroke=null;
     if(maskUploadFrame) uploadSubjectMask(); // export must see the final brush stroke immediately
@@ -3175,7 +3959,7 @@ function finishPreviewDrag(e){
 }
 canvas.addEventListener('pointerup',finishPreviewDrag);
 canvas.addEventListener('pointercancel',finishPreviewDrag);
-canvas.addEventListener('lostpointercapture',e=>{touchZoomPointers.delete(e.pointerId);if(pinchZoom?.ids.includes(e.pointerId))pinchZoom=null;if(previewDrag?.id===e.pointerId)previewDrag=null;if(maskStroke?.id===e.pointerId)maskStroke=null;if(!previewDrag)canvasWrap.classList.remove('dragging');});
+canvas.addEventListener('lostpointercapture',e=>{touchZoomPointers.delete(e.pointerId);if(pinchZoom?.ids.includes(e.pointerId))pinchZoom=null;if(previewDrag?.id===e.pointerId)previewDrag=null;if(maskStroke?.id===e.pointerId)maskStroke=null;if(maskBgStroke?.id===e.pointerId){maskBgStroke=null;if(maskBgUploadFrame)uploadMaskBackground();updateMaskBgControls();}if(!previewDrag)canvasWrap.classList.remove('dragging');});
 window.addEventListener('resize',()=>{if(hasContent) updatePreviewZoom();});
 updatePreviewZoom();
 
@@ -3222,12 +4006,22 @@ let presetFrame=null;
 function cancelPresetAnimation(){
   if(presetFrame!==null){ cancelAnimationFrame(presetFrame); presetFrame=null; }
 }
+function cancelSliderRender(){
+  if(sliderRenderTimer!==null){ clearTimeout(sliderRenderTimer); sliderRenderTimer=null; }
+}
+function scheduleSliderRender(){
+  cancelSliderRender();
+  sliderRenderTimer=setTimeout(()=>{
+    sliderRenderTimer=null;
+    if(hasContent && !exportBusy) render(performance.now());
+  },16);
+}
 function userChangedSliders(){
   cancelPresetAnimation();
   selectedPresetName=null;
   activePresetName=null; syncPresetSelection();
   updateFromSliders(); updateSliderUI(); floydLastKey=null; updateClusterSummaries();
-  if(hasContent) render(performance.now());
+  if(hasContent) scheduleSliderRender();
 }
 function updateDitherControlVisibility(){
   const algorithm=ditherAlgorithmSelect.value, colorMode=ditherColorModeSelect.value;
@@ -3271,18 +4065,20 @@ function toggleBeforeAfter(){
 $('beforeAfterBtn').addEventListener('click',toggleBeforeAfter);
 $('hdrBeforeBtn').addEventListener('click',toggleBeforeAfter);
 $('hdrUploadBtn').addEventListener('click',()=>fileInput.click());
+canvasWrap.addEventListener('dblclick',e=>{ if(maskBgPaintMode){e.preventDefault();e.stopImmediatePropagation();} },true);
 canvasWrap.addEventListener('dblclick',e=>{ if(performance.now()>=suppressTouchPickerUntil && !maskPaintMode && !e.target.closest('#cropOverlay,#captionOverlay')) fileInput.click(); });
 
 async function downloadImage(){
   if(!hasContent || exportBusy || mediaBusy){ showToast('Upload first'); return; }
-  const previousSplit=splitPreview; splitPreview=false; render(performance.now());
+  const view=beginExport('Preparing original-size PNG');
   try{
+    progressText.textContent='Rendering the full-resolution image…'; render(performance.now());
     const a=document.createElement('a'); a.href=canvas.toDataURL('image/png');
     const blob=await (await fetch(a.href)).blob();
     requestDownload(blob,`film-lab-${Date.now()}.png`,{format:'PNG',resolution:`${canvas.width} × ${canvas.height}`});
     showReadyConfirmation();
   }catch(error){ showToast(`Could not prepare PNG: ${error.message}`,4500); }
-  finally{ splitPreview=previousSplit; render(performance.now()); }
+  finally{ finishExport(view); }
 }
 $('downloadBtn').addEventListener('click',downloadImage);
 function handleHeaderExport(){
@@ -3546,7 +4342,92 @@ function presetSwatchGradient(values={}){
   const sat=Math.max(25,Math.min(88,48+Number(values.Saturation||0)*.22));
   return `linear-gradient(90deg,${hues.map((h,i)=>`hsl(${h} ${sat+(i===2?8:0)}% ${i===0?31:i===2?67:49}%)`).join(',')})`;
 }
+function syncPresetHoverOptions(){
+  const menu=$('presetHoverMenu'), select=$('presetSelect');
+  if(!menu || !select || typeof menu.querySelectorAll!=='function') return;
+  menu.querySelectorAll('.presetHoverOption').forEach(option=>{
+    option.setAttribute('aria-selected',String(option.dataset.presetName===select.value));
+  });
+}
+function renderPresetHoverOptions(){
+  const menu=$('presetHoverMenu'), select=$('presetSelect');
+  if(!menu || !select || typeof menu.replaceChildren!=='function') return;
+  menu.replaceChildren();
+  for(const group of Array.from(select.children||[])){
+    if(group.tagName?.toLowerCase()!=='optgroup') continue;
+    const heading=document.createElement('div'); heading.className='presetHoverGroup'; heading.setAttribute('role','presentation'); heading.textContent=group.label;
+    menu.appendChild(heading);
+    for(const sourceOption of Array.from(group.children||[])){
+      const name=sourceOption.value, values=availablePresets.get(name);
+      if(!name || !values) continue;
+      const option=document.createElement('button'); option.type='button'; option.className='presetHoverOption';
+      option.dataset.presetName=name; option.setAttribute('role','option'); option.setAttribute('aria-selected','false'); option.tabIndex=-1;
+      option.title=sourceOption.title||`Preview ${presetDisplayName(name)}`;
+      const label=document.createElement('span'); label.className='presetHoverName'; label.textContent=presetDisplayName(name);
+      const swatch=document.createElement('span'); swatch.className='presetColorSwatch'; swatch.setAttribute('aria-hidden','true'); swatch.style.background=presetSwatchGradient(values);
+      option.append(label,swatch);
+      option.addEventListener('pointerenter',()=>previewPresetHoverOption(name));
+      option.addEventListener('focus',()=>previewPresetHoverOption(name));
+      option.addEventListener('click',()=>choosePresetHoverOption(name));
+      menu.appendChild(option);
+    }
+  }
+  syncPresetHoverOptions();
+}
+function positionPresetHoverMenu(){
+  const menu=$('presetHoverMenu'), select=$('presetSelect');
+  if(!menu || menu.hidden || !select) return;
+  const rect=select.getBoundingClientRect(), below=Math.max(0,window.innerHeight-rect.bottom-14), above=Math.max(0,rect.top-14);
+  const opensUp=below<220 && above>below;
+  menu.classList.toggle('opensUp',opensUp);
+  menu.style.maxHeight=`${Math.max(120,Math.min(340,(opensUp?above:below)-8))}px`;
+}
+function previewPresetHoverOption(name){
+  if(!hasContent || !availablePresets.has(name)) return;
+  if(presetCompareSnapshot && presetCompareName===name) return;
+  startPresetCompare(name,availablePresets.get(name),customPresetDither.get(name));
+}
+function previewPresetAtPoint(x,y,preferVisible=false){
+  const menu=$('presetHoverMenu'); if(!menu || menu.hidden) return;
+  const target=document.elementFromPoint?.(x,y);
+  let option=target?.closest?.('.presetHoverOption');
+  if(!option || !menu.contains(option)){
+    if(!preferVisible) return;
+    const wrap=document.querySelector('.presetSelectWrap');
+    if(!menu.contains(target) && !wrap?.contains(target)) return;
+    const bounds=menu.getBoundingClientRect();
+    option=Array.from(menu.querySelectorAll('.presetHoverOption')).find(item=>{
+      const rect=item.getBoundingClientRect(); return rect.bottom>bounds.top+1 && rect.top<bounds.bottom-1;
+    });
+  }
+  if(option?.dataset.presetName) previewPresetHoverOption(option.dataset.presetName);
+}
+function openPresetHoverMenu(){
+  const wrap=document.querySelector('.presetSelectWrap'), menu=$('presetHoverMenu'), select=$('presetSelect');
+  if(!wrap || !menu || !menu.children.length) return;
+  menu.hidden=false; wrap.classList.add('previewOpen');
+  select.setAttribute('aria-controls','presetHoverMenu'); select.setAttribute('aria-expanded','true');
+  positionPresetHoverMenu();
+  const current=select.value||activePresetName;
+  if(current) previewPresetHoverOption(current);
+}
+function closePresetHoverMenu(restorePreview=true){
+  const wrap=document.querySelector('.presetSelectWrap'), menu=$('presetHoverMenu'), select=$('presetSelect');
+  if(menu){ menu.hidden=true; menu.classList.remove('opensUp'); }
+  wrap?.classList.remove('previewOpen'); select?.setAttribute('aria-expanded','false');
+  if(typeof presetHoverPointer!=='undefined') presetHoverPointer=null;
+  if(restorePreview && presetCompareSnapshot) stopPresetCompare();
+}
+function choosePresetHoverOption(name){
+  if(!availablePresets.has(name)) return;
+  const select=$('presetSelect');
+  closePresetHoverMenu(true);
+  select.value=name;
+  select.dispatchEvent(new Event('change',{bubbles:true}));
+  try{ select.focus({preventScroll:true}); }catch(error){ select.focus(); }
+}
 function syncPresetSelection(){
+
   document.querySelectorAll('#presetChips .chip').forEach(chip=>{
     const active=chip.textContent===activePresetName;
     chip.classList.toggle('active',active);
@@ -3563,6 +4444,7 @@ function syncPresetSelection(){
   const colorSwatch=$('presetSelectSwatch'); if(colorSwatch?.style) colorSwatch.style.background=swatch?presetSwatchGradient(swatch):'transparent';
   const compareButton=$('presetCompareBtn'), applyButton=$('presetApplyBtn');
   if(compareButton) compareButton.disabled=!swatchName||!swatch||!hasContent; if(applyButton) applyButton.disabled=!swatchName||!swatch;
+  if(typeof syncPresetHoverOptions==='function') syncPresetHoverOptions();
 }
 function renderChips(){
   const chips=$('presetChips'), select=$('presetSelect'), savedCards=$('savedPresetChips'), savedEmpty=$('savedPresetsEmpty');
@@ -3618,6 +4500,7 @@ function renderChips(){
     if(name.startsWith('ig:')) option.title=igPresetNotes[presetDisplayName(name)]||'';
     group.appendChild(option); moreCount++;
   }
+  if(typeof renderPresetHoverOptions==='function') renderPresetHoverOptions();
   $('presetCount').textContent=`${moreCount} ${moreCount===1?'look':'looks'}`;
   if(savedEmpty) savedEmpty.hidden=customPresets.length>0;
   if(activePresetName && !availablePresets.has(activePresetName)) activePresetName=null;
@@ -3626,12 +4509,13 @@ function renderChips(){
 }
 function applyPreset(name, values, ditherOptions=null, options={}){
   cancelPresetAnimation();
-  if(!options.preview && typeof settingsSnapshot==='function'){ lastPresetSnapshot=settingsSnapshot(); const undoButton=$('presetUndoBtn'); if(undoButton) undoButton.hidden=false; }
+  if(!options.preview && typeof settingsSnapshot==='function'){ lastPresetSnapshot=settingsSnapshot(); lastPresetMaskBackgroundSnapshot=captureMaskBgPresetSnapshot(); const undoButton=$('presetUndoBtn'); if(undoButton) undoButton.hidden=false; }
   activePresetName=name; syncPresetSelection();
   if(ditherOptions) setDitherSettings(ditherOptions);
   setDitherScope(values.DitherScope==='background'?'background':'full');
   selectedPresetName=name; syncPresetSelection();
   if(values.Effects || name.startsWith('ig:')) setEffectStates(values.Effects||{});
+  if(values.MaskBackground&&appState.mode==='photo') applyMaskBackgroundPresetSettings(values.MaskBackground);
   const start=getCurrentValues();
   // Old saved presets have no newer sliders; animate those back to neutral.
   const target=Object.fromEntries(ids.map(k=>[k,Number(values[k]??0)]));
@@ -3650,15 +4534,16 @@ function applyPreset(name, values, ditherOptions=null, options={}){
 function startPresetCompare(name,values,ditherOptions=null){
   if(!hasContent || !availablePresets.has(name)) return;
   if(presetCompareSnapshot) stopPresetCompare();
-  presetCompareSnapshot=settingsSnapshot(); presetCompareName=name; presetCompareSelection=selectedPresetName;
+  presetCompareSnapshot=settingsSnapshot(); presetCompareMaskBackgroundSnapshot=captureMaskBgPresetSnapshot(); presetCompareName=name; presetCompareSelection=selectedPresetName;
   $('presetCompareBtn').textContent='Stop compare';
   applyPreset(name,values,ditherOptions,{preview:true});
 }
 function stopPresetCompare(){
   if(!presetCompareSnapshot) return;
-  const snapshot=presetCompareSnapshot, selection=presetCompareSelection; presetCompareSnapshot=null; presetCompareName=null; presetCompareSelection=null;
+  const snapshot=presetCompareSnapshot, selection=presetCompareSelection, maskSnapshot=presetCompareMaskBackgroundSnapshot;
+  presetCompareSnapshot=null; presetCompareMaskBackgroundSnapshot=null; presetCompareName=null; presetCompareSelection=null;
   $('presetCompareBtn').textContent='Compare';
-  restoreSettings(snapshot); selectedPresetName=selection; syncPresetSelection();
+  restoreSettings(snapshot); restoreMaskBgPresetSnapshot(maskSnapshot); selectedPresetName=selection; syncPresetSelection();
 }
 function deleteCustomPreset(name){
   if(!customPresets.some(p=>p.name===name) || !confirm(`Delete "${name}"?`)) return;
@@ -3667,8 +4552,46 @@ function deleteCustomPreset(name){
   saveCustom(); renderChips(); showToast(`Deleted "${name}"`);
 }
 renderChips();
+// Mouse/pen get a scrollable hover preview; the mounted native select remains the touch and keyboard fallback.
+const presetHoverWrap=document.querySelector('.presetSelectWrap'), presetHoverMenu=$('presetHoverMenu'), presetSelect=$('presetSelect');
+presetSelect.setAttribute('aria-controls','presetHoverMenu'); presetSelect.setAttribute('aria-expanded','false');
+let presetHoverPointer=null;
+presetHoverWrap.addEventListener('pointerenter',e=>{
+  if(e.pointerType==='mouse' || e.pointerType==='pen') openPresetHoverMenu();
+});
+presetHoverWrap.addEventListener('pointerleave',e=>{
+  if(e.pointerType==='mouse' || e.pointerType==='pen') closePresetHoverMenu(true);
+});
+presetSelect.addEventListener('pointerdown',e=>{
+  if(e.pointerType!=='mouse' && e.pointerType!=='pen') return;
+  e.preventDefault();
+  try{ presetSelect.focus({preventScroll:true}); }catch(error){ presetSelect.focus(); }
+  openPresetHoverMenu();
+});
+presetHoverMenu.addEventListener('pointermove',e=>{
+  presetHoverPointer={x:e.clientX,y:e.clientY};
+  const option=e.target.closest?.('.presetHoverOption');
+  if(option && presetHoverMenu.contains(option)) previewPresetHoverOption(option.dataset.presetName);
+});
+presetHoverMenu.addEventListener('wheel',e=>{
+  presetHoverPointer={x:e.clientX,y:e.clientY};
+  requestAnimationFrame(()=>previewPresetAtPoint(e.clientX,e.clientY,true));
+},{passive:true});
+presetHoverMenu.addEventListener('scroll',()=>{
+  if(presetHoverPointer) requestAnimationFrame(()=>previewPresetAtPoint(presetHoverPointer.x,presetHoverPointer.y,true));
+},{passive:true});
+presetHoverWrap.addEventListener('wheel',e=>{
+  if(presetHoverMenu.hidden || e.target!==presetSelect) return;
+  e.preventDefault(); presetHoverMenu.scrollTop+=e.deltaY;
+  presetHoverPointer={x:e.clientX,y:e.clientY};
+  requestAnimationFrame(()=>previewPresetAtPoint(e.clientX,e.clientY,true));
+},{passive:false});
+window.addEventListener('resize',positionPresetHoverMenu);
+window.addEventListener('scroll',positionPresetHoverMenu,true);
 $('presetSelect').addEventListener('change',e=>{
-  const name=e.target.value; selectedPresetName=name||null; syncPresetSelection();
+  const name=e.target.value;
+  closePresetHoverMenu(true); $('presetSelect').value=name;
+  selectedPresetName=name||null; syncPresetSelection();
   if(e.detail?.applyNow) if(availablePresets.has(name)) applyPreset(name,availablePresets.get(name),customPresetDither.get(name));
 });
 $('presetApplyBtn').addEventListener('click',()=>{
@@ -3682,17 +4605,20 @@ $('presetCompareBtn').addEventListener('click',()=>{
 });
 $('presetUndoBtn').addEventListener('click',()=>{
   if(!lastPresetSnapshot) return;
-  const snapshot=lastPresetSnapshot; lastPresetSnapshot=null; $('presetUndoBtn').hidden=true;
-  stopPresetCompare(); restoreSettings(snapshot); showToast('Preset undone');
+  const snapshot=lastPresetSnapshot, maskSnapshot=lastPresetMaskBackgroundSnapshot;
+  lastPresetSnapshot=null;lastPresetMaskBackgroundSnapshot=null;$('presetUndoBtn').hidden=true;
+  stopPresetCompare(); restoreSettings(snapshot);restoreMaskBgPresetSnapshot(maskSnapshot);showToast('Preset undone');
 });
 $('savePresetBtn').addEventListener('click',()=>{
   const name=(prompt('Preset name:')||'').trim(); if(!name) return;
   if(name.startsWith('ig:')){ showToast('Please choose a name without the reserved ig: prefix'); return; }
   const values={...getCurrentValues(),DitherScope:ditherScope,Effects:{...effectEnabled}};
+  values.MaskBackground=getMaskBackgroundPresetSettings(true);
   customPresets=customPresets.filter(c=>c.name!==name);
   customPresets.push({name,values,version:2,dither:getDitherSettings()}); saveCustom();
   activePresetName=name; renderChips();
-  selectedPresetName=name; syncPresetSelection(); showToast(`Saved "${name}"`);
+  selectedPresetName=name; syncPresetSelection();
+  showToast(maskBgBackgroundImage&&!values.MaskBackground.imageDataUrl?'Preset saved without its background image because it was too large to embed':`Saved "${name}"`,5000);
 });
 $('deletePresetBtn').addEventListener('click',()=>{ if(activePresetName) deleteCustomPreset(activePresetName); });
 
@@ -3700,7 +4626,7 @@ $('deletePresetBtn').addEventListener('click',()=>{ if(activePresetName) deleteC
 function getCropPosition(){ return !isVideo && currentPhoto ? currentPhoto.crop : videoCrop; }
 function updateCropOverlay(){
   const overlay=$('cropOverlay'), frame=$('cropFrame'), ratio=social.cropRatio(exportOptions);
-  overlay.hidden=!hasContent || !cropEditing || ratio===null || !!maskPaintMode;
+  overlay.hidden=!hasContent || !cropEditing || ratio===null || !!maskPaintMode || !!maskBgPaintMode;
   if(overlay.hidden) return;
   const box=canvas.getBoundingClientRect(), wrap=canvasWrap.getBoundingClientRect();
   const rect=social.cropRect(canvas.width,canvas.height,ratio,getCropPosition());
@@ -3743,6 +4669,7 @@ function updateWorkspaceUI(){
   $('frameFormatLabel').textContent=isVideo?'Frame capture format':'Photo format';
   $('frameQualityLabel').textContent=isVideo?'Frame capture quality':'JPG quality';
   updateCaptionOverlay();
+  if(typeof updateMaskBgControls==='function')updateMaskBgControls();
 }
 function backToDropZone(){
   if(mediaBusy || exportBusy) return;
@@ -3771,8 +4698,17 @@ $('sidebarCollapseToggle').addEventListener('click',()=>{
   $('app').classList.toggle('sidebar-collapsed',collapsed);
   requestAnimationFrame(()=>{if(isVideo) updateCaptionOverlay();});
 });
+function needsTransparentMaskPng(){ return appState.mode==='photo'&&!isVideo&&maskBgActive&&maskBgSettings.mode==='transparent'; }
+function forceMaskBackgroundPng(showNotice=false){
+  if(!needsTransparentMaskPng()||exportOptions.type==='png')return false;
+  exportOptions.type='png';photoExportOptions={...photoExportOptions,type:'png'};
+  if($('exportFileType'))$('exportFileType').value='png';
+  if(typeof syncExportChoicePills==='function')syncExportChoicePills();
+  if(showNotice)showToast('Transparent backgrounds require PNG export',3500);
+  return true;
+}
 function updateSocialUI(){
-  updateWorkspaceUI(); updateClusterSummaries();
+  updateWorkspaceUI();forceMaskBackgroundPng();updateClusterSummaries();
   const locked=mediaBusy||exportBusy, ratio=social.cropRatio(exportOptions);
   $('rotateMediaBtn').disabled=!hasContent||locked;
   $('randomizeGrainBtn').disabled=!hasContent||locked;
@@ -3848,6 +4784,7 @@ async function rotateActiveMedia(){
     if(currentPhoto!==item) return;
     saveActivePhotoMask();
     item.mask && rotatePhotoMask(item.mask,90);
+    item.maskBackground && rotateMaskBgState(item.maskBackground,90);
     item.rotation=((item.rotation||0)+90)%360;
     item.crop=rotateCropPosition(item.crop);
     uploadPhoto(item,img,false);
@@ -3890,7 +4827,11 @@ $('cropPreviewBtn').addEventListener('click',()=>{
   updateSocialUI();
 });
 $('centerCropBtn').addEventListener('click',()=>{ Object.assign(getCropPosition(),{x:0.5,y:0.5}); updateCropOverlay(); });
-$('exportFileType').addEventListener('change',e=>{ exportOptions.type=e.target.value; updateSocialUI(); });
+$('exportFileType').addEventListener('change',e=>{
+  exportOptions.type=e.target.value;
+  if(needsTransparentMaskPng()&&exportOptions.type!=='png'){forceMaskBackgroundPng(true);updateSocialUI();return;}
+  updateSocialUI();
+});
 $('exportQuality').addEventListener('input',e=>{ exportOptions.quality=Number(e.target.value); updateSocialUI(); });
 function syncExportChoicePills(){
   const type=$('exportFileType').value, videoFormat=$('videoContainer').value, quality=Number($('exportQuality').value);
@@ -4084,6 +5025,7 @@ function makeExportCanvas(options=exportOptions,position=getCropPosition(),forVi
 }
 function setEditorBusy(busy){
   exportBusy=busy; $('app').classList.toggle('isBusy',busy);
+  if(busy) $('videoEngineStatus').hidden=true;
   if(busy){
     document.querySelectorAll('button,input,select').forEach(control=>{
       if(control.id==='cancelExportBtn') return;
@@ -4098,11 +5040,12 @@ function setEditorBusy(busy){
 function checkExportCancelled(){ if(cancelRequested) throw new DOMException('Export cancelled','AbortError'); }
 function beginExport(title){
   const view={original:showOriginal,split:splitPreview,playing:isVideo&&!videoEl.paused,time:videoEl.currentTime,
-    zoom:previewZoom,panX:previewPanX,panY:previewPanY};
-  cancelRequested=false; cancelPresetAnimation(); if(maskUploadFrame) uploadSubjectMask();
+    zoom:previewZoom,panX:previewPanX,panY:previewPanY,fullResolution:renderAtFullResolution};
+  cancelRequested=false; cancelPresetAnimation(); cancelSliderRender(); if(maskUploadFrame) uploadSubjectMask();
   if(animId!==null){ cancelAnimationFrame(animId); animId=null; }
   if(isVideo) videoEl.pause();
   setEditorBusy(true); showOriginal=false; splitPreview=false; beforeLabel.classList.remove('show'); updateSplitDivider();
+  setFullResolutionRendering(true);
   $('progressTitle').textContent=title; progressWrap.classList.add('show'); progressFill.style.width='0%'; progressPct.textContent='0%';
   exportStartedAt=Date.now(); $('progressEta').textContent='Estimated time remaining: calculating…';
   if(exportEtaTimer) clearInterval(exportEtaTimer); exportEtaTimer=setInterval(updateExportEta,1000);
@@ -4113,12 +5056,13 @@ function finishExport(view){
   if(exportEtaTimer){clearInterval(exportEtaTimer);exportEtaTimer=null;} exportStartedAt=0;
   showOriginal=view.original; splitPreview=view.split; beforeLabel.classList.toggle('show',showOriginal);
   previewZoom=view.zoom; previewPanX=view.panX; previewPanY=view.panY;
-  setEditorBusy(false); updatePreviewZoom(); render(performance.now());
+  setEditorBusy(false); setFullResolutionRendering(view.fullResolution); updatePreviewZoom(); render(performance.now());
   if(view.playing) videoEl.play().catch(()=>{});
   startLoop(); progressWrap.classList.remove('show','loading','ready');
 }
 async function exportPhoto(){
   if(!hasContent || exportBusy || mediaBusy){ showToast('Upload a photo first'); return; }
+  forceMaskBackgroundPng(true);
   const options={...exportOptions}, view=beginExport('Exporting photo');
   try{
     if(ditherScope==='background' && maskDetectionPending){ progressText.textContent='Finishing the subject mask…'; await maskQueue; }
@@ -4138,7 +5082,9 @@ async function exportPhoto(){
 async function exportCarousel(){
   if(isVideo || !photos.length || exportBusy || mediaBusy) return;
   saveActivePhotoMask();
-  const selected=activePhotoIndex, options={...exportOptions}, view=beginExport('Exporting carousel'), entries=[], outputSizes=new Set();
+  const selected=activePhotoIndex, hasTransparentMask=maskBgSettings.mode==='transparent'&&photos.some(item=>!!item.maskBackground?.active);
+  const options={...exportOptions,type:hasTransparentMask?'png':exportOptions.type}, view=beginExport('Exporting carousel'), entries=[], outputSizes=new Set();
+  if(hasTransparentMask&&exportOptions.type!=='png')showToast('Transparent carousel backgrounds require PNG; exporting all photos as PNG',4500);
   let missingMasks=0;
   try{
     for(let i=0;i<photos.length;i++){
@@ -4423,7 +5369,17 @@ window.addEventListener('keydown',e=>{
 
 // WebGL-rendered frames keep the entire effect pipeline; ffmpeg encodes only the selected clip.
 let ffmpegInstance=null, ffmpegLoading=false, ffmpegFetchController=null, ffmpegLoadPromise=null, lastFFmpegLog='';
-let encoderProgressBase=90, encoderProgressSpan=8, exportStartedAt=0, exportEtaTimer=null;
+let encoderProgressBase=90, encoderProgressSpan=8, exportStartedAt=0, exportEtaTimer=null, videoEngineStatusTimer=null;
+function setVideoEngineStatus(state,message,duration=0){
+  const status=$('videoEngineStatus');
+  if(videoEngineStatusTimer!==null){ clearTimeout(videoEngineStatusTimer); videoEngineStatusTimer=null; }
+  if(!message || exportBusy || !isVideo || !hasContent){ status.hidden=true; return; }
+  status.dataset.state=state; $('videoEngineStatusText').textContent=message; status.hidden=false;
+  if(duration>0) videoEngineStatusTimer=setTimeout(()=>{
+    if(status.dataset.state===state) status.hidden=true;
+    videoEngineStatusTimer=null;
+  },duration);
+}
 function updateExportEta(){
   if(!exportStartedAt) return;
   const progress=parseFloat($('progressPct').textContent)||0, elapsed=(Date.now()-exportStartedAt)/1000;
@@ -4448,13 +5404,19 @@ function loadExportScript(src,signal=ffmpegFetchController?.signal){
 function loadFFmpeg(){
   if(ffmpegLoadPromise)return ffmpegLoadPromise;
   if(ffmpegInstance)return Promise.resolve(ffmpegInstance);
-  ffmpegLoadPromise=initializeFFmpeg().finally(()=>{ffmpegLoadPromise=null;});
+  setVideoEngineStatus('loading','Loading video engine… this takes a moment');
+  ffmpegLoadPromise=initializeFFmpeg().then(instance=>{
+    setVideoEngineStatus('ready','Video engine ready for export',1400);
+    return instance;
+  },error=>{
+    setVideoEngineStatus('error','Video engine could not preload; it will retry when you export.',6000);
+    throw error;
+  }).finally(()=>{ffmpegLoadPromise=null;});
   return ffmpegLoadPromise;
 }
 async function initializeFFmpeg(){
   ffmpegLoading=true; const urls=[]; let ff=null; ffmpegFetchController=new AbortController();
   try{
-    progressText.textContent='Loading video engine…';
     if(!window.FFmpegWASM){
       try{ await loadExportScript('vendor/ffmpeg/ffmpeg.js'); }
       catch(error){ checkExportCancelled(); await loadExportScript('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js'); }
@@ -4484,7 +5446,6 @@ async function initializeFFmpeg(){
       const pct=Math.max(parseInt(progressPct.textContent)||0,Math.round(encoderProgressBase+social.clamp(progress,0,1)*encoderProgressSpan));
       progressFill.style.width=pct+'%'; progressPct.textContent=pct+'%'; progressText.textContent=`Encoding… ${pct}%`;
     });
-    progressText.textContent='Loading video engine…';
     const loadTimer=setTimeout(()=>ff.terminate(),60000);
     try{ await ff.load({coreURL,wasmURL}); }finally{ clearTimeout(loadTimer); }
     checkExportCancelled();
@@ -4681,7 +5642,8 @@ $('processVideoBtn').addEventListener('click',processVideo);
 // Looks / Adjust / Export are views over the same existing editor controls.
 let activeSidebarTab='looks', userSelectedSidebarTab=false;
 function selectSidebarTab(name){
-  if(!['looks','adjust','export'].includes(name))return;
+  if(!['looks','adjust','mask','export'].includes(name))return;
+  if(name==='mask'&&appState.mode!=='photo')return;
   activeSidebarTab=name;
   document.querySelectorAll('.sidebarTab').forEach(button=>{
     const active=button.dataset.tab===name;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));
@@ -4689,14 +5651,14 @@ function selectSidebarTab(name){
   document.querySelectorAll('.sidebarPanel').forEach(panel=>{
     const active=panel.dataset.panel===name;panel.classList.toggle('active',active);panel.hidden=!active;
   });
-  $('sidebarSheetHandle').querySelector('.sheetHandleText').textContent=name.toUpperCase();
+  $('sidebarSheetHandle').querySelector('.sheetHandleText').textContent=name==='mask'?'MASK & BG':name.toUpperCase();
+  if(name==='mask')loadMaskBgModelOnOpen();
 }
 document.querySelectorAll('.sidebarTab').forEach(button=>button.addEventListener('click',()=>{userSelectedSidebarTab=true;selectSidebarTab(button.dataset.tab);}));
 function updateClusterSummaries(){
   const groups={
-    basic:[['Exposure','Exposure'],['Contrast','Contrast'],['Saturation','Saturation'],['Temperature','Temperature'],['Vibrance','Vibrance'],['Fade','Fade'],['ShadowTone','Shadow'],['HighlightTone','Highlights'],['HighlightTint','Tint']],
-    creative:[['Bloom','Bloom'],['Hall','Hallation'],['Grain','Grain'],['BloomAnam','Anamorphic'],['VignStrength','Vignette'],['VignSize','Vignette size']],
-    technical:[['Dither','Dither'],['Sharp','Sharpening']]
+    basic:[['Exposure','Exposure'],['Contrast','Contrast'],['Saturation','Saturation'],['Temperature','Temperature'],['Vibrance','Vibrance'],['Fade','Fade'],['ShadowTone','Shadow'],['HighlightTone','Highlights'],['HighlightTint','Tint'],['Bloom','Bloom'],['Hall','Hallation'],['BloomAnam','Anamorphic']],
+    creative:[['Grain','Grain'],['VignStrength','Vignette'],['VignSize','Vignette size'],['Dither','Dither'],['Sharp','Sharpening']]
   };
   for(const [name,items] of Object.entries(groups)){
     const target=document.querySelector(`[data-summary="${name}"]`);if(!target)continue;
@@ -4738,12 +5700,16 @@ holdCompareButton.addEventListener('keyup',event=>{if(event.key===' '||event.key
 function setWorkspaceMode(mode){
   if(!['empty','photo','video'].includes(mode))return;
   appState.mode=mode;
+  if(mode!=='photo'&&maskBgPaintMode){maskBgPaintMode=null;maskBgStroke=null;updateMaskBgControls();}
+  if(mode==='video'&&activeSidebarTab==='mask'){userSelectedSidebarTab=false;selectSidebarTab('looks');}
+
+  if(mode!=='empty' && hasContent && typeof setMediaLoading==='function') setMediaLoading(false);
   document.body.dataset.mode=mode;
   $('app').dataset.workspace=mode;
   $('sidebar').hidden=mode==='empty';
   if(mode!=='empty')setEffectStates(effectEnabled);
   if(mode==='photo')setDitherScope(ditherScope);
-  updateClusterSummaries();
+  updateClusterSummaries();if(typeof updateMaskBgControls==='function')updateMaskBgControls();
 }
 function initializeWorkspaceModes(){ setWorkspaceMode('empty'); }
 // Narrow bridge keeps the standalone timeline module away from renderer and encoder internals.
