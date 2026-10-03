@@ -375,12 +375,16 @@ test('the workflow triggers on main and version tags, builds desktop + Android, 
   assert.match(workflow, /uses: actions\/setup-java@v4/);
   assert.match(workflow, /java-version: '17'/);
   assert.match(workflow, /run: npm run web:stage/);
+  assert.match(workflow, /run: npm ci/);
   assert.match(workflow, /run: npx cap sync android/);
-  assert.match(workflow, /run: \.\/android\/gradlew assembleDebug -p android/);
+  assert.match(workflow, /run: chmod \+x android\/gradlew/);
+  assert.match(workflow, /run: \.\/gradlew assembleDebug/);
+  assert.match(workflow, /working-directory: android/);
   assert.match(workflow, /name: film-lab-android/);
   assert.match(workflow, /path: android\/app\/build\/outputs\/apk\/debug\/app-debug\.apk/);
 
-  // The native Android project is tracked so `npx cap sync android` and `./android/gradlew` succeed in CI.
+  // The native Android project is tracked so `npx cap sync android` and `./gradlew` succeed in CI.
+  assert.ok(fs.existsSync(path.join(root, 'package-lock.json')), 'package-lock.json must exist for npm ci');
   assert.ok(fs.existsSync(path.join(root, 'android', 'gradlew')), 'android/gradlew must exist');
   assert.ok(fs.existsSync(path.join(root, 'android', 'app', 'build.gradle')), 'android/app/build.gradle must exist');
   assert.ok(fs.existsSync(path.join(root, 'android', 'app', 'src', 'main', 'java', 'com', 'filmlab', 'app', 'MainActivity.java')));

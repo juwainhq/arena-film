@@ -52,15 +52,21 @@ test('the service worker precaches only the app shell and leaves model and encod
   assert.match(html, /navigator\.serviceWorker\.register\(new URL\('sw\.js', appBase\)\.href, \{scope: appBase\.pathname\}\)/);
 });
 
-test('the install prompt is delayed, handles iOS guidance, and remembers dismissal or installation', () => {
+test('the install banner appears two seconds after load when installable, and remembers dismissal or installation', () => {
   assert.ok(installScript);
-  assert.match(installScript, /setTimeout\([\s\S]*?30000\)/);
+  assert.match(installScript, /setTimeout\([\s\S]*?2000\)/);
   assert.match(installScript, /beforeinstallprompt/);
-  assert.match(installScript, /Tap Share → Add to Home Screen/);
+  // The banner only shows when the browser actually offers an install prompt.
+  assert.match(installScript, /if \(!deferredPrompt \|\| !mayShow\(\)\) return;/);
   assert.match(installScript, /filmLabPwaInstallDismissed/);
   assert.match(installScript, /filmLabPwaInstalled/);
   assert.match(installScript, /localStorage\.setItem\(key, '1'\)/);
   assert.match(installScript, /appinstalled/);
+  assert.match(html, /<strong>Install Film Lab<\/strong>/);
+  assert.match(html, /Get the app for a better experience/);
+  assert.match(html, /id="pwaInstallDismiss"/);
+  assert.match(css, /#pwaInstallBanner \{[^}]*background: #1a1a1a/);
+  assert.match(css, /@media \(min-width: 768px\) \{[\s\S]*?#pwaInstallBanner \{[^}]*right: 20px/);
 });
 
 test('mobile sheet changes refresh the existing preview and keep swipe/tap controls', () => {
