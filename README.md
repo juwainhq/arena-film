@@ -78,7 +78,14 @@ Photos support JPG, PNG, HEIC, and HEIF, including uppercase extensions and empt
 
 Hover and scroll to zoom from **50% to 500%**, or use the − / + buttons on desktop or touch. Pinch with two fingers to zoom around the gesture midpoint; drag to pan when zoomed, and click the percentage to reset to fit. Desktop double-click opens the picker when no mask brush is active; touch double-taps never trigger the picker, and crop-frame gestures do not reopen it. Zoom changes the preview only, never the export pixels.
 
-The Juwain Haque header keeps the portfolio's **24px / 40px / 64px** gutters. On phones, header actions move behind one **···** menu, while the editor controls become a draggable bottom sheet with Looks, Adjust, and Export tabs; swipe up to expand it and down to minimize it. The **Looks** view opens first, **Adjust** groups controls into Basic, Creative, and Technical clusters, and **Export** focuses on the relevant photo or video settings. Hold the canvas pill to compare with the original. The icon-only sun/moon control switches dark/light UI without changing media pixels, saves `film_lab_theme`, and defaults to dark. The portfolio-style dot-and-ring cursor leaves the native cursor available and is disabled for touch and reduced motion. New panels retain the flat black/white/red aesthetic.
+The Juwain Haque header keeps the portfolio's **24px / 40px / 64px** gutters. On phones, header actions move behind one **···** menu, while the editor controls become a draggable bottom sheet with Looks, Adjust, and Export tabs; swipe up or tap the handle to expand it and swipe down or tap again to minimize it. The **Looks** view opens first, **Adjust** groups controls into Basic, Creative, and Technical clusters, and **Export** focuses on the relevant photo or video settings. Video retains its existing playback, speed, volume, and looping controls, plus a compact scrubber below the preview. Hold the canvas pill to compare with the original. The icon-only sun/moon control switches dark/light UI without changing media pixels, saves `film_lab_theme`, and defaults to dark. The portfolio-style dot-and-ring cursor leaves the native cursor available and is disabled for touch and reduced motion. New panels retain the flat black/white/red aesthetic.
+
+## Installable app and mobile use
+
+Film Lab can be installed from Chrome/Edge on Android and desktop, or from Safari's Share menu on iPhone/iPad (**Add to Home Screen**). After the page has been open for 30 seconds, an install banner appears when the browser supports installation; dismissing it is remembered on that device. The app shell, interface scripts, and icons are available offline after the service worker has installed. Large media-processing assets (FFmpeg, MediaPipe, and TFLite models) are intentionally not cached, so exporting or mask inference may still need their first network load.
+
+The PWA icons are generated without dependencies using `node scripts/generate-icons.cjs`. The deployment is hosted below `/film-lab/`; the manifest and service worker use that subpath for the installed start page and scope.
+
 
 | Shortcut | Action |
 | --- | --- |

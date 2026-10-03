@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="./manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Film Lab">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="theme-color" content="#0a0a0a">
 <title>FILM LAB — Cinematic Effects</title>
 <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=3">
 <link rel="icon" type="image/png" sizes="64x64" href="./favicon.png?v=3">
@@ -1144,6 +1151,111 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
   .mediaSkeleton span,.engineSpinner { animation: none !important; }
 }
 
+
+/* Installable app shell and responsive canvas tools. */
+#previewControls { position: absolute; inset: 0; z-index: 12; pointer-events: none; }
+#previewControls > * { pointer-events: auto; }
+body[data-mode="empty"] #previewControls { display: none !important; }
+#previewStage:hover #zoomControls,#zoomControls:focus-within { opacity: 1; }
+.timeline-mobile { display: none; }
+#pwaInstallBanner { position: fixed; z-index: 1500; left: 50%; bottom: max(14px,env(safe-area-inset-bottom,0px)); display: flex; align-items: center; gap: 10px; width: min(520px,calc(100vw - 24px)); max-width: calc(100vw - 24px); padding: 9px 10px 9px 13px; transform: translateX(-50%); border: 1px solid var(--panel-border); background: var(--panel); color: var(--text); box-shadow: 0 12px 38px var(--shadow); }
+#pwaInstallBanner[hidden] { display: none !important; }
+#pwaInstallText { flex: 1 1 auto; min-width: 0; color: var(--text); font-size: 10px; line-height: 1.45; }
+#pwaInstallBtn,#pwaInstallDismiss { display: inline-flex; flex: none; align-items: center; justify-content: center; min-width: 44px; min-height: 40px; padding: 7px 11px; border: 1px solid var(--panel-border); background: transparent; color: var(--text); cursor: pointer; }
+#pwaInstallBtn { border-color: var(--accent); }
+#pwaInstallBtn:hover,#pwaInstallBtn:focus-visible { background: var(--accent-bg); }
+#pwaInstallDismiss { width: 40px; min-width: 40px; padding: 0; font-size: 20px; }
+#pwaInstallBtn[hidden] { display: none !important; }
+
+@media (max-width: 767px) {
+  *,*::before,*::after { max-width: 100%; }
+  html,body { height: 100%; overflow-x: hidden; overflow-y: auto; }
+  body { display: flex; flex-direction: column; height: 100dvh; min-height: 100dvh; overscroll-behavior-y: contain; }
+  #app { flex: 1 1 auto; width: 100%; max-width: 100vw; height: 100dvh; min-height: 0; overflow: hidden; padding-bottom: env(safe-area-inset-bottom,0px); }
+  header { flex: 0 0 auto; width: 100%; min-width: 0; height: calc(48px + env(safe-area-inset-top,0px)); min-height: calc(48px + env(safe-area-inset-top,0px)); padding: env(safe-area-inset-top,0px) 12px 0; gap: 8px; overflow: visible; }
+  #logo { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  #headerActions { flex: none; min-width: 0; gap: 0; }
+  #mobileMenuBtn { width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 0; }
+  #content { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; width: 100%; min-width: 0; min-height: 0; overflow: hidden; }
+  #mainArea { position: relative; inset: auto; display: flex; flex: 1 1 auto; flex-direction: column; align-items: stretch; justify-content: flex-start; width: 100%; height: auto; min-width: 0; min-height: 0; padding: 10px 12px; overflow: hidden; }
+  #previewStage { display: flex; flex: 1 1 auto; flex-direction: column; width: 100%; height: auto; min-width: 0; min-height: 0; }
+  #dropZone { flex: 1 1 auto; width: 100%; height: 100%; min-width: 0; min-height: 0; gap: 15px; }
+  #dropZone .dropTop { align-items: flex-start; gap: 8px; }
+  #dropZone .dropStatus { max-width: 100%; white-space: normal; font-size: 8px; letter-spacing: .14em; }
+  body[data-mode="photo"] #app #mainArea { padding-bottom: calc(58px + env(safe-area-inset-bottom,0px)); }
+  body[data-mode="empty"] #app #timeline-module { display: none !important; }
+  #dropZone .dropHero { width: 100%; margin: auto 0; }
+  #dropZone h2 { font-size: clamp(66px,19vw,126px); }
+  #dropZone p { align-items: flex-start; flex-wrap: wrap; gap: 6px; margin-top: 16px; font-size: 9px; line-height: 1.5; letter-spacing: .07em; }
+  #dropZone p::before { width: 20px; margin-top: .65em; }
+  #dropZone p span { flex: 1 1 150px; min-width: 0; }
+  #dropZone .dropBottom { align-items: flex-end; flex-wrap: wrap; gap: 8px 12px; }
+  #dropZone .hint { max-width: 100%; font-size: 8px; line-height: 1.55; letter-spacing: .09em; white-space: normal; overflow-wrap: anywhere; }
+  #dropZone .dropCue { max-width: 100%; font-size: 8px; letter-spacing: .12em; white-space: normal; }
+  .dropPickers { display: grid; grid-template-columns: minmax(0,1fr); gap: 8px; width: 100%; margin-top: 14px; }
+  .dropPickerBtn { display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 100%; min-width: 0; min-height: 56px; gap: 8px; padding: 8px 11px; }
+  .dropPickerBtn > span { min-width: 0; font-size: 10px; letter-spacing: .07em; }
+  .dropPickerBtn > small { flex: 0 1 52%; min-width: 0; font-size: 7px; line-height: 1.4; letter-spacing: .015em; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+
+  #canvasWrap { flex: 1 1 auto; width: 100%; height: auto; min-width: 0; min-height: 0; }
+  #glCanvas { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+  #previewControls { position: relative; inset: auto; z-index: 12; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-width: 0; min-height: 52px; padding: 4px 0; }
+  #previewControls #holdCompareBtn { position: relative; inset: auto; flex: 0 1 auto; min-width: 44px; min-height: 44px; max-width: calc(100% - 190px); margin: 0; padding: 8px 9px; transform: none; white-space: nowrap; }
+  #zoomControls { position: relative; inset: auto; display: flex; flex: none; align-items: center; right: auto; bottom: auto; opacity: 1; }
+  #zoomControls .zoomInstructions { display: none; }
+  #zoomControls button { width: 44px; min-width: 44px; height: 44px; min-height: 44px; }
+  #zoomControls #zoomResetBtn { width: 58px; min-width: 58px; }
+  .timeline-mobile { display: none; }
+  #app[data-workspace="video"] .timeline-mobile { display: flex; flex: none; align-items: center; gap: 8px; width: 100%; min-width: 0; min-height: 50px; margin: 4px 0 0; padding: 0 7px; border-top: 1px solid var(--panel-border); background: var(--bg); }
+  #app[data-workspace="video"] #mob-play { flex: none; width: 44px; min-width: 44px; min-height: 44px; border: 1px solid var(--panel-border); background: transparent; color: var(--text); font-size: 16px; }
+  #app[data-workspace="video"] #mob-scrubber { flex: 1 1 auto; width: 100%; min-width: 40px; min-height: 44px; height: 44px; margin: 0; }
+  #app[data-workspace="video"] #mob-time { flex: none; min-width: 74px; color: var(--text-dim); font: 9px 'JetBrains Mono',monospace; text-align: right; white-space: nowrap; }
+  #app[data-workspace="video"] #mainArea { padding: 8px 12px calc(58px + env(safe-area-inset-bottom,0px)); gap: 4px; }
+  #app[data-workspace="video"] #previewStage { min-height: 0; }
+  #app[data-workspace="video"] #videoEngineStatus { min-height: 18px; font-size: 8px; }
+  #app[data-workspace="video"] #videoPlaybackControls { position: relative; inset: auto; display: flex; flex: 0 0 auto; flex-direction: row; width: 100%; min-width: 0; min-height: 44px; height: 44px; margin: 0; padding: 0; overflow: hidden; border: 0; background: transparent; }
+  #app[data-workspace="video"] .videoPlaybackActions { display: flex; flex: 1 1 auto; align-items: center; gap: 4px; width: 100%; min-width: 0; min-height: 44px; overflow-x: auto; overflow-y: hidden; }
+  #app[data-workspace="video"] .videoPlaybackActions .playbackSpeeds,
+  #app[data-workspace="video"] .videoPlaybackActions .playbackVolume,
+  #app[data-workspace="video"] .videoPlaybackActions #videoMuteBtn,
+  #app[data-workspace="video"] .videoPlaybackActions #videoLoopToggle { display: flex !important; }
+  #app[data-workspace="video"] #videoPlayBtn,
+  #app[data-workspace="video"] #videoTime,
+  #app[data-workspace="video"] #videoSeek { display: none !important; }
+  #app[data-workspace="video"] #videoSkipStart,
+  #app[data-workspace="video"] #videoSkipEnd { flex: none; width: 44px; min-width: 44px; min-height: 44px; padding: 4px; }
+  #app[data-workspace="video"] .playbackSpeeds button { flex: none; min-width: 44px; min-height: 44px; padding: 2px 5px; font-size: 8px; }
+  #app[data-workspace="video"] #videoVolume { flex: none; width: 54px; min-width: 54px; min-height: 44px; height: 44px; }
+  #app[data-workspace="video"] .playbackVolume label,
+  #app[data-workspace="video"] #videoVolumeValue { display: none; }
+  #sidebar { position: fixed; z-index: 100; right: 0; bottom: 0; left: 0; width: 100%; min-width: 0; height: min(65dvh,760px); max-height: calc(100dvh - 48px - env(safe-area-inset-top,0px)); padding: 0 14px max(16px,env(safe-area-inset-bottom,0px)); gap: 12px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--panel-border); border-bottom: 0; border-radius: 16px 16px 0 0; background: var(--panel); box-shadow: 0 -12px 44px rgba(0,0,0,.15); transform: translateY(calc(100% - 56px)); transition: transform .28s cubic-bezier(.2,.8,.2,1); }
+  #sidebar.mobileSheetOpen { transform: translateY(0); }
+  #sidebarSheetHandle { position: sticky; top: 0; z-index: 3; display: flex; flex: 0 0 auto; align-items: center; justify-content: center; flex-direction: column; gap: 7px; width: calc(100% + 28px); min-width: 0; min-height: 56px; margin: 0 -14px 2px; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--panel-border); border-radius: 16px 16px 0 0; background: var(--panel); color: var(--text-dim); cursor: grab; touch-action: none; }
+  #sidebarControls { min-width: 0; gap: 12px; }
+  #sidebarViews,.sidebarPanel { min-width: 0; }
+  #sidebarCollapseToggle { display: none !important; }
+  #sidebar:not(.mobileSheetOpen) .sidebarTabs,
+  #sidebar:not(.mobileSheetOpen) .sidebarViews,
+  #sidebar:not(.mobileSheetOpen) #shortcuts { visibility: hidden; pointer-events: none; }
+  #sidebar:not(.mobileSheetOpen) #sidebarSheetHandle { border-bottom: 0; }
+  #sidebarTabs { position: sticky; top: 0; }
+  #shortcuts-bar { display: none !important; }
+  #app[data-workspace="video"] #holdCompareBtn { bottom: 18px; }
+  #carouselStrip { left: 12px; right: 12px; bottom: 64px; width: auto; }
+  button,[role="button"] { min-width: 44px; min-height: 44px; }
+  input[type="range"] { min-height: 44px; height: 44px; }
+  .desktop-only { display: none !important; }
+  #pwaInstallBanner { bottom: calc(64px + env(safe-area-inset-bottom,0px)); }
+  body[data-mode="empty"] #pwaInstallBanner { bottom: calc(14px + env(safe-area-inset-bottom,0px)); }
+}
+
+@media (max-width: 380px) {
+  #previewControls { flex-direction: column; align-items: stretch; gap: 4px; min-height: 92px; }
+  #previewControls #holdCompareBtn { align-self: center; max-width: 100%; }
+  #zoomControls { justify-content: center; }
+  #logo { font-size: 10px; letter-spacing: .1em; }
+  .dropPickerBtn > small { font-size: 6px; }
+}
 </style>
 </head>
 <body data-mode="empty">
@@ -1178,8 +1290,8 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
           <h2><span>Film</span><span>Lab.</span></h2>
           <p><span>Drop a photo or video, or <b>click to browse</b></span></p>
           <div class="dropPickers" role="group" aria-label="Choose photo or video">
-            <button type="button" class="dropPickerBtn" id="photoPickerBtn"><span>Choose photos</span><small>JPG · PNG · HEIC · HEIF</small></button>
-            <button type="button" class="dropPickerBtn" id="videoPickerBtn"><span>Choose a video</span><small>MP4 · MOV · WEBM · M4V</small></button>
+            <button type="button" class="dropPickerBtn" id="photoPickerBtn"><span>📷 Open Photo</span><small>JPG · PNG · HEIC · HEIF</small></button>
+            <button type="button" class="dropPickerBtn" id="videoPickerBtn"><span>🎬 Open Video</span><small>MP4 · MOV · WEBM · M4V</small></button>
           </div>
         </div>
         <div class="dropBottom">
@@ -1194,8 +1306,10 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
         <div id="splitDivider" hidden><span class="splitBadge before">BEFORE</span><span class="splitBadge after">AFTER</span></div>
         <button type="button" id="maskDoneBtn" aria-label="Finish painting subject mask">✓ Finish mask</button>
         <div id="beforeLabel">BEFORE</div>
-        <button type="button" id="holdCompareBtn" aria-label="Hold to compare with the original" aria-pressed="false">◑ <span>Hold to compare</span></button>
         <div id="captionOverlay" class="video-only" hidden tabindex="0" aria-label="Video caption. Drag to reposition, use arrow keys for fine adjustment."></div>
+      </div>
+      <div id="previewControls" aria-label="Preview controls">
+        <button type="button" id="holdCompareBtn" aria-label="Hold to compare with the original" aria-pressed="false">◑ <span>Hold to compare</span></button>
         <div id="zoomControls" role="group" aria-label="Preview zoom and rotation controls">
           <span class="zoomInstructions" aria-hidden="true">Scroll to zoom · drag when zoomed</span>
           <button type="button" id="rotateMediaBtn" aria-label="Rotate media 90 degrees clockwise" title="Rotate media 90° clockwise">↻</button>
@@ -1203,6 +1317,11 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
           <button type="button" id="zoomResetBtn" aria-label="Reset preview zoom to 100%" title="Reset zoom to fit">100%</button>
           <button type="button" id="zoomInBtn" aria-label="Zoom in" title="Zoom in">+</button>
         </div>
+      </div>
+      <div class="timeline-mobile video-only" role="group" aria-label="Mobile video playback">
+        <button type="button" id="mob-play" aria-label="Play video">▶</button>
+        <input type="range" id="mob-scrubber" min="0" max="100" step="0.1" value="0" aria-label="Video playback position">
+        <output id="mob-time" aria-live="off">0:00 / 0:00</output>
       </div>
       <video id="videoEl" muted playsinline></video>
       <div id="mediaLoading" class="mediaLoading" hidden aria-live="polite">
@@ -5223,7 +5342,22 @@ const closeOpenTips=except=>document.querySelectorAll('.infoTip[aria-expanded="t
 document.querySelectorAll('.infoTip').forEach(tip=>tip.addEventListener('click',e=>{e.stopPropagation();const open=tip.getAttribute('aria-expanded')!=='true';closeOpenTips(tip);tip.setAttribute('aria-expanded',String(open));}));
 document.addEventListener('click',e=>{if(!e.target.closest('.infoTip'))closeOpenTips(null);});
 const mobileSidebar=$('sidebar'), sheetHandle=$('sidebarSheetHandle');
-function setMobileSheet(open){mobileSidebar.classList.toggle('mobileSheetOpen',open);sheetHandle.setAttribute('aria-expanded',String(open));sheetHandle.setAttribute('aria-label',open?'Close editing controls':'Open editing controls');}
+function refreshCanvasAfterSheetLayout(){
+  requestAnimationFrame(()=>{
+    updatePreviewZoom();
+    refreshPreviewResolution();
+    if(hasContent)render(performance.now());
+  });
+}
+function setMobileSheet(open){
+  mobileSidebar.classList.toggle('mobileSheetOpen',open);
+  sheetHandle.setAttribute('aria-expanded',String(open));
+  sheetHandle.setAttribute('aria-label',open?'Close editing controls':'Open editing controls');
+  refreshCanvasAfterSheetLayout();
+}
+mobileSidebar.addEventListener('transitionend',event=>{
+  if(event.target===mobileSidebar&&event.propertyName==='transform')refreshCanvasAfterSheetLayout();
+});
 sheetHandle.addEventListener('click',()=>{if(sheetWasDragged){sheetWasDragged=false;return;}setMobileSheet(!mobileSidebar.classList.contains('mobileSheetOpen'));});
 let sheetPointer=null, sheetWasDragged=false;
 sheetHandle.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;sheetPointer={id:e.pointerId,y:e.clientY,moved:false};sheetHandle.setPointerCapture(e.pointerId);});
@@ -5501,11 +5635,19 @@ function updateVideoPlayback(){
     if($('videoLoopToggle').getAttribute('aria-pressed')==='true') videoEl.currentTime=videoTrim.start;
     else{ videoEl.pause(); videoEl.currentTime=videoTrim.end; }
   }
-  const now=Math.min(videoEl.duration,Math.max(0,videoEl.currentTime));
+  const duration=videoEl.duration, now=Math.min(duration,Math.max(0,videoEl.currentTime));
   $('videoSeek').value=now; $('videoSeek').setAttribute('aria-valuetext',social.timeLabel(now));
-  $('videoTime').textContent=`${clockLabel(now)} / ${clockLabel(videoEl.duration)}`;
+  $('videoTime').textContent=`${clockLabel(now)} / ${clockLabel(duration)}`;
   $('videoPlayBtn').textContent=videoEl.paused?'▶':'Ⅱ';
   $('videoPlayBtn').setAttribute('aria-label',videoEl.paused?'Play video':'Pause video');
+  const mobilePercent=duration>0?Math.max(0,Math.min(100,now/duration*100)):0;
+  $('mob-scrubber').value=String(mobilePercent);
+  $('mob-scrubber').setAttribute('aria-valuetext',social.timeLabel(now));
+  $('mob-time').textContent=`${clockLabel(now)} / ${clockLabel(duration)}`;
+  $('mob-play').textContent=videoEl.paused?'▶':'Ⅱ';
+  $('mob-play').setAttribute('aria-label',videoEl.paused?'Play video':'Pause video');
+  $('mob-play').disabled=exportBusy||mediaBusy;
+  $('mob-scrubber').disabled=exportBusy||mediaBusy;
   document.querySelectorAll('[data-playback-rate]').forEach(button=>{const active=Number(button.dataset.playbackRate)===videoEl.playbackRate;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
   updateTimelineVisuals(); updateCaptionOverlay();
 }
@@ -5559,6 +5701,13 @@ function toggleVideoPlayback(){
   else videoEl.pause(); updateVideoPlayback();
 }
 $('videoPlayBtn').addEventListener('click',toggleVideoPlayback);
+$('mob-play').addEventListener('click',toggleVideoPlayback);
+$('mob-scrubber').addEventListener('input',event=>{
+  if(!isVideo||exportBusy||mediaBusy||!Number.isFinite(videoEl.duration)||videoEl.duration<=0)return;
+  videoEl.pause();
+  videoEl.currentTime=videoEl.duration*Math.max(0,Math.min(100,Number(event.target.value)||0))/100;
+  updateVideoPlayback();
+});
 $('videoSkipStart').addEventListener('click',()=>{if(!isVideo)return;videoEl.currentTime=videoTrim.start;updateVideoPlayback();});
 $('videoSkipEnd').addEventListener('click',()=>{if(!isVideo)return;videoEl.currentTime=videoTrim.end;updateVideoPlayback();});
 document.querySelectorAll('[data-playback-rate]').forEach(button=>button.addEventListener('click',()=>{$('videoSpeed').value=button.dataset.playbackRate;$('videoSpeed').dispatchEvent(new Event('change',{bubbles:true}));}));
@@ -6043,5 +6192,77 @@ else startFilmLab();
 </script>
 <script src="./timeline-module.js"></script>
 <script src="./multi-timeline.js"></script>
+<div id="pwaInstallBanner" role="status" aria-live="polite" hidden>
+  <span id="pwaInstallText">📲 Install Film Lab as an app</span>
+  <button type="button" id="pwaInstallBtn">Install</button>
+  <button type="button" id="pwaInstallDismiss" aria-label="Dismiss install prompt">×</button>
+</div>
+<script>
+(() => {
+  if (!('serviceWorker' in navigator)) return;
+  const appBase = new URL('./', document.baseURI);
+  navigator.serviceWorker.register(new URL('sw.js', appBase).href, {scope: appBase.pathname})
+    .catch(error => console.warn('Film Lab offline support could not start', error));
+})();
+</script>
+<script>
+(() => {
+  const banner = document.getElementById('pwaInstallBanner');
+  const message = document.getElementById('pwaInstallText');
+  const installButton = document.getElementById('pwaInstallBtn');
+  const dismissButton = document.getElementById('pwaInstallDismiss');
+  const dismissedKey = 'filmLabPwaInstallDismissed';
+  const installedKey = 'filmLabPwaInstalled';
+  let deferredPrompt = null;
+  let delayElapsed = false;
+
+  const readFlag = key => { try { return localStorage.getItem(key) === '1'; } catch (_) { return false; } };
+  const writeFlag = key => { try { localStorage.setItem(key, '1'); } catch (_) {} };
+  const standalone = () => !!(navigator.standalone || window.matchMedia?.('(display-mode: standalone)').matches);
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const mayShow = () => delayElapsed && !standalone() && !readFlag(dismissedKey) && !readFlag(installedKey);
+
+  function showBanner() {
+    if (!mayShow()) return;
+    if (deferredPrompt) {
+      message.textContent = '📲 Install Film Lab as an app';
+      installButton.hidden = false;
+    } else if (ios) {
+      message.textContent = 'Tap Share → Add to Home Screen to install';
+      installButton.hidden = true;
+    } else return;
+    banner.hidden = false;
+  }
+
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    deferredPrompt = event;
+    showBanner();
+  });
+  window.addEventListener('appinstalled', () => {
+    writeFlag(installedKey);
+    deferredPrompt = null;
+    banner.hidden = true;
+  });
+  dismissButton.addEventListener('click', () => {
+    writeFlag(dismissedKey);
+    banner.hidden = true;
+  });
+  installButton.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    const promptEvent = deferredPrompt;
+    deferredPrompt = null;
+    banner.hidden = true;
+    try {
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      if (choice?.outcome === 'accepted') writeFlag(installedKey);
+    } catch (error) {
+      console.warn('Film Lab install prompt was unavailable', error);
+    }
+  });
+  window.setTimeout(() => { delayElapsed = true; showBanner(); }, 30000);
+})();
+</script>
 </body>
 </html>
