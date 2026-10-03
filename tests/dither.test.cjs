@@ -169,7 +169,8 @@ test('still-photo grain remains frozen despite Speed; video grain can still anim
 test('presets and resets return new sliders to neutral and remember scope for saved looks', () => {
   assert.match(script, /Bloom:0,Hall:0,Grain:0,Dither:0,Sharp:0/);
   assert.match(script, /setDitherScope\(values\.DitherScope==='background'\?'background':'full'\)/);
-  assert.match(script, /const values=\{\.\.\.getCurrentValues\(\),DitherScope:ditherScope,Effects:\{\.\.\.effectEnabled\}\}/);
+  assert.match(script, /const activePresetBase=activePresetName===selectedPresetName&&presetIntensity>0\?availablePresets\.get\(activePresetName\):null/);
+  assert.match(script, /const values=\{\.\.\.\(activePresetBase\|\|getCurrentValues\(\)\),DitherScope:ditherScope,Effects:\{\.\.\.effectEnabled\}\}/);
   assert.match(script, /if\(sectionId==='dither'\)\{setDitherSettings\(social\.DEFAULT_DITHER\);setDitherScope\('full'\);\}/);
   assert.match(script, /document\.querySelectorAll\('\.groupReset'\)\.forEach\(btn=>btn\.addEventListener\('click',[\s\S]*?resetSection\(btn\.dataset\.reset\)/);
   assert.match(script, /\$\('resetOriginalBtn'\)\.click\(\)/);

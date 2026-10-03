@@ -390,6 +390,28 @@
       return thumb.toDataURL('image/jpeg', 0.72);
     } catch (error) { return ''; }
   }
+  function scheduleMediaThumbnail(media, videoElement) {
+    const schedule = () => {
+      const renderThumbnail = () => {
+        if (!state.media.has(media.id)) return;
+        if (!videoElement || videoElement.readyState < 2 || !videoElement.videoWidth) {
+          videoElement?.addEventListener('loadeddata', schedule, { once: true });
+          return;
+        }
+        const thumbnail = getMediaThumbnail(media, videoElement);
+        if (!thumbnail) return;
+        media.thumbnail = thumbnail;
+        const card = Array.from(pool.querySelectorAll('.mtl-media-card')).find((node) => node.dataset.mediaId === media.id);
+        if (!card) return;
+        let image = card.querySelector('img');
+        if (!image) { image = document.createElement('img'); image.alt = ''; card.prepend(image); }
+        image.src = thumbnail;
+      };
+      if (window.requestIdleCallback) window.requestIdleCallback(renderThumbnail, { timeout: 1200 });
+      else setTimeout(renderThumbnail, 120);
+    };
+    schedule();
+  }
   function addMediaCard(media) {
     const card = document.createElement('button');
     card.type = 'button'; card.className = 'mtl-media-card'; card.draggable = true;
@@ -421,10 +443,10 @@
       name: file?.name || 'Main video', thumbnail: '', videoElement, overlayVideoElement,
       external: false,
     };
-    media.thumbnail = getMediaThumbnail(media, videoElement) || '';
     state.media.set(media.id, media);
     state.firstMediaId = media.id;
     addMediaCard(media);
+    scheduleMediaThumbnail(media, videoElement);
     const trim = bridge().trim || { start: 0, end: Math.min(duration, 60) };
     const end = Math.min(duration, Math.max(0.05, trim.end || duration));
     const firstClip = { id: uid('clip'), mediaId: media.id, track: 'main', start: 0, trimStart: Math.max(0, trim.start || 0), trimEnd: end, transition: 'none', transitionOut: { type: 'none', duration: 0.5 } };
@@ -505,10 +527,11 @@
         });
         if (!(video.duration > 0 && video.videoWidth > 0)) throw new Error('This video has no readable frames');
         try { await new Promise((resolve) => { if (video.readyState >= 2) return resolve(); video.addEventListener('loadeddata', resolve, { once: true }); setTimeout(resolve, 5000); }); } catch (error) {}
-        media = { id: `media-${mediaSequence++}`, file, src, type: 'video', duration: video.duration, name: file.name || 'Video', thumbnail: getMediaThumbnail(null, video), videoElement: video, external: true };
+        media = { id: `media-${mediaSequence++}`, file, src, type: 'video', duration: video.duration, name: file.name || 'Video', thumbnail: '', videoElement: video, external: true };
       }
       state.media.set(media.id, media);
       addMediaCard(media);
+      if (media.type === 'video') scheduleMediaThumbnail(media, media.videoElement);
       return media;
     } catch (error) {
       URL.revokeObjectURL(src);
