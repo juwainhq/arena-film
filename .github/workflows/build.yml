@@ -55,17 +55,16 @@ jobs:
         run: npm run web:stage
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-      - name: Accept Android licenses
-        run: yes | sdkmanager --licenses || true
       - name: Sync Capacitor
         run: npx cap sync android
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
       - name: Build debug APK
         run: ./gradlew assembleDebug
         working-directory: android
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

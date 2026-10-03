@@ -21,6 +21,21 @@ test('landing has separate filtered photo and video pickers without removing the
   assert.match(script, /videoPickerInput'\)\.addEventListener\('change',e=>\{ handleFiles\(e\.target\.files\); e\.target\.value=''; \}\)/);
 });
 
+test('the photo and video picker buttons stay plain text with no camera or film icons', () => {
+  const button = id => html.match(new RegExp(`<button\\b[^>]*id="${id}"[\\s\\S]*?</button>`))[0];
+  const label = id => button(id).match(/<span>([\s\S]*?)<\/span>/)[1];
+  // Exact labels: no emoji, no leading icon character, nothing but the words.
+  assert.equal(label('photoPickerBtn'), 'Open Photo');
+  assert.equal(label('videoPickerBtn'), 'Open Video');
+  for (const id of ['photoPickerBtn', 'videoPickerBtn']) {
+    // No emoji/pictographs, no variation selectors, no inline SVG or <img> icon.
+    assert.doesNotMatch(button(id), /[\u{1F000}-\u{1FAFF}\u{2190}-\u{2BFF}\u{FE0F}]/u);
+    assert.doesNotMatch(button(id), /<svg\b|<img\b/i);
+  }
+  // And no CSS pseudo-element draws an icon over the labels either.
+  assert.doesNotMatch(styles, /\.dropPickerBtn::(?:before|after)/);
+});
+
 test('responsive media layouts include the tablet two-column photo editor and a larger simplified mobile scrubber', () => {
   assert.match(styles, /@media \(min-width: 768px\) and \(max-width: 1100px\)[\s\S]*?body\[data-mode="photo"\] #content \{ display: flex; flex-direction: row/);
   assert.match(styles, /@media \(max-width: 767px\)[\s\S]*?\.dropPickers \{ gap: 8px/);
