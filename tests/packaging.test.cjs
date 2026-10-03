@@ -370,3 +370,18 @@ test('the tag workflow builds every desktop target and uploads the installers', 
     assert.ok(pkg.scripts[`build:${target.split(': ')[1]}`], `missing ${target} script`);
   }
 });
+
+test('a final job publishes a GitHub Release with all three installers', () => {
+  // It must run only after the full build matrix has finished.
+  assert.match(workflow, /^  release:$/m);
+  assert.match(workflow, /needs: build/);
+  assert.match(workflow, /uses: actions\/download-artifact@v4/);
+  assert.match(workflow, /uses: softprops\/action-gh-release@v1/);
+  assert.match(workflow, /name: Film Lab v\$\{\{ github\.ref_name \}\}/);
+  assert.match(workflow, /tag_name: \$\{\{ github\.ref_name \}\}/);
+
+  // The release must attach the .exe, .dmg and .AppImage installers.
+  for (const ext of ['exe', 'dmg', 'AppImage']) {
+    assert.match(workflow, new RegExp(`artifacts/\\*/\\*\\.${ext}`), `release must attach .${ext} files`);
+  }
+});

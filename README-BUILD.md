@@ -1,5 +1,16 @@
 # Building Film Lab as a Desktop App and Android APK
 
+## Downloads
+
+Prebuilt installers for all three platforms are attached to the
+[latest GitHub release](https://github.com/juwainhq/film-lab/releases/latest):
+
+- **Windows:** `.exe` installer
+- **Mac:** `.dmg` disk image
+- **Linux:** `.AppImage`
+
+See [DOWNLOADS.md](DOWNLOADS.md) for the short version.
+
 Film Lab is a static site: `index.html` plus the worker and vendor scripts next to it.
 The same files are packaged twice — as a native desktop app with [Electron](https://www.electronjs.org/)
 and as an Android APK with [Capacitor](https://capacitorjs.com/).
@@ -44,9 +55,14 @@ git push origin v1.0.0
 ```
 
 The workflow runs `windows-latest`, `macos-latest` and `ubuntu-latest` in parallel and
-uploads the installers as `film-lab-<runner>` artifacts on the run page. The builds are
-unsigned, so Windows SmartScreen and macOS Gatekeeper will show an "unidentified
-developer" warning on first launch.
+uploads the installers as `film-lab-<runner>` artifacts on the run page. Once all three
+builds finish, a final `release` job publishes a GitHub Release named
+"Film Lab v<tag>" (for example `Film Lab v1.0.0`) with the Windows `.exe`, macOS `.dmg`
+and Linux `.AppImage` attached as downloadable assets, so
+[the latest release](https://github.com/juwainhq/film-lab/releases/latest) is always the
+one place to point people at. Re-run the workflow (or delete and re-push the tag) to
+publish a new release for the same tag. The builds are unsigned, so Windows SmartScreen
+and macOS Gatekeeper will show an "unidentified developer" warning on first launch.
 
 ### Notes on how the packaged app loads the site
 

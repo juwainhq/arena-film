@@ -36,3 +36,28 @@ jobs:
         with:
           name: film-lab-${{ matrix.os }}
           path: dist-electron/
+
+  release:
+    name: Publish Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - uses: softprops/action-gh-release@v1
+        with:
+          name: Film Lab v${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          body: |
+            Film Lab installers for every platform:
+
+            - **Windows:** download the `.exe` installer
+            - **Mac:** download the `.dmg` disk image
+            - **Linux:** download the `.AppImage`
+          # Only the installers: `artifacts/*/*` skips the unpacked builds
+          # (e.g. `win-unpacked/Film Lab.exe`) that electron-builder leaves behind.
+          files: |
+            artifacts/*/*.exe
+            artifacts/*/*.dmg
+            artifacts/*/*.AppImage
