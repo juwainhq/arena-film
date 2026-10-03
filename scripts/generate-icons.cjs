@@ -3,21 +3,23 @@
 
 /*
  * Dependency-free 2D canvas renderer for Film Lab's install icons.
+ * Rasterizes the Juwain Haque (JH) mark from favicon.svg into square PNG icons.
  * Run with: node scripts/generate-icons.cjs
- * The generated PNGs are committed so GitHub Pages needs no build runtime.
  */
 const fs = require('node:fs');
 const path = require('node:path');
 const zlib = require('node:zlib');
 
-const OUTPUT_DIR = path.resolve(__dirname, '../icons');
+const ROOT_DIR = path.resolve(__dirname, '..');
+const OUTPUT_DIR = path.join(ROOT_DIR, 'icons');
 const SIZES = [192, 512];
-const COLORS = {
-  background: '#0a0a0a',
-  frame: '#f5f5f5',
-  accent: '#d62828',
-  shadow: '#686868',
-};
+const ANDROID_MIPMAPS = [
+  { dir: 'mipmap-mdpi', size: 48 },
+  { dir: 'mipmap-hdpi', size: 72 },
+  { dir: 'mipmap-xhdpi', size: 96 },
+  { dir: 'mipmap-xxhdpi', size: 144 },
+  { dir: 'mipmap-xxxhdpi', size: 192 },
+];
 
 function rgba(hex) {
   const value = hex.replace('#', '');
@@ -48,30 +50,18 @@ class Canvas {
     }
   }
 
-  fillCircle(centerX, centerY, radius, color) {
-    const top = Math.max(0, Math.floor(centerY - radius));
-    const bottom = Math.min(this.height, Math.ceil(centerY + radius));
+  fillPolygon(points, color) {
     const [red, green, blue, alpha] = rgba(color);
-    const radiusSquared = radius * radius;
-    for (let y = top; y < bottom; y++) {
-      for (let x = Math.max(0, Math.floor(centerX - radius)); x < Math.min(this.width, Math.ceil(centerX + radius)); x++) {
-        const dx = x + 0.5 - centerX;
-        const dy = y + 0.5 - centerY;
-        if (dx * dx + dy * dy > radiusSquared) continue;
-        const offset = (y * this.width + x) * 4;
-        this.pixels[offset] = red;
-        this.pixels[offset + 1] = green;
-        this.pixels[offset + 2] = blue;
-        this.pixels[offset + 3] = alpha;
-      }
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < points.length; i++) {
+      const y = points[i][1];
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
     }
-  }
-
-  fillTriangle(points, color) {
-    const [red, green, blue, alpha] = rgba(color);
-    const minY = Math.max(0, Math.floor(Math.min(...points.map(point => point[1]))));
-    const maxY = Math.min(this.height, Math.ceil(Math.max(...points.map(point => point[1]))));
-    for (let y = minY; y < maxY; y++) {
+    const top = Math.max(0, Math.floor(minY));
+    const bottom = Math.min(this.height, Math.ceil(maxY));
+    for (let y = top; y < bottom; y++) {
       const scanY = y + 0.5;
       const intersections = [];
       for (let i = 0; i < points.length; i++) {
@@ -97,30 +87,105 @@ class Canvas {
   }
 }
 
-function drawFilmFrame(size) {
-  const canvas = new Canvas(size);
-  const px = value => Math.round(value * size);
-  canvas.fillRect(0, 0, size, size, COLORS.background);
+function cubicPoint(p0, p1, p2, p3, t) {
+  const mt = 1 - t;
+  return (
+    mt * mt * mt * p0 +
+    3 * mt * mt * t * p1 +
+    3 * mt * t * t * p2 +
+    t * t * t * p3
+  );
+}
 
-  // Broad outer film strip with a centered, inset picture frame so the mark
-  // remains legible when a platform applies a maskable-icon crop.
-  canvas.fillRect(px(.11), px(.10), px(.78), px(.80), COLORS.frame);
-  canvas.fillRect(px(.255), px(.145), px(.49), px(.71), COLORS.accent);
-  canvas.fillRect(px(.282), px(.172), px(.436), px(.656), COLORS.background);
+function parseSvgPaths(svgSource) {
+  const paths = [];
+  const pathRegex = /<path\s+d="([^"]+)"\s+fill="([^"]+)"(?:\s+transform="translate\(([^,]+),([^)]+)\)")?/g;
+  let match;
+  while ((match = pathRegex.exec(svgSource)) !== null) {
+    const [, d, fill, tx = '0', ty = '0'] = match;
+    const offsetX = Number.parseFloat(tx);
+    const offsetY = Number.parseFloat(ty);
+    const tokens = d.match(/[MCZ]|-?\d+(?:\.\d+)?/g) || [];
+    const points = [];
+    let cx = 0;
+    let cy = 0;
+    let i = 0;
+    while (i < tokens.length) {
+      const cmd = tokens[i++];
+      if (cmd === 'M') {
+        cx = Number.parseFloat(tokens[i++]) + offsetX;
+        cy = Number.parseFloat(tokens[i++]) + offsetY;
+        points.push([cx, cy]);
+      } else if (cmd === 'C') {
+        const x1 = Number.parseFloat(tokens[i++]) + offsetX;
+        const y1 = Number.parseFloat(tokens[i++]) + offsetY;
+        const x2 = Number.parseFloat(tokens[i++]) + offsetX;
+        const y2 = Number.parseFloat(tokens[i++]) + offsetY;
+        const x3 = Number.parseFloat(tokens[i++]) + offsetX;
+        const y3 = Number.parseFloat(tokens[i++]) + offsetY;
+        const steps = 8;
+        for (let s = 1; s <= steps; s++) {
+          const t = s / steps;
+          points.push([
+            cubicPoint(cx, x1, x2, x3, t),
+            cubicPoint(cy, y1, y2, y3, t),
+          ]);
+        }
+        cx = x3;
+        cy = y3;
+      } else if (cmd === 'Z') {
+        break;
+      }
+    }
+    paths.push({ fill, points });
+  }
+  return paths;
+}
 
-  // Film perforations on both rails.
-  for (let index = 0; index < 5; index++) {
-    const y = px(.17 + index * .14);
-    canvas.fillRect(px(.145), y, px(.075), px(.075), COLORS.background);
-    canvas.fillRect(px(.78), y, px(.075), px(.075), COLORS.background);
+const SVG_SOURCE = fs.readFileSync(path.join(ROOT_DIR, 'favicon.svg'), 'utf8');
+const SVG_PATHS = parseSvgPaths(SVG_SOURCE);
+const SVG_WIDTH = 3000;
+const SVG_HEIGHT = 2400;
+
+function drawBrandMark(size) {
+  const supersample = 2;
+  const hiSize = size * supersample;
+  const hiCanvas = new Canvas(hiSize);
+  hiCanvas.fillRect(0, 0, hiSize, hiSize, '#000000');
+
+  // Center the 3000x2400 JH mark inside the square icon (matching favicon.png).
+  const scale = hiSize / SVG_WIDTH;
+  const drawHeight = SVG_HEIGHT * scale;
+  const padY = (hiSize - drawHeight) / 2;
+
+  for (const { fill, points } of SVG_PATHS) {
+    const scaled = points.map(([x, y]) => [x * scale, padY + y * scale]);
+    hiCanvas.fillPolygon(scaled, fill);
   }
 
-  // A minimal still-life inside the frame: red sun and two clean mountain cuts.
-  canvas.fillCircle(px(.59), px(.355), px(.075), COLORS.accent);
-  canvas.fillTriangle([[px(.31), px(.735)], [px(.475), px(.49)], [px(.61), px(.735)]], COLORS.frame);
-  canvas.fillTriangle([[px(.43), px(.735)], [px(.615), px(.535)], [px(.73), px(.735)]], COLORS.shadow);
-  canvas.fillRect(px(.31), px(.735), px(.42), px(.027), COLORS.accent);
-  return canvas;
+  const out = new Canvas(size);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      for (let sy = 0; sy < supersample; sy++) {
+        for (let sx = 0; sx < supersample; sx++) {
+          const idx = ((y * supersample + sy) * hiSize + (x * supersample + sx)) * 4;
+          r += hiCanvas.pixels[idx];
+          g += hiCanvas.pixels[idx + 1];
+          b += hiCanvas.pixels[idx + 2];
+        }
+      }
+      const count = supersample * supersample;
+      const outIdx = (y * size + x) * 4;
+      out.pixels[outIdx] = Math.round(r / count);
+      out.pixels[outIdx + 1] = Math.round(g / count);
+      out.pixels[outIdx + 2] = Math.round(b / count);
+      out.pixels[outIdx + 3] = 255;
+    }
+  }
+  return out;
 }
 
 const crcTable = new Uint32Array(256);
@@ -161,14 +226,26 @@ function encodePNG(canvas) {
   return Buffer.concat([
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
     chunk('IHDR', header),
-    chunk('IDAT', zlib.deflateSync(scanlines, {level: 9})),
+    chunk('IDAT', zlib.deflateSync(scanlines, { level: 9 })),
     chunk('IEND', Buffer.alloc(0)),
   ]);
 }
 
-fs.mkdirSync(OUTPUT_DIR, {recursive: true});
+fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 for (const size of SIZES) {
   const file = path.join(OUTPUT_DIR, `icon-${size}.png`);
-  fs.writeFileSync(file, encodePNG(drawFilmFrame(size)));
+  fs.writeFileSync(file, encodePNG(drawBrandMark(size)));
   console.log(`Generated ${file}`);
+}
+
+const androidResDir = path.join(ROOT_DIR, 'android', 'app', 'src', 'main', 'res');
+if (fs.existsSync(androidResDir)) {
+  for (const { dir, size } of ANDROID_MIPMAPS) {
+    const targetDir = path.join(androidResDir, dir);
+    if (!fs.existsSync(targetDir)) continue;
+    const png = encodePNG(drawBrandMark(size));
+    for (const name of ['ic_launcher.png', 'ic_launcher_round.png', 'ic_launcher_foreground.png']) {
+      fs.writeFileSync(path.join(targetDir, name), png);
+    }
+  }
 }
