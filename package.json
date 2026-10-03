@@ -19,6 +19,7 @@
   "build": {
     "appId": "com.filmlab.app",
     "productName": "Film Lab",
+    "publish": null,
     "directories": { "output": "dist-electron" },
     "files": [
       "**/*",

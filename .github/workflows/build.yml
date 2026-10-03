@@ -3,6 +3,9 @@ on:
   push:
     tags: ['v*']
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -18,6 +21,7 @@ jobs:
           - os: ubuntu-latest
             target: linux
     env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Tag builds are unsigned; skip certificate discovery so electron-builder
       # never fails looking for a signing identity that CI does not have.
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
