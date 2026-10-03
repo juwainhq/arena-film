@@ -33,6 +33,7 @@ const SKIP = new Set([
   '.DS_Store',
   '.gitignore',
   'capacitor.config.json',
+  'DOWNLOADS.md',
   'package-lock.json',
   'package.json',
   'README-BUILD.md',

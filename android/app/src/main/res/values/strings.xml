@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Film Lab</string>
+    <string name="title_activity_main">Film Lab</string>
+    <string name="package_name">com.filmlab.app</string>
+    <string name="custom_url_scheme">com.filmlab.app</string>
+</resources>

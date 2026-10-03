@@ -352,9 +352,9 @@ test('the staging script produces a self-contained web bundle for Capacitor', ()
 
 /* --- CI ------------------------------------------------------------------------- */
 
-test('the tag workflow builds every desktop target and uploads the installers', () => {
+test('the workflow triggers on main and version tags, builds desktop + Android, and uploads artifacts', () => {
   assert.match(workflow, /^name: Build Desktop Apps$/m);
-  assert.match(workflow, /push:\s*\n\s*tags: \['v\*'\]/);
+  assert.match(workflow, /push:\s*\n\s*branches: \['main'\]\s*\n\s*tags: \['v\*'\]/);
   assert.match(workflow, /matrix:\s*\n\s*os: \[windows-latest, macos-latest, ubuntu-latest\]/);
   assert.match(workflow, /uses: actions\/checkout@v4/);
   assert.match(workflow, /uses: actions\/setup-node@v4/);
@@ -369,19 +369,35 @@ test('the tag workflow builds every desktop target and uploads the installers', 
   for (const target of workflow.match(/target: (win|mac|linux)/g) || []) {
     assert.ok(pkg.scripts[`build:${target.split(': ')[1]}`], `missing ${target} script`);
   }
+
+  // Fourth build job: Android APK.
+  assert.match(workflow, /^  android:$/m);
+  assert.match(workflow, /uses: actions\/setup-java@v4/);
+  assert.match(workflow, /java-version: '17'/);
+  assert.match(workflow, /run: npm run web:stage/);
+  assert.match(workflow, /run: npx cap sync android/);
+  assert.match(workflow, /run: \.\/android\/gradlew assembleDebug -p android/);
+  assert.match(workflow, /name: film-lab-android/);
+  assert.match(workflow, /path: android\/app\/build\/outputs\/apk\/debug\/app-debug\.apk/);
+
+  // The native Android project is tracked so `npx cap sync android` and `./android/gradlew` succeed in CI.
+  assert.ok(fs.existsSync(path.join(root, 'android', 'gradlew')), 'android/gradlew must exist');
+  assert.ok(fs.existsSync(path.join(root, 'android', 'app', 'build.gradle')), 'android/app/build.gradle must exist');
+  assert.ok(fs.existsSync(path.join(root, 'android', 'app', 'src', 'main', 'java', 'com', 'filmlab', 'app', 'MainActivity.java')));
 });
 
-test('a final job publishes a GitHub Release with all three installers', () => {
-  // It must run only after the full build matrix has finished.
+test('a final job publishes a GitHub Release with all desktop installers and the Android APK', () => {
+  // It must run only after the desktop matrix and Android build have finished.
   assert.match(workflow, /^  release:$/m);
-  assert.match(workflow, /needs: build/);
+  assert.match(workflow, /needs: \[build, android\]/);
   assert.match(workflow, /uses: actions\/download-artifact@v4/);
   assert.match(workflow, /uses: softprops\/action-gh-release@v1/);
-  assert.match(workflow, /name: Film Lab v\$\{\{ github\.ref_name \}\}/);
+  assert.match(workflow, /name: Film Lab \$\{\{ github\.ref_name \}\}/);
   assert.match(workflow, /tag_name: \$\{\{ github\.ref_name \}\}/);
+  assert.match(workflow, /tag_name: latest-build/);
 
-  // The release must attach the .exe, .dmg and .AppImage installers.
-  for (const ext of ['exe', 'dmg', 'AppImage']) {
+  // The release must attach the .exe, .dmg, .AppImage and .apk packages.
+  for (const ext of ['exe', 'dmg', 'AppImage', 'apk']) {
     assert.match(workflow, new RegExp(`artifacts/\\*/\\*\\.${ext}`), `release must attach .${ext} files`);
   }
 });

@@ -2,12 +2,13 @@
 
 ## Downloads
 
-Prebuilt installers for all three platforms are attached to the
+Prebuilt installers for all four platforms are attached to the
 [latest GitHub release](https://github.com/juwainhq/film-lab/releases/latest):
 
 - **Windows:** `.exe` installer
 - **Mac:** `.dmg` disk image
 - **Linux:** `.AppImage`
+- **Android:** `.apk` package
 
 See [DOWNLOADS.md](DOWNLOADS.md) for the short version.
 
@@ -47,22 +48,23 @@ tag-driven workflow below to get all three at once.
 
 ### Ship a release from GitHub Actions
 
-`.github/workflows/build.yml` builds every platform when you push a tag:
+`.github/workflows/build.yml` runs on every push to `main` and when you push a version tag:
 
 ```sh
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The workflow runs `windows-latest`, `macos-latest` and `ubuntu-latest` in parallel and
-uploads the installers as `film-lab-<runner>` artifacts on the run page. Once all three
-builds finish, a final `release` job publishes a GitHub Release named
-"Film Lab v<tag>" (for example `Film Lab v1.0.0`) with the Windows `.exe`, macOS `.dmg`
-and Linux `.AppImage` attached as downloadable assets, so
-[the latest release](https://github.com/juwainhq/film-lab/releases/latest) is always the
-one place to point people at. Re-run the workflow (or delete and re-push the tag) to
-publish a new release for the same tag. The builds are unsigned, so Windows SmartScreen
-and macOS Gatekeeper will show an "unidentified developer" warning on first launch.
+The workflow runs `windows-latest`, `macos-latest` and `ubuntu-latest` desktop builds in
+parallel alongside an `android` job that stages the web app, syncs Capacitor and runs
+`./android/gradlew assembleDebug -p android` to produce `film-lab-android` (`app-debug.apk`).
+Once all four builds finish, a final `release` job publishes a GitHub Release named
+`Film Lab <tag>` (for example `Film Lab v1.0.0`) on tag pushes — or creates/updates a
+rolling `latest-build` release on pushes to `main` — with the Windows `.exe`, macOS `.dmg`,
+Linux `.AppImage` and Android `.apk` attached as downloadable assets, so
+[the latest release](https://github.com/juwainhq/film-lab/releases/latest) always has the
+freshest downloads. The builds are unsigned, so Windows SmartScreen, macOS Gatekeeper and
+Android Play Protect will show an "unidentified developer" warning on first install.
 
 ### Notes on how the packaged app loads the site
 
