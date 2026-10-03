@@ -256,6 +256,8 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 .maskButtons button:disabled { opacity: .45; cursor: not-allowed; }
 #canvasWrap.maskPainting #glCanvas { cursor: crosshair; touch-action: none; }
 #canvasWrap.maskBgEditing #glCanvas { cursor: crosshair; touch-action: none; }
+#maskBrushCursor { position: absolute; z-index: 6; display: none; width: 0; height: 0; border: 1px solid var(--accent); border-radius: 50%; background: radial-gradient(circle,rgba(var(--accent-rgb),.14) 0%,rgba(var(--accent-rgb),.08) calc(100% - var(--brush-softness,35%)),transparent 100%); box-shadow: 0 0 0 1px rgba(0,0,0,.72); pointer-events: none; transform: translate(-50%,-50%); }
+#canvasWrap.maskBgBrushPreview #maskBrushCursor { display: block; }
 #maskDoneBtn { display: none; position: absolute; top: 0; right: 0; z-index: 7; padding: 9px 12px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
 #canvasWrap.maskPainting #maskDoneBtn { display: block; }
 #maskDoneBtn:hover,#maskDoneBtn:focus-visible { border-color: var(--accent); color: var(--accent); }
@@ -546,6 +548,10 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #shortcutsHelpBtn:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
 .presetActions { display: flex; gap: 8px; margin-top: 10px; }
 .presetActions .toolBtn { flex: 1; min-height: 38px; text-align: center; }
+.presetIntensityControl { margin: 14px 0 2px; }
+.presetIntensityControl label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 2px; color: var(--text-dim); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; }
+.presetIntensityControl output { color: var(--text); font: 9px 'JetBrains Mono',monospace; }
+.presetIntensityHint { margin: 0; color: var(--text-dim2); font-size: 9px; line-height: 1.5; }
 #presetApplyBtn { border-color: var(--border-strong); color: var(--text); }
 #presetUndoBtn { color: var(--accent); border-color: var(--accent); }
 .presetColorSwatch { display: inline-block; flex: none; width: 36px; height: 6px; margin-left: auto; border: 1px solid var(--panel-border); vertical-align: middle; }
@@ -1183,6 +1189,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
       </div>
       <div id="canvasWrap" style="display:none">
         <canvas id="glCanvas" title="Scroll to zoom in or out. Drag to pan when zoomed."></canvas>
+        <div id="maskBrushCursor" aria-hidden="true"></div>
         <div id="cropOverlay" hidden><div id="cropFrame" role="group" tabindex="0" aria-label="Crop frame. Drag to reposition, or use arrow keys."><span id="cropFrameLabel"></span></div></div>
         <div id="splitDivider" hidden><span class="splitBadge before">BEFORE</span><span class="splitBadge after">AFTER</span></div>
         <button type="button" id="maskDoneBtn" aria-label="Finish painting subject mask">✓ Finish mask</button>
@@ -1258,6 +1265,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
         <label class="presetSelectLabel" for="presetSelect">More presets <span id="presetCount">26 looks</span></label>
         <div class="presetSelectWrap"><span id="presetSelectSwatch" aria-hidden="true"></span><select id="presetSelect"><option value="">Choose a look</option></select><div id="presetHoverMenu" class="presetHoverMenu" role="listbox" aria-label="More preset previews" hidden></div></div>
         <div class="presetActions"><button type="button" class="toolBtn" id="presetCompareBtn" disabled>Compare</button><button type="button" class="toolBtn" id="presetApplyBtn" disabled>Apply preset</button><button type="button" class="toolBtn" id="presetUndoBtn" hidden>Undo</button></div>
+        <div class="presetIntensityControl"><label for="presetIntensity">Preset intensity <output id="presetIntensityValue" aria-live="polite">100%</output></label><input class="subSlider" type="range" id="presetIntensity" min="0" max="100" value="100" aria-valuetext="100 percent"><p class="presetIntensityHint">0% neutral · 100% full look</p></div>
       </div><section id="settingsTools" class="socialPanel" aria-label="Copy and share settings">
         <button type="button" id="settingsToolsToggle" class="panelHeading" aria-expanded="false" aria-controls="settingsToolsBody"><span class="sectionLabel">Copy / paste & share</span><span class="panelChevron" aria-hidden="true"></span></button>
         <div id="settingsToolsBody" hidden>
@@ -1478,15 +1486,19 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
                 <button type="button" class="toolBtn" id="magicSelectBtn" aria-pressed="false">✧ Magic select</button>
                 <button type="button" class="toolBtn" id="undoMaskBgBtn" disabled>↶ Undo</button>
               </div>
-              <p class="maskBgHint">Magic select: click the area you want to keep. Paint and erase to refine it.</p>
+              <p class="maskBgHint">Magic select: click the area you want to keep. Shift-click with Paint or Erase to flood-fill the connected mask area.</p>
               <div class="maskBgButtonRow">
                 <button type="button" class="toolBtn" id="maskBgPaintBtn" aria-pressed="false">Paint / keep</button>
                 <button type="button" class="toolBtn" id="maskBgEraseBtn" aria-pressed="false">Erase / remove</button>
               </div>
               <button type="button" class="toolBtn maskBgDone" id="finishMaskBgEditBtn" hidden>✓ Finish mask editing</button>
               <div class="maskBgRangeRow">
-                <label for="maskBgBrushSize">Brush size <output id="maskBgBrushSizeValue">48 px</output></label>
-                <input class="subSlider" type="range" id="maskBgBrushSize" min="4" max="140" value="48">
+                <label for="maskBgBrushSize">Brush size <output id="maskBgBrushSizeValue">20 px</output></label>
+                <input class="subSlider" type="range" id="maskBgBrushSize" min="4" max="140" value="20">
+              </div>
+              <div class="maskBgRangeRow">
+                <label for="maskBgHardness">Brush hardness <output id="maskBgHardnessValue">65%</output></label>
+                <input class="subSlider" type="range" id="maskBgHardness" min="0" max="100" value="65">
               </div>
               <div class="maskBgRangeRow">
                 <label for="maskBgMagicTolerance">Magic tolerance <output id="maskBgMagicToleranceValue">34</output></label>
@@ -1515,7 +1527,7 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
               </div>
               <div class="maskBgControl" id="maskBgBlurControl" hidden>
                 <label for="maskBgBlur">Background blur <output id="maskBgBlurValue">24 px</output></label>
-                <input class="subSlider" type="range" id="maskBgBlur" min="0" max="80" value="24">
+                <input class="subSlider" type="range" id="maskBgBlur" min="2" max="40" value="24">
               </div>
               <div class="maskBgControl" id="maskBgImageControl" hidden>
                 <input type="file" id="maskBgImageInput" accept="image/*" hidden>
@@ -2319,13 +2331,7 @@ void main(){
     float keepAlpha=smoothstep(0.06,0.94,keep);
     vec3 background=u_backgroundColor;
     if(u_backgroundMode==3){
-      vec2 b=vec2(u_backgroundBlurPixels/max(u_resolution.x,1.0),u_backgroundBlurPixels/max(u_resolution.y,1.0));
-      vec3 blurred=texture(u_base,maskUv).rgb*0.28;
-      blurred+=(texture(u_base,maskUv+vec2(-b.x,0.0)).rgb+texture(u_base,maskUv+vec2(b.x,0.0)).rgb)*0.09;
-      blurred+=(texture(u_base,maskUv+vec2(0.0,-b.y)).rgb+texture(u_base,maskUv+vec2(0.0,b.y)).rgb)*0.09;
-      blurred+=(texture(u_base,maskUv+vec2(-b.x,-b.y)).rgb+texture(u_base,maskUv+vec2(b.x,-b.y)).rgb
-        +texture(u_base,maskUv+vec2(-b.x,b.y)).rgb+texture(u_base,maskUv+vec2(b.x,b.y)).rgb)*0.065;
-      background=blurred;
+      background=texture(u_backgroundImage,maskUv).rgb;
     }else if(u_backgroundMode==4){
       background=texture(u_backgroundImage,maskUv).rgb;
     }else if(u_backgroundMode==5){
@@ -2671,6 +2677,7 @@ function render(timeMs){
   renderDitherPass(timeMs,ditherStrength,backgroundOnly);
   if(cacheable) lastPreviewRenderKey=frameKey;
 }
+function renderFrame(timeMs=performance.now()){ render(timeMs); }
 
 function hexRgb(hex){
   const value=String(hex||'#000000').replace(/^#/,'');
@@ -2876,11 +2883,14 @@ let maskDetectionPending=false, maskManuallyCleared=false, maskAutoFailed=false;
 let segmenterPromise=null, maskQueue=Promise.resolve(), activeMaskRequest=0, maskUploadFrame=0;
 // Photo-only Mask & Background state is separate from Dither's white-subject mask.
 let maskBgCanvas=null, maskBgCtx=null, maskBgAutoCanvas=null, maskBgStrokes=[], maskBgStroke=null;
-let maskBgActive=false, maskBgBaseValue=255, maskBgPaintMode=null, maskBgUndoStack=[], maskBgUploadFrame=0;
-let maskBgRevision=0, maskBgAutoRequestId=0, maskBgModelPromise=null, maskBgModelState='idle', maskBgSegmentationHandler=null;
+let maskBgActive=false, maskBgBaseValue=255, maskBgPaintMode=null, maskBgUndoStack=[], maskBgUploadFrame=0, maskBgProcessing=false, maskBrushCursorPoint=null;
+let maskBgRevision=0, maskBgAutoRequestId=0, maskBgAutoTimeout=null, maskBgModelPromise=null, maskBgModelState='idle', maskBgModelLoadId=0, maskBgSegmentationHandler=null;
+let maskBgWorker=null, maskBgWorkerRequestId=0, maskBgWorkerPending=new Map();
 let maskBgBackgroundImage=null, maskBgImageCanvas=null, maskBgImageRevision=0, maskBgImageDataUrl='', maskBgImageName='No image selected', maskBgPresetImageRequest=0;
-const maskBgSettings={mode:'transparent',color:'#101014',blur:24,feather:6,expand:0,invert:false,gradientStart:'#11131a',gradientEnd:'#d62828',gradientAngle:45,brushSize:48,magicTolerance:34};
+let maskBgOriginalSource=null, maskBgBlurCanvas=null, maskBgBlurCanvasKey='', maskBgBlurRequestId=0, maskBgBlurTimer=null, maskBgBlurWorker=null, maskBgBlurWorkerRequestId=0, maskBgBlurWorkerPending=new Map(), maskBgBlurResolve=null, maskBgBlurPromise=Promise.resolve({ok:true});
+const maskBgSettings={mode:'transparent',color:'#101014',blur:24,feather:6,expand:0,invert:false,gradientStart:'#11131a',gradientEnd:'#d62828',gradientAngle:45,brushSize:20,hardness:65,magicTolerance:34};
 const maskBgPaintBtn=$('maskBgPaintBtn'), maskBgEraseBtn=$('maskBgEraseBtn'), magicSelectBtn=$('magicSelectBtn');
+const maskBrushCursor=$('maskBrushCursor');
 const autoRemoveBackgroundBtn=$('autoRemoveBackgroundBtn'), maskBgStatus=$('maskBgStatus');
 const maskBgAiStatus=$('maskBgAiStatus'), maskBgAiStatusText=$('maskBgAiStatusText');
 const maskBgModeRadios=[...document.querySelectorAll('input[name="maskBgMode"]')];
@@ -2893,9 +2903,9 @@ function maskBgRenderSettingsKey(){
   return JSON.stringify([mode,color,blur,feather,expand,invert,gradientStart,gradientEnd,gradientAngle]);
 }
 function setMaskBgStatus(message){ if(maskBgStatus) maskBgStatus.textContent=message; }
-function setMaskBgAiStatus(message,visible=true){
+function setMaskBgAiStatus(message,visible=true,spinning=/^(Loading|Analyzing)/.test(String(message))){
   if(maskBgAiStatusText) maskBgAiStatusText.textContent=message;
-  if(maskBgAiStatus){maskBgAiStatus.hidden=!visible;const spinner=maskBgAiStatus.querySelector('.engineSpinner');if(spinner)spinner.hidden=!String(message).startsWith('Loading');}
+  if(maskBgAiStatus){maskBgAiStatus.hidden=!visible;const spinner=maskBgAiStatus.querySelector('.engineSpinner');if(spinner)spinner.hidden=!spinning;}
 }
 function safeMaskBgColor(value,fallback){ return /^#[0-9a-f]{6}$/i.test(String(value||''))?String(value):fallback; }
 function normalizeMaskBgSettings(raw={}){
@@ -2904,18 +2914,18 @@ function normalizeMaskBgSettings(raw={}){
   return {
     mode:modes.has(raw.mode)?raw.mode:'transparent',
     color:safeMaskBgColor(raw.color,'#101014'),
-    blur:number(raw.blur,24,0,80), feather:number(raw.feather,6,0,40),
+    blur:number(raw.blur,24,2,40), feather:number(raw.feather,6,0,40),
     expand:number(raw.expand,0,-32,32), invert:typeof raw.invert==='boolean'?raw.invert:false,
     gradientStart:safeMaskBgColor(raw.gradientStart,'#11131a'),gradientEnd:safeMaskBgColor(raw.gradientEnd,'#d62828'),
-    gradientAngle:number(raw.gradientAngle,45,0,360),brushSize:number(raw.brushSize,48,4,140),
-    magicTolerance:number(raw.magicTolerance,34,1,100)
+    gradientAngle:number(raw.gradientAngle,45,0,360),brushSize:number(raw.brushSize,20,4,140),
+    hardness:number(raw.hardness,65,0,100),magicTolerance:number(raw.magicTolerance,34,1,100)
   };
 }
 function updateMaskBgControls(){
   const available=maskBgPhotoReady() && !!maskBgCanvas, locked=exportBusy||mediaBusy;
   if(!maskBgPaintBtn) return;
   document.querySelectorAll('#maskPanel input,#maskPanel button').forEach(control=>{control.disabled=!available||locked;});
-  autoRemoveBackgroundBtn.disabled=!available||locked||maskBgModelState==='loading';
+  autoRemoveBackgroundBtn.disabled=!available||locked||maskBgModelState==='loading'||maskBgProcessing;
   maskBgPaintBtn.disabled=maskBgEraseBtn.disabled=magicSelectBtn.disabled=!available||locked;
   $('undoMaskBgBtn').disabled=!available||locked||maskBgUndoStack.length===0;
   $('resetMaskBackgroundBtn').disabled=!available||locked;
@@ -2924,7 +2934,8 @@ function updateMaskBgControls(){
   maskBgPaintBtn.setAttribute('aria-pressed',String(maskBgPaintMode==='paint'));
   maskBgEraseBtn.setAttribute('aria-pressed',String(maskBgPaintMode==='erase'));
   magicSelectBtn.setAttribute('aria-pressed',String(maskBgPaintMode==='magic'));
-  canvasWrap.classList.toggle('maskBgEditing',available&&!!maskBgPaintMode);
+  canvasWrap.classList.toggle('maskBgEditing',available&&!locked&&!!maskBgPaintMode);
+  canvasWrap.classList.toggle('maskBgBrushPreview',available&&!locked&&(maskBgPaintMode==='paint'||maskBgPaintMode==='erase'));
   maskBgModeRadios.forEach(input=>{input.checked=input.value===maskBgSettings.mode;input.disabled=!available||locked;});
   $('maskBgColorControl').hidden=maskBgSettings.mode!=='color';
   $('maskBgBlurControl').hidden=maskBgSettings.mode!=='blur';
@@ -2935,11 +2946,13 @@ function updateMaskBgControls(){
   $('maskBgGradientStart').value=maskBgSettings.gradientStart; $('maskBgGradientEnd').value=maskBgSettings.gradientEnd;
   $('maskBgGradientAngle').value=maskBgSettings.gradientAngle; $('maskBgGradientAngleValue').textContent=`${maskBgSettings.gradientAngle}°`;
   $('maskBgBrushSize').value=maskBgSettings.brushSize; $('maskBgBrushSizeValue').textContent=`${maskBgSettings.brushSize} px`;
+  $('maskBgHardness').value=maskBgSettings.hardness; $('maskBgHardnessValue').textContent=`${maskBgSettings.hardness}%`;
   $('maskBgMagicTolerance').value=maskBgSettings.magicTolerance; $('maskBgMagicToleranceValue').textContent=String(maskBgSettings.magicTolerance);
   $('maskBgFeather').value=maskBgSettings.feather; $('maskBgFeatherValue').textContent=`${maskBgSettings.feather} px`;
   $('maskBgExpand').value=maskBgSettings.expand; $('maskBgExpandValue').textContent=`${maskBgSettings.expand>0?'+':''}${maskBgSettings.expand} px`;
   $('maskBgInvert').checked=maskBgSettings.invert;
   $('maskBgImageName').textContent=maskBgImageName;
+  updateMaskBrushCursor();
 }
 function cloneMaskBgCanvas(source){
   if(!source) return null;
@@ -2961,18 +2974,30 @@ function uploadMaskBackground(){
 function scheduleMaskBackgroundUpload(){
   if(!maskBgUploadFrame) maskBgUploadFrame=requestAnimationFrame(()=>{maskBgUploadFrame=0;uploadMaskBackground();});
 }
+function maskBgBackgroundDimensions(){
+  const maxEdge=Math.max(1,Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE)||1,gl.getParameter(gl.MAX_RENDERBUFFER_SIZE)||1));
+  const sourceWidth=Math.max(1,canvas.width||maskBgCanvas?.width||1),sourceHeight=Math.max(1,canvas.height||maskBgCanvas?.height||1);
+  const scale=Math.min(1,maxEdge/Math.max(sourceWidth,sourceHeight));
+  return {width:Math.max(1,Math.round(sourceWidth*scale)),height:Math.max(1,Math.round(sourceHeight*scale)),scale};
+}
+function maskBgBlurKey(radius=maskBgSettings.blur){
+  const {width,height}=maskBgBackgroundDimensions();
+  return [currentPhoto?.id||'photo',photoTextureRevision,width,height,Math.round(radius)].join(':');
+}
 function uploadMaskBgBackgroundImage(){
   if(!maskBgBackgroundTexture) return;
+  const expectedBlurKey=maskBgSettings.mode==='blur'?maskBgBlurKey():'';
+  const source=maskBgSettings.mode==='blur'?(maskBgBlurCanvas&&maskBgBlurCanvasKey===expectedBlurKey?maskBgBlurCanvas:maskBgOriginalSource):maskBgImageCanvas;
   gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D,maskBgBackgroundTexture);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-  if(maskBgImageCanvas) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,maskBgImageCanvas);
+  if(source) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
   else gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
   gl.activeTexture(gl.TEXTURE0); maskBgImageRevision++; lastPreviewRenderKey=null;
   if(hasContent) render(performance.now());
 }
 function fitMaskBgImageToPhoto(){
   if(!maskBgBackgroundImage||!maskBgCanvas) return;
-  const w=maskBgCanvas.width,h=maskBgCanvas.height;
+  const {width:w,height:h}=maskBgBackgroundDimensions();
   const output=document.createElement('canvas'); output.width=w; output.height=h;
   const ctx=output.getContext('2d'); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
   const iw=maskBgBackgroundImage.naturalWidth||maskBgBackgroundImage.width, ih=maskBgBackgroundImage.naturalHeight||maskBgBackgroundImage.height;
@@ -2980,7 +3005,76 @@ function fitMaskBgImageToPhoto(){
   ctx.drawImage(maskBgBackgroundImage,(w-dw)/2,(h-dh)/2,dw,dh);
   maskBgImageCanvas=output; uploadMaskBgBackgroundImage();
 }
+function terminateMaskBgBlurWorker(reason=new Error('Background blur cancelled')){
+  if(maskBgBlurWorker){maskBgBlurWorker.terminate();maskBgBlurWorker=null;}
+  for(const pending of maskBgBlurWorkerPending.values())pending.reject(reason);
+  maskBgBlurWorkerPending.clear();
+}
+function ensureMaskBgBlurWorker(){
+  if(maskBgBlurWorker)return maskBgBlurWorker;
+  const worker=new Worker(new URL('background-blur-worker.js',document.baseURI));
+  worker.onmessage=event=>{
+    const data=event.data||{},pending=maskBgBlurWorkerPending.get(data.requestId);
+    if(!pending){data.bitmap?.close?.();return;}
+    maskBgBlurWorkerPending.delete(data.requestId);
+    if(data.error)pending.reject(new Error(data.error));else pending.resolve(data.bitmap);
+  };
+  worker.onerror=event=>{
+    const error=new Error(event.message||'Background blur worker failed');
+    for(const pending of maskBgBlurWorkerPending.values())pending.reject(error);
+    maskBgBlurWorkerPending.clear();worker.terminate();if(maskBgBlurWorker===worker)maskBgBlurWorker=null;
+  };
+  maskBgBlurWorker=worker;return worker;
+}
+function cancelMaskBgBlurWork(){
+  clearTimeout(maskBgBlurTimer);maskBgBlurTimer=null;maskBgBlurRequestId++;
+  maskBgBlurResolve?.({ok:false,cancelled:true});maskBgBlurResolve=null;
+  if(maskBgBlurWorkerPending.size)terminateMaskBgBlurWorker(new Error('Background blur superseded'));
+}
+function requestMaskBgBlur(immediate=false){
+  if(!maskBgPhotoReady()||isVideo||maskBgSettings.mode!=='blur'||!maskBgOriginalSource)return Promise.resolve({ok:false,skipped:true});
+  clearTimeout(maskBgBlurTimer);maskBgBlurTimer=null;
+  maskBgBlurResolve?.({ok:false,cancelled:true});maskBgBlurResolve=null;
+  const requestId=++maskBgBlurRequestId,radius=Math.max(2,Math.min(40,Math.round(maskBgSettings.blur)));
+  const {width,height}=maskBgBackgroundDimensions(),key=maskBgBlurKey(radius);
+  if(maskBgBlurWorkerPending.size)terminateMaskBgBlurWorker(new Error('Background blur superseded'));
+  if(maskBgBlurCanvas&&maskBgBlurCanvasKey===key){uploadMaskBgBackgroundImage();return Promise.resolve({ok:true});}
+  let resolveCompletion,settled=false;
+  const completion=new Promise(resolve=>{resolveCompletion=resolve;});
+  const complete=result=>{if(!settled){settled=true;resolveCompletion(result);}};
+  maskBgBlurPromise=completion;maskBgBlurResolve=complete;
+  const finish=result=>{complete(result);if(maskBgBlurResolve===complete)maskBgBlurResolve=null;};
+  uploadMaskBgBackgroundImage(); // show the original immediately while the local StackBlur pass runs
+  const run=async()=>{
+    maskBgBlurTimer=null;
+    if(requestId!==maskBgBlurRequestId||maskBgSettings.mode!=='blur'||!maskBgPhotoReady()){finish({ok:false,cancelled:true});return;}
+    try{
+      setMaskBgStatus('Blurring the original photo locally…');
+      const image=await createImageBitmap(maskBgOriginalSource);
+      if(requestId!==maskBgBlurRequestId){image.close?.();finish({ok:false,cancelled:true});return;}
+      const worker=ensureMaskBgBlurWorker(),workerRequestId=++maskBgBlurWorkerRequestId;
+      const result=await new Promise((resolve,reject)=>{
+        maskBgBlurWorkerPending.set(workerRequestId,{resolve,reject});
+        try{worker.postMessage({requestId:workerRequestId,image,width,height,radius},[image]);}
+        catch(error){maskBgBlurWorkerPending.delete(workerRequestId);image.close?.();reject(error);}
+      });
+      if(requestId!==maskBgBlurRequestId||maskBgSettings.mode!=='blur'||!maskBgPhotoReady()){result?.close?.();finish({ok:false,cancelled:true});return;}
+      maskBgBlurCanvas?.close?.();maskBgBlurCanvas=result;maskBgBlurCanvasKey=key;
+      uploadMaskBgBackgroundImage();setMaskBgStatus('Background blur updated.');finish({ok:true});
+    }catch(error){
+      if(requestId===maskBgBlurRequestId){console.warn('Local background blur failed',error);setMaskBgStatus('Could not create the background blur. The original photo remains visible.');finish({ok:false,error});}
+    }
+  };
+  if(immediate)run();else maskBgBlurTimer=setTimeout(run,140);
+  return completion;
+}
+async function prepareMaskBgBlurForExport(){
+  if(!maskBgPhotoReady()||isVideo||!maskBgActive||maskBgSettings.mode!=='blur')return;
+  const result=await requestMaskBgBlur(true);
+  if(!result.ok)throw new Error(result.error?.message||'Could not prepare the local StackBlur background for export.');
+}
 function maskBgSnapshot(){
+
   return {canvas:cloneMaskBgCanvas(maskBgCanvas),auto:maskBgAutoCanvas,strokes:maskBgStrokes.map(stroke=>({...stroke,points:(stroke.points||[]).map(point=>({...point}))})),
     active:maskBgActive,baseValue:maskBgBaseValue};
 }
@@ -3000,9 +3094,12 @@ function restoreMaskBgSnapshot(snapshot){
 function stampMaskBackground(x,y,radius,mode){
   if(!maskBgCtx||!maskBgCanvas) return;
   const px=x*maskBgCanvas.width,py=y*maskBgCanvas.height;
-  const edge=maskBgCtx.createRadialGradient(px,py,radius*.62,px,py,radius);
+  const softness=1-maskBgSettings.hardness/100,hardEdge=1-softness;
+  const edge=maskBgCtx.createRadialGradient(px,py,radius*hardEdge,px,py,radius);
   const color=mode==='erase'?'0,0,0':'255,255,255';
-  edge.addColorStop(0,`rgba(${color},1)`); edge.addColorStop(1,`rgba(${color},0)`);
+  edge.addColorStop(0,`rgba(${color},1)`);
+  if(hardEdge>0)edge.addColorStop(hardEdge,`rgba(${color},1)`);
+  edge.addColorStop(1,`rgba(${color},0)`);
   maskBgCtx.fillStyle=edge; maskBgCtx.beginPath(); maskBgCtx.arc(px,py,radius,0,Math.PI*2); maskBgCtx.fill();
 }
 function drawMaskBgStroke(stroke,from,to){
@@ -3017,7 +3114,7 @@ function rebuildMaskBackgroundCanvas(){
   maskBgCtx.fillRect(0,0,maskBgCanvas.width,maskBgCanvas.height);
   if(maskBgAutoCanvas) maskBgCtx.drawImage(maskBgAutoCanvas,0,0,maskBgCanvas.width,maskBgCanvas.height);
   for(const stroke of maskBgStrokes){
-    if(stroke.mode==='magic'&&stroke.selection){maskBgCtx.drawImage(stroke.selection,0,0,maskBgCanvas.width,maskBgCanvas.height);continue;}
+    if((stroke.mode==='magic'||stroke.mode==='flood')&&stroke.selection){maskBgCtx.drawImage(stroke.selection,0,0,maskBgCanvas.width,maskBgCanvas.height);continue;}
     const points=stroke.points||[]; if(!points.length) continue;
     stampMaskBackground(points[0].x,points[0].y,stroke.radius*Math.min(maskBgCanvas.width,maskBgCanvas.height),stroke.mode);
     for(let i=1;i<points.length;i++) drawMaskBgStroke(stroke,points[i-1],points[i]);
@@ -3033,7 +3130,7 @@ function ensureMaskBgBase(mode){
   maskBgActive=true;
 }
 function setMaskBgPaintMode(mode){
-  if(mode&&!maskBgPhotoReady()) return;
+  if(mode&&(exportBusy||mediaBusy||!maskBgPhotoReady())) return;
   if(mode&&maskPaintMode) setMaskPaintMode(null);
   maskBgPaintMode=maskBgPaintMode===mode?null:mode;
   if(maskBgPaintMode){
@@ -3051,16 +3148,16 @@ function paintMaskBackground(event){
   maskBgStroke.stroke.points.push(point); drawMaskBgStroke(maskBgStroke.stroke,previous,point); scheduleMaskBackgroundUpload();
 }
 function beginMaskBgStroke(event){
-  if(!maskBgPaintMode||maskBgPaintMode==='magic'||!maskBgPhotoReady()||!maskBgCanvas) return false;
+  if(exportBusy||mediaBusy||!maskBgPaintMode||maskBgPaintMode==='magic'||!maskBgPhotoReady()||!maskBgCanvas) return false;
   if(event.pointerType==='mouse'&&event.button!==0) return false;
   event.preventDefault(); pushMaskBgUndo(); ensureMaskBgBase(maskBgPaintMode);
-  const point=subjectPoint(event),stroke={mode:maskBgPaintMode,radius:maskBgSettings.brushSize/Math.min(maskBgCanvas.width,maskBgCanvas.height),points:[point]};
+  const point=subjectPoint(event),stroke={mode:maskBgPaintMode,radius:(maskBgSettings.brushSize/2)/Math.min(maskBgCanvas.width,maskBgCanvas.height),points:[point]};
   maskBgStrokes.push(stroke); maskBgStroke={id:event.pointerId,stroke};
   canvas.setPointerCapture(event.pointerId); stampMaskBackground(point.x,point.y,stroke.radius*Math.min(maskBgCanvas.width,maskBgCanvas.height),stroke.mode);
   uploadMaskBackground(); updateMaskBgControls(); forceMaskBackgroundPng(); updateSocialUI(); markMaskBgPresetChanged(); return true;
 }
 function magicSelectMask(point){
-  if(!maskBgPhotoReady()||!maskBgCanvas||!photoForMask) return;
+  if(exportBusy||mediaBusy||!maskBgPhotoReady()||!maskBgCanvas||!photoForMask) return;
   if(maskBgStrokes.filter(stroke=>stroke.mode==='magic').length>=8){showToast('Up to eight Magic select regions per photo. Undo or reset to continue.');return;}
   pushMaskBgUndo(); ensureMaskBgBase('magic');
   const width=photoForMask.width,height=photoForMask.height,total=width*height;
@@ -3085,6 +3182,29 @@ function magicSelectMask(point){
   rebuildMaskBackgroundCanvas(); updateMaskBgControls(); forceMaskBackgroundPng(); updateSocialUI(); markMaskBgPresetChanged();
   setMaskBgStatus(`Magic select kept ${Math.max(1,Math.round(selected/total*100))}% of the image. Paint or erase to refine.`);
 }
+function floodFillMaskBackground(point,mode){
+  if(exportBusy||mediaBusy||!maskBgPhotoReady()||!maskBgCanvas||!['paint','erase'].includes(mode))return;
+  pushMaskBgUndo();ensureMaskBgBase(mode);
+  const width=maskBgCanvas.width,height=maskBgCanvas.height,total=width*height;
+  const pixels=maskBgCtx.getImageData(0,0,width,height).data,seedX=Math.max(0,Math.min(width-1,Math.floor(point.x*width)));
+  const seedY=Math.max(0,Math.min(height-1,Math.floor(point.y*height))),seedIndex=seedY*width+seedX;
+  const targetForeground=pixels[seedIndex*4]>=128,visited=new Uint8Array(total),queue=new Int32Array(total);
+  const selection=document.createElement('canvas');selection.width=width;selection.height=height;
+  const output=selection.getContext('2d').createImageData(width,height),target=mode==='paint'?255:0;
+  let head=0,tail=0;queue[tail++]=seedIndex;visited[seedIndex]=1;
+  while(head<tail){
+    const index=queue[head++],pixel=index*4;
+    if((pixels[pixel]>=128)!==targetForeground)continue;
+    output.data[pixel]=output.data[pixel+1]=output.data[pixel+2]=target;output.data[pixel+3]=255;
+    const x=index%width,y=(index/width)|0;
+    const add=next=>{if(!visited[next]&&(pixels[next*4]>=128)===targetForeground){visited[next]=1;queue[tail++]=next;}};
+    if(x>0)add(index-1);if(x+1<width)add(index+1);if(y>0)add(index-width);if(y+1<height)add(index+width);
+  }
+  selection.getContext('2d').putImageData(output,0,0);
+  maskBgStrokes.push({mode:'flood',floodMode:mode,selection,points:[],radius:0});maskBgActive=true;
+  rebuildMaskBackgroundCanvas();updateMaskBgControls();forceMaskBackgroundPng();updateSocialUI();markMaskBgPresetChanged();
+  const action=mode==='paint'?'kept':'removed';setMaskBgStatus(`Flood fill ${action} the connected mask region.`);
+}
 function undoMaskBackground(){
   const snapshot=maskBgUndoStack.pop(); if(!snapshot)return;
   restoreMaskBgSnapshot(snapshot); updateMaskBgControls(); markMaskBgPresetChanged();
@@ -3097,7 +3217,7 @@ function saveActiveMaskBackground(){
   }:null;
 }
 function restoreMaskBackgroundForPhoto(item){
-  ++maskBgAutoRequestId; maskBgStroke=null; maskBgPaintMode=null; maskBgSegmentationHandler=null;
+  cancelMaskBgAutoRequest('A different photo was opened');maskBgStroke=null; maskBgPaintMode=null; maskBgSegmentationHandler=null;
   const width=maskCanvas?.width||Math.max(1,Math.min(canvas.width,1024)),height=maskCanvas?.height||Math.max(1,Math.min(canvas.height,1024));
   const saved=item?.maskBackground;
   if(saved?.canvas){
@@ -3112,8 +3232,9 @@ function restoreMaskBackgroundForPhoto(item){
     maskBgAutoCanvas=null;maskBgStrokes=[];maskBgActive=false;maskBgBaseValue=255;maskBgUndoStack=[];
   }
   maskBgCtx=maskBgCanvas.getContext('2d');
-  if(maskBgBackgroundImage) fitMaskBgImageToPhoto(); else uploadMaskBgBackgroundImage();
+  if(maskBgBackgroundImage&&maskBgSettings.mode==='image')fitMaskBgImageToPhoto();else uploadMaskBgBackgroundImage();
   uploadMaskBackground();updateMaskBgControls();
+  if(maskBgSettings.mode==='blur')requestMaskBgBlur(true);
 }
 function rotateMaskBgState(saved,degrees){
   if(!saved) return;
@@ -3128,10 +3249,10 @@ function rotateMaskBgState(saved,degrees){
 }
 function clearMaskBackground(){
   if(!maskBgCanvas||!maskBgPhotoReady()) return;
-  ++maskBgAutoRequestId;maskBgPresetImageRequest++;maskBgStroke=null;maskBgPaintMode=null;maskBgSegmentationHandler=null;
+  cancelMaskBgAutoRequest('Mask reset');cancelMaskBgBlurWork();maskBgPresetImageRequest++;maskBgStroke=null;maskBgPaintMode=null;maskBgSegmentationHandler=null;
   maskBgActive=false;maskBgAutoCanvas=null;maskBgBaseValue=255;maskBgStrokes=[];maskBgUndoStack=[];
   maskBgSettings.mode='transparent';maskBgSettings.color='#101014';maskBgSettings.blur=24;maskBgSettings.feather=6;maskBgSettings.expand=0;maskBgSettings.invert=false;
-  maskBgSettings.gradientStart='#11131a';maskBgSettings.gradientEnd='#d62828';maskBgSettings.gradientAngle=45;maskBgSettings.brushSize=48;maskBgSettings.magicTolerance=34;
+  maskBgSettings.gradientStart='#11131a';maskBgSettings.gradientEnd='#d62828';maskBgSettings.gradientAngle=45;maskBgSettings.brushSize=20;maskBgSettings.hardness=65;maskBgSettings.magicTolerance=34;
   maskBgBackgroundImage=null;maskBgImageCanvas=null;maskBgImageDataUrl='';maskBgImageName='No image selected';
   maskBgCtx.fillStyle='#fff';maskBgCtx.fillRect(0,0,maskBgCanvas.width,maskBgCanvas.height);
   uploadMaskBackground();uploadMaskBgBackgroundImage();updateMaskBgControls();updateSocialUI();
@@ -3145,6 +3266,10 @@ function applyMaskBackground(){
 function setMaskBgSetting(key,value){
   if(!maskBgPhotoReady())return;
   maskBgSettings[key]=value;updateMaskBgControls();markMaskBgPresetChanged();
+  if(key==='mode'){
+    if(value==='blur')requestMaskBgBlur(true);
+    else{cancelMaskBgBlurWork();uploadMaskBgBackgroundImage();}
+  }else if(key==='blur'&&maskBgSettings.mode==='blur')requestMaskBgBlur(false);
   if(key==='mode'&&value==='transparent')forceMaskBackgroundPng(true);
   lastPreviewRenderKey=null;if(hasContent)render(performance.now());updateSocialUI();
 }
@@ -3176,8 +3301,9 @@ function restoreMaskBgPresetSnapshot(snapshot){
   Object.assign(maskBgSettings,normalizeMaskBgSettings(snapshot.settings||{}));
   maskBgBackgroundImage=snapshot.image||null;maskBgImageCanvas=snapshot.imageCanvas||null;
   maskBgImageDataUrl=snapshot.imageDataUrl||'';maskBgImageName=snapshot.imageName||'No image selected';
-  if(maskBgBackgroundImage&&maskBgCanvas)fitMaskBgImageToPhoto();else uploadMaskBgBackgroundImage();
+  if(maskBgSettings.mode==='image'&&maskBgBackgroundImage&&maskBgCanvas)fitMaskBgImageToPhoto();else uploadMaskBgBackgroundImage();
   updateMaskBgControls();forceMaskBackgroundPng();lastPreviewRenderKey=null;if(hasContent)render(performance.now());
+  if(maskBgSettings.mode==='blur')requestMaskBgBlur(true);
 }
 function applyMaskBackgroundPresetSettings(raw){
   if(!raw||typeof raw!=='object'||!maskBgPhotoReady())return;
@@ -3191,6 +3317,7 @@ function applyMaskBackgroundPresetSettings(raw){
     image.onerror=()=>{if(request===maskBgPresetImageRequest){maskBgImageName='No image selected';setMaskBgStatus('Preset background image could not be restored.');updateMaskBgControls();}};image.src=imageDataUrl;
   }else if(raw.mode==='image')setMaskBgStatus('This preset did not include an embeddable background image. Choose one on this device.');
   updateMaskBgControls();forceMaskBackgroundPng();lastPreviewRenderKey=null;if(hasContent)render(performance.now());
+  if(maskBgSettings.mode==='blur')requestMaskBgBlur(true);
 }
 function loadMaskBgImageFile(file){
   const imageFile=!!file&&(file.type?.startsWith('image/')||/\.(png|jpe?g|webp|avif|gif|bmp)$/i.test(file.name||''));
@@ -3199,63 +3326,126 @@ function loadMaskBgImageFile(file){
   image.onload=()=>{URL.revokeObjectURL(url);if(request!==maskBgPresetImageRequest)return;maskBgBackgroundImage=image;maskBgImageDataUrl='';maskBgImageName=file.name||'Background image';fitMaskBgImageToPhoto();setMaskBgStatus('Background image loaded on this device.');markMaskBgPresetChanged();updateMaskBgControls();};
   image.onerror=()=>{URL.revokeObjectURL(url);if(request===maskBgPresetImageRequest)showToast('Could not open that background image');};image.src=url;
 }
-async function ensureMaskBgModel(){
-  if(maskBgModelState==='ready')return loadPortraitSegmenter();
-  if(maskBgModelPromise)return maskBgModelPromise;
-  maskBgModelState='loading';setMaskBgAiStatus('Loading AI model… this may take a moment',true);updateMaskBgControls();
-  maskBgModelPromise=loadPortraitSegmenter().then(segmenter=>{
-    maskBgModelState='ready';setMaskBgAiStatus('AI model ready on this device.',true);setMaskBgStatus('Local AI is ready. Choose automatic removal or refine by hand.');updateMaskBgControls();return segmenter;
-  }).catch(error=>{
-    maskBgModelState='error';maskBgModelPromise=null;setMaskBgAiStatus('Local AI model unavailable. Try Magic select or paint.',true);updateMaskBgControls();throw error;
+function rejectMaskBgWorkerRequests(error){
+  for(const pending of maskBgWorkerPending.values())pending.reject(error);
+  maskBgWorkerPending.clear();
+}
+function terminateMaskBgWorker(error=new Error('Local AI request cancelled'),state='idle'){
+  maskBgModelLoadId++;
+  if(maskBgWorker){maskBgWorker.terminate();maskBgWorker=null;}
+  rejectMaskBgWorkerRequests(error);maskBgModelPromise=null;maskBgModelState=state;
+}
+function ensureMaskBgWorker(){
+  if(maskBgWorker)return maskBgWorker;
+  const worker=new Worker(new URL('mask-segmentation-worker.js',document.baseURI));
+  worker.onmessage=event=>{
+    const data=event.data||{};
+    if(data.type==='progress'){
+      if(maskBgProcessing)setMaskBgAiStatus(data.message,true,true);
+      return;
+    }
+    const pending=maskBgWorkerPending.get(data.requestId);
+    if(!pending)return;
+    maskBgWorkerPending.delete(data.requestId);
+    if(data.type==='error')pending.reject(new Error(data.error||'MediaPipe image segmentation failed'));
+    else if(data.type==='ready')pending.resolve(worker);
+    else if(data.type==='result')pending.resolve({...data,mask:new Uint8Array(data.mask)});
+  };
+  worker.onerror=event=>{
+    const error=new Error(event.message||'The local segmentation worker failed');
+    rejectMaskBgWorkerRequests(error);worker.terminate();
+    if(maskBgWorker===worker){maskBgWorker=null;maskBgModelPromise=null;maskBgModelState='error';}
+  };
+  maskBgWorker=worker;return worker;
+}
+function requestMaskBgWorker(type,payload={}){
+  const worker=ensureMaskBgWorker(),requestId=++maskBgWorkerRequestId;
+  return new Promise((resolve,reject)=>{
+    maskBgWorkerPending.set(requestId,{resolve,reject});
+    try{worker.postMessage({type,requestId,...payload},payload.image?[payload.image]:[]);}
+    catch(error){maskBgWorkerPending.delete(requestId);payload.image?.close?.();reject(error);}
   });
-  return maskBgModelPromise;
+}
+async function ensureMaskBgModel(){
+  if(maskBgModelState==='ready'&&maskBgWorker)return maskBgWorker;
+  if(maskBgModelPromise)return maskBgModelPromise;
+  const loadId=++maskBgModelLoadId;
+  maskBgModelState='loading';setMaskBgAiStatus('Loading AI model… this may take a moment.',true,true);updateMaskBgControls();
+  const loading=requestMaskBgWorker('init').then(worker=>{
+    if(loadId!==maskBgModelLoadId)throw new Error('AI model loading was cancelled');
+    maskBgModelState='ready';setMaskBgAiStatus('AI model ready on this device.',true,false);
+    if(!maskBgProcessing)setMaskBgStatus('AI model ready on this device. Your photo stays local.');
+    updateMaskBgControls();return worker;
+  }).catch(error=>{
+    if(loadId===maskBgModelLoadId){
+      if(maskBgModelState!=='error')terminateMaskBgWorker(error,'error');
+      maskBgModelPromise=null;setMaskBgAiStatus('AI model unavailable. Try Magic select or Paint / keep.',true,false);updateMaskBgControls();
+    }
+    throw error;
+  });
+  maskBgModelPromise=loading;return loading;
 }
 function loadMaskBgModelOnOpen(){
   if(!maskBgPhotoReady()||activeSidebarTab!=='mask'||!$('maskBackgroundDetails').open)return;
-  if(maskBgModelState==='ready'){setMaskBgAiStatus('AI model ready on this device.',true);return;}
+  if(maskBgModelState==='ready'){setMaskBgAiStatus('AI model ready on this device.',true,false);return;}
   ensureMaskBgModel().catch(error=>console.warn('Local background model unavailable',error));
 }
+function cancelMaskBgAutoRequest(reason='The photo changed',terminateWorker=false){
+  const wasBusy=maskBgProcessing||maskBgModelState==='loading';
+  clearTimeout(maskBgAutoTimeout);maskBgAutoTimeout=null;maskBgAutoRequestId++;maskBgProcessing=false;
+  if(wasBusy||terminateWorker)terminateMaskBgWorker(new Error(reason),'idle');
+  updateMaskBgControls();
+}
+function buildMaskBgCanvasFromPixels(width,height,mask){
+  if(!mask||mask.length!==width*height)throw new Error('The model returned an invalid foreground mask');
+  const candidate=document.createElement('canvas');candidate.width=width;candidate.height=height;
+  const ctx=candidate.getContext('2d'),image=ctx.createImageData(width,height);
+  for(let i=0;i<mask.length;i++){
+    const value=mask[i],offset=i*4;image.data[offset]=image.data[offset+1]=image.data[offset+2]=value;image.data[offset+3]=255;
+  }
+  ctx.putImageData(image,0,0);return candidate;
+}
 async function autoRemoveMaskBackground(){
-  if(!maskBgPhotoReady()||!photoForMask||!maskBgCanvas)return;
-  const token=++maskBgAutoRequestId,photo=photoForMask;
-  setMaskBgAiStatus(maskBgModelState==='ready'?'AI model ready on this device.':'Loading AI model… this may take a moment',true);setMaskBgStatus('Finding the foreground on this device…');updateMaskBgControls();
-  const task=maskQueue.catch(()=>{}).then(async()=>{
-    let segmentationHandler=null;
-    try{
-      const segmenter=await ensureMaskBgModel();
-      if(token!==maskBgAutoRequestId||photo!==photoForMask)return;
-      let received=false,valid=false;
-      segmentationHandler=results=>{
-        if(token!==maskBgAutoRequestId||photo!==photoForMask||!results.segmentationMask)return;
-        const candidate=document.createElement('canvas');candidate.width=maskBgCanvas.width;candidate.height=maskBgCanvas.height;
-        const ctx=candidate.getContext('2d');ctx.drawImage(results.segmentationMask,0,0,candidate.width,candidate.height);
-        ctx.globalCompositeOperation='source-in';ctx.fillStyle='#fff';ctx.fillRect(0,0,candidate.width,candidate.height);
-        ctx.globalCompositeOperation='destination-over';ctx.fillStyle='#000';ctx.fillRect(0,0,candidate.width,candidate.height);
-        const probe=document.createElement('canvas');probe.width=32;probe.height=32;const pc=probe.getContext('2d');pc.drawImage(candidate,0,0,32,32);
-        const pixels=pc.getImageData(0,0,32,32).data;let kept=0;for(let i=0;i<pixels.length;i+=4)if(pixels[i]>128)kept++;
-        received=true;valid=kept>=4&&kept<1020;
-        if(!valid)return;
-        pushMaskBgUndo();maskBgAutoCanvas=candidate;maskBgStrokes=[];maskBgBaseValue=0;maskBgActive=true;
-        maskBgPaintMode=null;markMaskBgPresetChanged();rebuildMaskBackgroundCanvas();
-        setMaskBgStatus('Background removed. Paint to keep details, erase to remove more, or choose a new background.');
-        setMaskBgAiStatus('AI model ready on this device.',true);updateMaskBgControls();forceMaskBackgroundPng();updateSocialUI();
-      };
-      maskBgSegmentationHandler=segmentationHandler;
-      await segmenter.send({image:photo});
-      if(token!==maskBgAutoRequestId)return;
-      if(!received||!valid)throw new Error('No clear subject found in this photo');
-    }catch(error){
-      if(token===maskBgAutoRequestId){
-        console.warn('Automatic background removal unavailable',error);
-        setMaskBgStatus(`${error.message}. Try Magic select, or paint the area to keep.`);
-        if(maskBgModelState==='error')setMaskBgAiStatus('Local AI model unavailable. Try Magic select or paint.',true);
-      }
-    }finally{
-      if(segmentationHandler&&maskBgSegmentationHandler===segmentationHandler)maskBgSegmentationHandler=null;
-      if(token===maskBgAutoRequestId){if(maskBgModelState==='ready')setMaskBgAiStatus('AI model ready on this device.',true);updateMaskBgControls();}
+  if(!maskBgPhotoReady()||!photoForMask||!maskBgCanvas||maskBgProcessing)return;
+  const token=++maskBgAutoRequestId,photo=photoForMask,width=maskBgCanvas.width,height=maskBgCanvas.height;
+  maskBgProcessing=true;setMaskBgAiStatus('Loading AI model… this may take a moment.',true,true);
+  setMaskBgStatus('Preparing automatic background removal on this device…');updateMaskBgControls();
+  maskBgAutoTimeout=setTimeout(()=>{
+    if(token!==maskBgAutoRequestId)return;
+    maskBgAutoRequestId++;maskBgProcessing=false;maskBgAutoTimeout=null;
+    terminateMaskBgWorker(new Error('Automatic removal timed out after 8 seconds'),'error');
+    setMaskBgAiStatus('Auto-remove failed — try painting the mask manually',true,false);
+    setMaskBgStatus('Auto-remove failed — try painting the mask manually');
+    updateMaskBgControls();
+  },8000);
+  try{
+    await ensureMaskBgModel();
+    if(token!==maskBgAutoRequestId||photo!==photoForMask)return;
+    setMaskBgAiStatus('Analyzing image…',true,true);
+    setMaskBgStatus('Analyzing image…');
+    const image=await createImageBitmap(photo);
+    if(token!==maskBgAutoRequestId){image.close?.();return;}
+    const result=await requestMaskBgWorker('segment',{image,width,height});
+    if(token!==maskBgAutoRequestId||photo!==photoForMask)return;
+    const candidate=buildMaskBgCanvasFromPixels(result.width,result.height,result.mask);
+    const probe=document.createElement('canvas');probe.width=32;probe.height=32;
+    const probeContext=probe.getContext('2d');probeContext.drawImage(candidate,0,0,32,32);
+    const pixels=probeContext.getImageData(0,0,32,32).data;let kept=0;
+    for(let i=0;i<pixels.length;i+=4)if(pixels[i]>128)kept++;
+    if(kept<4||kept>=1020)throw new Error('No clear foreground was found in this photo');
+    pushMaskBgUndo();maskBgAutoCanvas=candidate;maskBgStrokes=[];maskBgBaseValue=0;maskBgActive=true;maskBgPaintMode=null;
+    markMaskBgPresetChanged();rebuildMaskBackgroundCanvas();
+    setMaskBgStatus('Background removed — refine edges with the brush');
+    setMaskBgAiStatus('Background removed — refine edges with the brush',true,false);updateMaskBgControls();forceMaskBackgroundPng();updateSocialUI();
+  }catch(error){
+    if(token===maskBgAutoRequestId){
+      console.warn('Automatic background removal unavailable',error);
+      setMaskBgAiStatus('Auto-remove failed — try painting the mask manually',true,false);
+      setMaskBgStatus('Auto-remove failed — try painting the mask manually');
     }
-  });
-  maskQueue=task;return task;
+  }finally{
+    if(token===maskBgAutoRequestId){clearTimeout(maskBgAutoTimeout);maskBgAutoTimeout=null;maskBgProcessing=false;updateMaskBgControls();}
+  }
 }
 
 function setMaskBgBackgroundMode(mode){
@@ -3279,7 +3469,8 @@ $('maskBgBlur').addEventListener('input',event=>setMaskBgSetting('blur',Number(e
 $('maskBgGradientStart').addEventListener('input',event=>setMaskBgSetting('gradientStart',safeMaskBgColor(event.target.value,'#11131a')));
 $('maskBgGradientEnd').addEventListener('input',event=>setMaskBgSetting('gradientEnd',safeMaskBgColor(event.target.value,'#d62828')));
 $('maskBgGradientAngle').addEventListener('input',event=>setMaskBgSetting('gradientAngle',Number(event.target.value)));
-$('maskBgBrushSize').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.brushSize=Number(event.target.value);$('maskBgBrushSizeValue').textContent=`${maskBgSettings.brushSize} px`;markMaskBgPresetChanged();});
+$('maskBgBrushSize').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.brushSize=Number(event.target.value);$('maskBgBrushSizeValue').textContent=`${maskBgSettings.brushSize} px`;updateMaskBrushCursor();markMaskBgPresetChanged();});
+$('maskBgHardness').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.hardness=Number(event.target.value);$('maskBgHardnessValue').textContent=`${maskBgSettings.hardness}%`;updateMaskBrushCursor();markMaskBgPresetChanged();});
 $('maskBgMagicTolerance').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.magicTolerance=Number(event.target.value);$('maskBgMagicToleranceValue').textContent=String(maskBgSettings.magicTolerance);markMaskBgPresetChanged();});
 $('maskBgFeather').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.feather=Number(event.target.value);$('maskBgFeatherValue').textContent=`${maskBgSettings.feather} px`;markMaskBgPresetChanged();lastPreviewRenderKey=null;if(hasContent)render(performance.now());});
 $('maskBgExpand').addEventListener('input',event=>{if(!maskBgPhotoReady())return;maskBgSettings.expand=Number(event.target.value);$('maskBgExpandValue').textContent=`${maskBgSettings.expand>0?'+':''}${maskBgSettings.expand} px`;markMaskBgPresetChanged();lastPreviewRenderKey=null;if(hasContent)render(performance.now());});
@@ -3355,7 +3546,19 @@ function subjectPoint(e){
   const box=canvas.getBoundingClientRect(); // also accounts for preview zoom and pan
   return {x:Math.max(0,Math.min(1,(e.clientX-box.left)/box.width)),y:Math.max(0,Math.min(1,(e.clientY-box.top)/box.height))};
 }
+function updateMaskBrushCursor(event){
+  if(event)maskBrushCursorPoint={x:event.clientX,y:event.clientY};
+  if(!maskBrushCursor||!maskBrushCursorPoint||!maskBgCanvas||!canvasWrap.classList.contains('maskBgBrushPreview')){if(maskBrushCursor)maskBrushCursor.style.display='none';return;}
+  const rect=canvas.getBoundingClientRect(),wrap=canvasWrap.getBoundingClientRect(),point=maskBrushCursorPoint;
+  if(point.x<rect.left||point.x>rect.right||point.y<rect.top||point.y>rect.bottom){maskBrushCursor.style.display='none';return;}
+  const diameterX=Math.max(1,maskBgSettings.brushSize*rect.width/Math.max(1,maskBgCanvas.width));
+  const diameterY=Math.max(1,maskBgSettings.brushSize*rect.height/Math.max(1,maskBgCanvas.height));
+  maskBrushCursor.style.display='block';maskBrushCursor.style.left=`${point.x-wrap.left}px`;maskBrushCursor.style.top=`${point.y-wrap.top}px`;
+  maskBrushCursor.style.width=`${diameterX}px`;maskBrushCursor.style.height=`${diameterY}px`;
+  maskBrushCursor.style.setProperty('--brush-softness',`${100-maskBgSettings.hardness}%`);
+}
 function paintSubject(e){
+
   if(!maskStroke || maskStroke.id!==e.pointerId || !maskCanvas) return;
   const point=subjectPoint(e), previous=maskStroke.stroke.points.at(-1);
   maskStroke.stroke.points.push(point);
@@ -3592,7 +3795,9 @@ function uploadPhoto(item,img,resetView=true){
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
   photoTextureRevision++; lastPreviewRenderKey=null;
   const returningFromVideo=isVideo;
-  maskBgActive=false;maskBgPaintMode=null;maskBgStroke=null;maskBgSegmentationHandler=null;++maskBgAutoRequestId;
+  cancelMaskBgAutoRequest('A new photo was opened');cancelMaskBgBlurWork();
+  maskBgBlurCanvas?.close?.();maskBgBlurCanvas=null;maskBgBlurCanvasKey='';maskBgOriginalSource=source;
+  maskBgActive=false;maskBgPaintMode=null;maskBgStroke=null;maskBgSegmentationHandler=null;
   isVideo=false; hasContent=true; currentPhoto=item;
   if(returningFromVideo)exportOptions={...photoExportOptions};else photoExportOptions={...exportOptions};
   setWorkspaceMode('photo');
@@ -3760,6 +3965,8 @@ async function handleVideoFile(file){
     if(token!==fileLoadId) return;
     const dur=incoming.duration, w=incoming.videoWidth, h=incoming.videoHeight;
     if(!(Number.isFinite(dur) && dur>0 && w>0 && h>0)) throw new Error('Video metadata is unavailable');
+    cancelMaskBgAutoRequest('Video mode does not use photo segmentation',true);cancelMaskBgBlurWork();
+    maskBgBlurCanvas?.close?.();maskBgBlurCanvas=null;maskBgBlurCanvasKey='';maskBgOriginalSource=null;
     unloadVideo(); clearPhotos(); videoEl.replaceWith(incoming); videoEl=incoming; incoming.id='videoEl';
     videoSourceFile=file; videoObjectUrl=url; committed=true; wireVideoEvents();
     videoEl.volume=Number($('videoVolume').value)/100;
@@ -3881,6 +4088,9 @@ canvasWrap.addEventListener('pointerup',e=>{
   if(now-lastCanvasTouchTap<550) suppressTouchPickerUntil=now+750;
   lastCanvasTouchTap=now;
 },true);
+canvas.addEventListener('pointerleave',()=>{
+  if(maskBgStroke)return;maskBrushCursorPoint=null;updateMaskBrushCursor();
+});
 canvas.addEventListener('wheel',e=>{
   if(!hasContent) return;
   const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?canvasWrap.clientHeight:1);
@@ -3890,6 +4100,9 @@ canvas.addEventListener('wheel',e=>{
   zoomPreviewTo(next,e.clientX,e.clientY);
 },{passive:false});
 canvas.addEventListener('pointerdown',e=>{
+  if(e.shiftKey&&(maskBgPaintMode==='paint'||maskBgPaintMode==='erase')&&maskBgPhotoReady()&&(e.pointerType!=='mouse'||e.button===0)){
+    e.preventDefault();floodFillMaskBackground(subjectPoint(e),maskBgPaintMode);return;
+  }
   if(maskBgPaintMode==='magic' && maskBgPhotoReady() && (e.pointerType!=='mouse' || e.button===0)){
     e.preventDefault();magicSelectMask(subjectPoint(e));return;
   }
@@ -3922,6 +4135,7 @@ canvas.addEventListener('pointerdown',e=>{
   if(e.pointerType!=='mouse') e.preventDefault();
 });
 canvas.addEventListener('pointermove',e=>{
+  updateMaskBrushCursor(e);
   const touchPoint=touchZoomPointers.get(e.pointerId);
   if(touchPoint){ touchPoint.x=e.clientX; touchPoint.y=e.clientY; }
   if(pinchZoom && pinchZoom.ids.includes(e.pointerId)){ e.preventDefault(); updatePinchZoom(); return; }
@@ -4072,6 +4286,7 @@ async function downloadImage(){
   if(!hasContent || exportBusy || mediaBusy){ showToast('Upload first'); return; }
   const view=beginExport('Preparing original-size PNG');
   try{
+    await prepareMaskBgBlurForExport();
     progressText.textContent='Rendering the full-resolution image…'; render(performance.now());
     const a=document.createElement('a'); a.href=canvas.toDataURL('image/png');
     const blob=await (await fetch(a.href)).blob();
@@ -4335,7 +4550,35 @@ const socialPresetNotes={
   'Coastal Fade':'Airy blue tones and softly lifted shadows',
   'After Hours':'Purple shadows and warm city-light halos'
 };
-let lastPresetSnapshot=null, presetCompareSnapshot=null, presetCompareName=null, presetCompareSelection=null, selectedPresetName=null;
+let lastPresetSnapshot=null,lastPresetActiveNameSnapshot=null,lastPresetSelectedNameSnapshot=null;
+let presetCompareSnapshot=null,presetCompareName=null,presetCompareSelection=null,presetCompareActivePreset=null,selectedPresetName=null;
+let presetHoverPreviewTimer=null,presetHoverPreviewPending=null,presetIntensity=100,lastPresetIntensitySnapshot=100;
+const presetIntensityInput=$('presetIntensity'),presetIntensityOutput=$('presetIntensityValue');
+function updatePresetIntensityReadout(){
+  const requested=Number(presetIntensityInput.value);
+  presetIntensity=Math.max(0,Math.min(100,Number.isFinite(requested)?Math.round(requested):100));
+  presetIntensityInput.value=String(presetIntensity);
+  presetIntensityInput.setAttribute('aria-valuetext',`${presetIntensity} percent`);
+  presetIntensityOutput.textContent=`${presetIntensity}%`;
+}
+function scalePresetValues(values,intensity=presetIntensity){
+  const requested=Number(intensity),factor=(Number.isFinite(requested)?Math.max(0,Math.min(100,requested)):100)/100;
+  return Object.fromEntries(ids.map(id=>{
+    const value=Number(values?.[id]??0);
+    return [id,Number.isFinite(value)?Math.round(Math.max(-100,Math.min(100,value))*factor):0];
+  }));
+}
+function applyActivePresetIntensity(){
+  updatePresetIntensityReadout();
+  const name=activePresetName;
+  if(!name||selectedPresetName!==name||!availablePresets.has(name))return;
+  cancelPresetAnimation();cancelSliderRender();
+  setValues(scalePresetValues(availablePresets.get(name),presetIntensity));
+  floydLastKey=null;updateClusterSummaries();
+  if(hasContent)scheduleSliderRender();
+}
+presetIntensityInput.addEventListener('input',applyActivePresetIntensity);
+updatePresetIntensityReadout();
 function presetSwatchGradient(values={}){
   const temp=Number(values.Temperature||0), shadow=Number(values.ShadowTone||0), highlight=Number(values.HighlightTone||0), tint=Number(values.HighlightTint||0);
   const hues=[(210-shadow*.68+360)%360,(38+temp*.42+360)%360,(48+highlight*.58+360)%360,(335+tint*.72+360)%360];
@@ -4383,9 +4626,17 @@ function positionPresetHoverMenu(){
   menu.style.maxHeight=`${Math.max(120,Math.min(340,(opensUp?above:below)-8))}px`;
 }
 function previewPresetHoverOption(name){
-  if(!hasContent || !availablePresets.has(name)) return;
-  if(presetCompareSnapshot && presetCompareName===name) return;
-  startPresetCompare(name,availablePresets.get(name),customPresetDither.get(name));
+  if(!hasContent||!availablePresets.has(name))return;
+  if(presetCompareSnapshot&&presetCompareName===name){cancelPresetHoverPreview();return;}
+  if(presetHoverPreviewTimer!==null)clearTimeout(presetHoverPreviewTimer);
+  presetHoverPreviewPending=name;
+  presetHoverPreviewTimer=setTimeout(()=>{
+    presetHoverPreviewTimer=null;
+    const pending=presetHoverPreviewPending;presetHoverPreviewPending=null;
+    if(!pending||!hasContent||!availablePresets.has(pending))return;
+    if(presetCompareSnapshot&&presetCompareName===pending)return;
+    startPresetCompare(pending,availablePresets.get(pending),customPresetDither.get(pending));
+  },80);
 }
 function previewPresetAtPoint(x,y,preferVisible=false){
   const menu=$('presetHoverMenu'); if(!menu || menu.hidden) return;
@@ -4464,11 +4715,11 @@ function renderChips(){
       const card=document.createElement('button'); card.type='button'; card.className='chip custom'; card.textContent=name;
       const curve=document.createElement('span'); curve.className='presetColorSwatch'; curve.setAttribute('aria-hidden','true'); if(curve.style) curve.style.background=presetSwatchGradient(values); card.appendChild(curve);
       card.setAttribute('aria-pressed','false'); card.title='Right-click to delete';
-      card.addEventListener('pointerenter',()=>startPresetCompare(name,values,customPresetDither.get(name)));
+      card.addEventListener('pointerenter',()=>previewPresetHoverOption(name));
       card.addEventListener('pointerleave',()=>stopPresetCompare());
-      card.addEventListener('focus',()=>startPresetCompare(name,values,customPresetDither.get(name)));
+      card.addEventListener('focus',()=>previewPresetHoverOption(name));
       card.addEventListener('blur',()=>stopPresetCompare());
-      card.addEventListener('click',()=>{stopPresetCompare();applyPreset(name,values,customPresetDither.get(name));});
+      card.addEventListener('click',()=>schedulePresetApplication(name,values,customPresetDither.get(name)));
       card.addEventListener('contextmenu',e=>{e.preventDefault();deleteCustomPreset(name);});
       savedCards.appendChild(card);
     }
@@ -4478,11 +4729,11 @@ function renderChips(){
       chip.textContent=name;
       const swatch=document.createElement('span'); swatch.className='presetColorSwatch'; swatch.setAttribute('aria-hidden','true'); if(swatch.style) swatch.style.background=presetSwatchGradient(values); chip.appendChild(swatch);
       chip.setAttribute('aria-pressed','false');
-      chip.addEventListener('pointerenter',()=>startPresetCompare(name,values,customPresetDither.get(name)));
+      chip.addEventListener('pointerenter',()=>previewPresetHoverOption(name));
       chip.addEventListener('pointerleave',()=>stopPresetCompare());
-      chip.addEventListener('focus',()=>startPresetCompare(name,values,customPresetDither.get(name)));
+      chip.addEventListener('focus',()=>previewPresetHoverOption(name));
       chip.addEventListener('blur',()=>stopPresetCompare());
-      chip.addEventListener('click',()=>{ stopPresetCompare(); applyPreset(name,values,customPresetDither.get(name)); });
+      chip.addEventListener('click',()=>schedulePresetApplication(name,values,customPresetDither.get(name)));
       if(isCustom){
         chip.title='Right-click to delete';
         chip.addEventListener('contextmenu',e=>{ e.preventDefault(); deleteCustomPreset(name); });
@@ -4507,43 +4758,63 @@ function renderChips(){
   if(typeof selectedPresetName!=='undefined' && selectedPresetName && !availablePresets.has(selectedPresetName)) selectedPresetName=activePresetName;
   syncPresetSelection();
 }
+function cancelPresetHoverPreview(){
+  if(presetHoverPreviewTimer!==null){clearTimeout(presetHoverPreviewTimer);presetHoverPreviewTimer=null;}
+  presetHoverPreviewPending=null;
+}
 function applyPreset(name, values, ditherOptions=null, options={}){
-  cancelPresetAnimation();
-  if(!options.preview && typeof settingsSnapshot==='function'){ lastPresetSnapshot=settingsSnapshot(); lastPresetMaskBackgroundSnapshot=captureMaskBgPresetSnapshot(); const undoButton=$('presetUndoBtn'); if(undoButton) undoButton.hidden=false; }
-  activePresetName=name; syncPresetSelection();
-  if(ditherOptions) setDitherSettings(ditherOptions);
-  setDitherScope(values.DitherScope==='background'?'background':'full');
-  selectedPresetName=name; syncPresetSelection();
-  if(values.Effects || name.startsWith('ig:')) setEffectStates(values.Effects||{});
-  if(values.MaskBackground&&appState.mode==='photo') applyMaskBackgroundPresetSettings(values.MaskBackground);
-  const start=getCurrentValues();
-  // Old saved presets have no newer sliders; animate those back to neutral.
-  const target=Object.fromEntries(ids.map(k=>[k,Number(values[k]??0)]));
-  const dur=340, t0=performance.now();
-  const ease=t=>1-Math.pow(1-t,3);
-  function step(now){
-    const p=Math.min((now-t0)/dur,1), e=ease(p);
-    const cur={};
-    for(const k of ids){ cur[k]=start[k]+(target[k]-start[k])*e; }
-    setValues(cur); if(typeof updateClusterSummaries==='function') updateClusterSummaries(); render(now);
-    presetFrame=p<1 ? requestAnimationFrame(step) : null;
-  }
-  presetFrame=requestAnimationFrame(step);
-  if(!options.preview) showToast(`Preset: ${presetDisplayName(name)}`);
+  cancelPresetAnimation();if(typeof cancelPresetHoverPreview==='function')cancelPresetHoverPreview();
+  if(!options.preview && typeof settingsSnapshot==='function'){ lastPresetSnapshot=settingsSnapshot(); lastPresetMaskBackgroundSnapshot=captureMaskBgPresetSnapshot(); lastPresetIntensitySnapshot=presetIntensity; lastPresetActiveNameSnapshot=activePresetName; lastPresetSelectedNameSnapshot=selectedPresetName; const undoButton=$('presetUndoBtn'); if(undoButton) undoButton.hidden=false; }
+  activePresetName=name;selectedPresetName=name;syncPresetSelection();
+  if(!options.preview)showToast(`Preset: ${presetDisplayName(name)}`);
+  const animationStartedAt=Number.isFinite(options.animationStartedAt)?options.animationStartedAt:performance.now();
+  const beginTransition=now=>{
+    presetFrame=null;
+    if(ditherOptions)setDitherSettings(ditherOptions);
+    setDitherScope(values.DitherScope==='background'?'background':'full');
+    if(values.Effects||name.startsWith('ig:'))setEffectStates(values.Effects||{});
+    if(values.MaskBackground&&appState.mode==='photo')applyMaskBackgroundPresetSettings(values.MaskBackground);
+    const start=getCurrentValues();
+    // Old saved presets have no newer sliders; animate those back to neutral.
+    const target=scalePresetValues(values,presetIntensity);
+    const dur=340,t0=animationStartedAt,ease=t=>1-Math.pow(1-t,3);
+    function step(frameTime){
+      const p=Math.min((frameTime-t0)/dur,1),e=ease(p),cur={};
+      for(const k of ids)cur[k]=start[k]+(target[k]-start[k])*e;
+      setValues(cur);if(typeof updateClusterSummaries==='function')updateClusterSummaries();renderFrame(frameTime);
+      presetFrame=p<1?requestAnimationFrame(step):null;
+    }
+    step(now);
+  };
+  if(options.inAnimationFrame)beginTransition(options.frameTime??performance.now());
+  else presetFrame=requestAnimationFrame(beginTransition);
+}
+function schedulePresetApplication(name,values,ditherOptions=null){
+  const animationStartedAt=performance.now();
+  cancelPresetAnimation();if(typeof cancelPresetHoverPreview==='function')cancelPresetHoverPreview();
+  presetFrame=requestAnimationFrame(frameTime=>{
+    presetFrame=null;
+    if(presetCompareSnapshot)stopPresetCompare();
+    applyPreset(name,values,ditherOptions,{inAnimationFrame:true,frameTime,animationStartedAt});
+    renderFrame(frameTime);
+  });
 }
 function startPresetCompare(name,values,ditherOptions=null){
+  cancelPresetHoverPreview();
   if(!hasContent || !availablePresets.has(name)) return;
   if(presetCompareSnapshot) stopPresetCompare();
-  presetCompareSnapshot=settingsSnapshot(); presetCompareMaskBackgroundSnapshot=captureMaskBgPresetSnapshot(); presetCompareName=name; presetCompareSelection=selectedPresetName;
+  presetCompareSnapshot=settingsSnapshot(); presetCompareMaskBackgroundSnapshot=captureMaskBgPresetSnapshot(); presetCompareName=name; presetCompareSelection=selectedPresetName; presetCompareActivePreset=activePresetName;
   $('presetCompareBtn').textContent='Stop compare';
   applyPreset(name,values,ditherOptions,{preview:true});
 }
 function stopPresetCompare(){
+  cancelPresetHoverPreview();
   if(!presetCompareSnapshot) return;
-  const snapshot=presetCompareSnapshot, selection=presetCompareSelection, maskSnapshot=presetCompareMaskBackgroundSnapshot;
-  presetCompareSnapshot=null; presetCompareMaskBackgroundSnapshot=null; presetCompareName=null; presetCompareSelection=null;
+  const snapshot=presetCompareSnapshot, selection=presetCompareSelection, maskSnapshot=presetCompareMaskBackgroundSnapshot, activePreset=presetCompareActivePreset;
+  presetCompareSnapshot=null; presetCompareMaskBackgroundSnapshot=null; presetCompareName=null; presetCompareSelection=null; presetCompareActivePreset=null;
   $('presetCompareBtn').textContent='Compare';
-  restoreSettings(snapshot); restoreMaskBgPresetSnapshot(maskSnapshot); selectedPresetName=selection; syncPresetSelection();
+  restoreSettings(snapshot); restoreMaskBgPresetSnapshot(maskSnapshot);
+  activePresetName=activePreset&&availablePresets.has(activePreset)?activePreset:null;selectedPresetName=selection;syncPresetSelection();
 }
 function deleteCustomPreset(name){
   if(!customPresets.some(p=>p.name===name) || !confirm(`Delete "${name}"?`)) return;
@@ -4592,11 +4863,11 @@ $('presetSelect').addEventListener('change',e=>{
   const name=e.target.value;
   closePresetHoverMenu(true); $('presetSelect').value=name;
   selectedPresetName=name||null; syncPresetSelection();
-  if(e.detail?.applyNow) if(availablePresets.has(name)) applyPreset(name,availablePresets.get(name),customPresetDither.get(name));
+  if(e.detail?.applyNow) if(availablePresets.has(name)) schedulePresetApplication(name,availablePresets.get(name),customPresetDither.get(name));
 });
 $('presetApplyBtn').addEventListener('click',()=>{
   const name=selectedPresetName||$('presetSelect').value||activePresetName;
-  if(availablePresets.has(name)){ stopPresetCompare(); applyPreset(name,availablePresets.get(name),customPresetDither.get(name)); }
+  if(availablePresets.has(name)) schedulePresetApplication(name,availablePresets.get(name),customPresetDither.get(name));
 });
 $('presetCompareBtn').addEventListener('click',()=>{
   if(presetCompareSnapshot){ stopPresetCompare(); return; }
@@ -4605,14 +4876,19 @@ $('presetCompareBtn').addEventListener('click',()=>{
 });
 $('presetUndoBtn').addEventListener('click',()=>{
   if(!lastPresetSnapshot) return;
-  const snapshot=lastPresetSnapshot, maskSnapshot=lastPresetMaskBackgroundSnapshot;
-  lastPresetSnapshot=null;lastPresetMaskBackgroundSnapshot=null;$('presetUndoBtn').hidden=true;
-  stopPresetCompare(); restoreSettings(snapshot);restoreMaskBgPresetSnapshot(maskSnapshot);showToast('Preset undone');
+  const snapshot=lastPresetSnapshot, maskSnapshot=lastPresetMaskBackgroundSnapshot, intensitySnapshot=lastPresetIntensitySnapshot;
+  const activeSnapshot=lastPresetActiveNameSnapshot, selectionSnapshot=lastPresetSelectedNameSnapshot;
+  lastPresetSnapshot=null;lastPresetMaskBackgroundSnapshot=null;lastPresetActiveNameSnapshot=null;lastPresetSelectedNameSnapshot=null;$('presetUndoBtn').hidden=true;
+  stopPresetCompare(); restoreSettings(snapshot);restoreMaskBgPresetSnapshot(maskSnapshot);
+  activePresetName=activeSnapshot&&availablePresets.has(activeSnapshot)?activeSnapshot:null;
+  selectedPresetName=selectionSnapshot&&availablePresets.has(selectionSnapshot)?selectionSnapshot:activePresetName;
+  syncPresetSelection();presetIntensityInput.value=String(intensitySnapshot);updatePresetIntensityReadout();showToast('Preset undone');
 });
 $('savePresetBtn').addEventListener('click',()=>{
   const name=(prompt('Preset name:')||'').trim(); if(!name) return;
   if(name.startsWith('ig:')){ showToast('Please choose a name without the reserved ig: prefix'); return; }
-  const values={...getCurrentValues(),DitherScope:ditherScope,Effects:{...effectEnabled}};
+  const activePresetBase=activePresetName===selectedPresetName&&presetIntensity>0?availablePresets.get(activePresetName):null;
+  const values={...(activePresetBase||getCurrentValues()),DitherScope:ditherScope,Effects:{...effectEnabled}};
   values.MaskBackground=getMaskBackgroundPresetSettings(true);
   customPresets=customPresets.filter(c=>c.name!==name);
   customPresets.push({name,values,version:2,dither:getDitherSettings()}); saveCustom();
@@ -4718,6 +4994,7 @@ function updateSocialUI(){
   $('hdrDownloadBtn').setAttribute('aria-label',isVideo?'Export selected video clip':'Open photo export settings');
   const presetName=selectedPresetName||activePresetName;
   $('presetCompareBtn').disabled=!hasContent||!availablePresets.has(presetName); $('presetApplyBtn').disabled=!availablePresets.has(presetName);
+  presetIntensityInput.disabled=locked;
   document.querySelectorAll('[data-format]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.format===exportOptions.format && !exportOptions.comparison)));
   $('sourceDimensions').textContent=hasContent?`${canvas.width} × ${canvas.height}`:'—';
   const size=social.outputSize(exportOptions,canvas.width,canvas.height);
@@ -5065,6 +5342,7 @@ async function exportPhoto(){
   forceMaskBackgroundPng(true);
   const options={...exportOptions}, view=beginExport('Exporting photo');
   try{
+    await prepareMaskBgBlurForExport();
     if(ditherScope==='background' && maskDetectionPending){ progressText.textContent='Finishing the subject mask…'; await maskQueue; }
     checkExportCancelled(); progressText.textContent='Rendering your Instagram-ready image…';
     const output=makeExportCanvas(options), type=options.type==='png'?'image/png':'image/jpeg';
@@ -5091,6 +5369,7 @@ async function exportCarousel(){
       checkExportCancelled();
       const item=photos[i]; progressText.textContent=`Photo ${i+1}/${photos.length} · preparing…`;
       const img=await decodePhoto(item); checkExportCancelled(); uploadPhoto(item,img,false);
+      await prepareMaskBgBlurForExport();
       if(ditherScope==='background' && maskDetectionPending) await maskQueue;
       checkExportCancelled(); saveActivePhotoMask();
       if(ditherScope==='background' && effectEnabled.dither && params.dither && !autoSubjectMask && !maskStrokes.some(s=>s.mode==='protect')) missingMasks++;
@@ -5671,6 +5950,7 @@ $('resetOriginalBtn').addEventListener('click',()=>{
   if(exportBusy||mediaBusy)return;
   ids.forEach(id=>sliders[id].value=0);setDitherScope('full');setDitherSettings(social.DEFAULT_DITHER);
   for(const [name,on] of Object.entries(effectEnabled))if(!on){effectEnabled[name]=true;const toggle=document.querySelector(`[data-toggle="${name}"]`);if(toggle){toggle.setAttribute('aria-checked','true');toggle.querySelector('.toggleText').textContent='ON';toggle.closest('.effectGroup').classList.remove('effectOff');}}
+  presetIntensityInput.value='100';updatePresetIntensityReadout();
   activePresetName=null;selectedPresetName=null;syncPresetSelection();userChangedSliders();updateSectionIndicators();updateClusterSummaries();updateSocialUI();showToast('Reset to original');
 });
 

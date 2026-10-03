@@ -238,22 +238,24 @@ test('eighteen complete presets, legacy translations and v4 upgrades retain old 
 test('older saved presets fade new sliders to zero while preserving custom sharpening', () => {
   const frames = [], scopeChanges=[], selections=[], inputs = {Fade:{value:70},ShadowTone:{value:-35},Sharp:{value:0},Exposure:{value:0}};
   const state = vm.createContext({
-    ids:Object.keys(inputs), sliders:inputs, presetFrame:null, activePresetName:null,
+    ids:Object.keys(inputs), sliders:inputs, presetFrame:null, activePresetName:null, presetIntensity:100,
     performance:{now:()=>0}, requestAnimationFrame(fn){frames.push(fn);return frames.length;},
     cancelPresetAnimation(){}, syncPresetSelection(){ selections.push(state.activePresetName); }, presetDisplayName:name=>name, setEffectStates(){},
     setDitherScope(scope){ scopeChanges.push(scope); },
-    updateFromSliders(){}, updateSliderUI(){}, render(){}, showToast(){},
+    updateFromSliders(){}, updateSliderUI(){}, render(){}, renderFrame(){}, showToast(){},
   });
   const getter = script.match(/function getCurrentValues\(\)\{[\s\S]*?\n\}/)[0];
   const setter = script.match(/function setValues\(o\)\{[\s\S]*?\n\}/)[0];
+  const scaler = script.match(/function scalePresetValues\(values,intensity=presetIntensity\)\{[\s\S]*?\n\}/)[0];
   const applyStart=script.indexOf('function applyPreset('), applyEnd=script.indexOf('\nfunction deleteCustomPreset',applyStart);
   const apply=script.slice(applyStart,applyEnd);
-  vm.runInContext(`${getter}\n${setter}\n${apply}\nthis.apply=applyPreset;`,state);
+  vm.runInContext(`${getter}\n${setter}\n${scaler}\n${apply}\nthis.apply=applyPreset;`,state);
   state.apply('Old custom',{Sharp:35,Exposure:20}); // saved before Fade and Dither existed
   assert.equal(selections.at(-1),'Old custom');
-  assert.equal(scopeChanges.at(-1),'full');
+  assert.equal(scopeChanges.length,0); // scope and slider application wait for the next animation frame
   assert.equal(frames.length,1);
   frames.shift()(170);
+  assert.equal(scopeChanges.at(-1),'full');
   assert.ok(inputs.Fade.value>0 && inputs.Fade.value<70);
   assert.ok(inputs.ShadowTone.value<0 && inputs.ShadowTone.value>-35);
   frames.shift()(340);
@@ -291,7 +293,7 @@ test('six original presets stay visible; the rest are grouped in a keyboard-acce
   assert.match(script, /if\(name==='Golden Hour'\) addGroup\('For your feed'\)/);
   assert.match(script, /if\(name==='Teal & Ember'\) addGroup\('Color stories'\)/);
   assert.match(script, /addGroup\('Saved presets'\)/);
-  assert.match(script, /const target=Object\.fromEntries\(ids\.map\(k=>\[k,Number\(values\[k\]\?\?0\)\]\)\)/);
+  assert.match(script, /const target=scalePresetValues\(values,presetIntensity\)/);
   assert.match(script, /const dur=340/);
 
   class Element {
@@ -342,8 +344,8 @@ test('six original presets stay visible; the rest are grouped in a keyboard-acce
 });
 
 test('selecting, adjusting, saving, and deleting looks keeps both preset controls in sync', () => {
-  assert.match(script, /\$\('presetSelect'\)\.addEventListener\('change',e=>\{[\s\S]*?if\(availablePresets\.has\(name\)\) applyPreset\(name,availablePresets\.get\(name\),customPresetDither\.get\(name\)\)/);
-  assert.match(script, /activePresetName=name; syncPresetSelection\(\);\n  if\(ditherOptions\) setDitherSettings\(ditherOptions\);\n  setDitherScope/);
+  assert.match(script, /\$\('presetSelect'\)\.addEventListener\('change',e=>\{[\s\S]*?if\(availablePresets\.has\(name\)\) schedulePresetApplication\(name,availablePresets\.get\(name\),customPresetDither\.get\(name\)\)/);
+  assert.match(script, /activePresetName=name;selectedPresetName=name;syncPresetSelection\(\);[\s\S]*?const beginTransition=now=>\{[\s\S]*?if\(ditherOptions\)setDitherSettings\(ditherOptions\);[\s\S]*?setDitherScope/);
   assert.match(script, /activePresetName=null; syncPresetSelection\(\);\n  updateFromSliders/);
   assert.match(script, /customPresets\.push\(\{name,values,version:2,dither:getDitherSettings\(\)\}\); saveCustom\(\);\n  activePresetName=name; renderChips\(\)/);
   assert.match(script, /\$\('deletePresetBtn'\)\.addEventListener\('click',\(\)=>\{ if\(activePresetName\) deleteCustomPreset\(activePresetName\); \}\)/);

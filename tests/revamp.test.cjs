@@ -102,6 +102,38 @@ test('More presets previews on hover and the dropdown remains scrollable without
   assert.match(script, /if\(e\.pointerType!=='mouse' && e\.pointerType!=='pen'\) return/); // native touch/keyboard selection stays available
 });
 
+test('preset work is deferred to animation frames and hover comparisons debounce against the mounted list', () => {
+  const apply = script.match(/function applyPreset\(name, values, ditherOptions=null, options=\{\}\)\{[\s\S]*?\n\}/)[0];
+  const schedule = script.match(/function schedulePresetApplication\(name,values,ditherOptions=null\)\{[\s\S]*?\n\}/)[0];
+  const preview = script.match(/function previewPresetHoverOption\(name\)\{[\s\S]*?\n\}/)[0];
+  const open = script.match(/function openPresetHoverMenu\(\)\{[\s\S]*?\n\}/)[0];
+  const sync = script.match(/function syncPresetSelection\(\)\{[\s\S]*?\n\}/)[0];
+  assert.match(apply, /requestAnimationFrame\(beginTransition\)/);
+  assert.match(apply, /setDitherScope\(values\.DitherScope/);
+  assert.match(schedule, /requestAnimationFrame\(frameTime=>\{[\s\S]*?applyPreset\(name,values,ditherOptions,\{inAnimationFrame:true/);
+  assert.match(schedule, /renderFrame\(frameTime\)/);
+  assert.match(preview, /setTimeout\([\s\S]*?,80\)/);
+  assert.match(script, /if\(typeof renderPresetHoverOptions==='function'\) renderPresetHoverOptions\(\)/); // built alongside the select at initialization/data changes
+  assert.doesNotMatch(open, /renderPresetHoverOptions/); // opening only reveals already-mounted options
+  assert.doesNotMatch(sync, /renderChips\(\)|renderPresetHoverOptions\(\)/); // selection is updated in place
+});
+
+test('preset intensity scales signed preset values toward neutral and can update the active look live', () => {
+  const scaler = script.match(/function scalePresetValues\(values,intensity=presetIntensity\)\{[\s\S]*?\n\}/)[0];
+  const state = vm.createContext({ids:['Exposure','Bloom','Temperature','Grain'],presetIntensity:100});
+  vm.runInContext(`${scaler}\nthis.scale=scalePresetValues;`,state);
+  assert.deepEqual(JSON.parse(JSON.stringify(state.scale({Exposure:-80,Bloom:60,Temperature:0,Grain:125},50))),{
+    Exposure:-40,Bloom:30,Temperature:0,Grain:50,
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(state.scale({Exposure:-80,Bloom:60},0))),{
+    Exposure:0,Bloom:0,Temperature:0,Grain:0,
+  });
+  assert.match(html,/id="presetIntensity" min="0" max="100" value="100"/);
+  assert.match(script,/const target=scalePresetValues\(values,presetIntensity\)/);
+  assert.match(script,/presetIntensityInput\.addEventListener\('input',applyActivePresetIntensity\)/);
+  assert.match(script,/setValues\(scalePresetValues\(availablePresets\.get\(name\),presetIntensity\)\)/);
+});
+
 test('Adjust keeps Bloom and Hallation in Basic and folds Technical controls into Creative', () => {
   const adjust = html.match(/<section class="sidebarPanel" id="adjustPanel"[\s\S]*?<\/section>\s*<section class="sidebarPanel exportTabPanel"/)?.[0] || '';
   const basicStart = adjust.indexOf('<details class="adjustCluster" data-cluster="basic"');
