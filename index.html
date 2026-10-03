@@ -548,7 +548,7 @@ input[type=range].subSlider::-moz-range-thumb { width: 9px; height: 9px; }
 #shortcutsHelpBtn:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
 .presetActions { display: flex; gap: 8px; margin-top: 10px; }
 .presetActions .toolBtn { flex: 1; min-height: 38px; text-align: center; }
-.presetIntensityControl { margin: 14px 0 2px; }
+.presetIntensityControl { margin: 2px 0 10px; padding: 9px 11px 6px; border: 1px solid var(--panel-border); background: var(--soft-bg); }
 .presetIntensityControl label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 2px; color: var(--text-dim); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; }
 .presetIntensityControl output { color: var(--text); font: 9px 'JetBrains Mono',monospace; }
 .presetIntensityHint { margin: 0; color: var(--text-dim2); font-size: 9px; line-height: 1.5; }
@@ -1259,13 +1259,13 @@ body[data-mode="video"] #app #content .mtl-shell:not([hidden]) { display: flex; 
           <section class="sidebarPanel active" id="looksPanel" data-panel="looks" role="tabpanel" aria-labelledby="looksTab">
             <div class="panelHeading"><span class="sectionLabel">Looks</span><button type="button" class="textAction" id="resetOriginalBtn">Reset to original</button></div>
       <div>
+        <div class="presetIntensityControl"><label for="presetIntensity">Preset intensity <output id="presetIntensityValue" aria-live="polite">100%</output></label><input class="subSlider" type="range" id="presetIntensity" min="0" max="100" value="100" aria-valuetext="100 percent" aria-describedby="presetIntensityHint"><p id="presetIntensityHint" class="presetIntensityHint">0% neutral · 100% full look</p></div>
         <div class="sectionLabel">Popular looks</div>
         <div id="presetChips" role="group" aria-label="Featured presets"></div>
         <section class="savedLooks" aria-label="Saved looks"><div class="savedHeading"><span class="sectionLabel">Saved</span></div><div id="savedPresetChips" class="savedPresetGrid" role="group" aria-label="Saved presets"></div><p id="savedPresetsEmpty" class="savedEmpty">Saved looks appear here.</p><button type="button" class="textAction" id="savePresetBtn">+ Save current look</button><button type="button" id="deletePresetBtn" hidden>Delete selected saved preset</button></section>
         <label class="presetSelectLabel" for="presetSelect">More presets <span id="presetCount">26 looks</span></label>
         <div class="presetSelectWrap"><span id="presetSelectSwatch" aria-hidden="true"></span><select id="presetSelect"><option value="">Choose a look</option></select><div id="presetHoverMenu" class="presetHoverMenu" role="listbox" aria-label="More preset previews" hidden></div></div>
         <div class="presetActions"><button type="button" class="toolBtn" id="presetCompareBtn" disabled>Compare</button><button type="button" class="toolBtn" id="presetApplyBtn" disabled>Apply preset</button><button type="button" class="toolBtn" id="presetUndoBtn" hidden>Undo</button></div>
-        <div class="presetIntensityControl"><label for="presetIntensity">Preset intensity <output id="presetIntensityValue" aria-live="polite">100%</output></label><input class="subSlider" type="range" id="presetIntensity" min="0" max="100" value="100" aria-valuetext="100 percent"><p class="presetIntensityHint">0% neutral · 100% full look</p></div>
       </div><section id="settingsTools" class="socialPanel" aria-label="Copy and share settings">
         <button type="button" id="settingsToolsToggle" class="panelHeading" aria-expanded="false" aria-controls="settingsToolsBody"><span class="sectionLabel">Copy / paste & share</span><span class="panelChevron" aria-hidden="true"></span></button>
         <div id="settingsToolsBody" hidden>

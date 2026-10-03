@@ -134,6 +134,18 @@ test('preset intensity scales signed preset values toward neutral and can update
   assert.match(script,/setValues\(scalePresetValues\(availablePresets\.get\(name\),presetIntensity\)\)/);
 });
 
+test('preset intensity is immediately visible at the top of Looks, before the preset list', () => {
+  const looksStart = html.indexOf('<section class="sidebarPanel active" id="looksPanel"');
+  const adjustStart = html.indexOf('<section class="sidebarPanel" id="adjustPanel"', looksStart);
+  const looks = html.slice(looksStart, adjustStart);
+  const heading = looks.indexOf('class="panelHeading"');
+  const intensity = looks.indexOf('class="presetIntensityControl"');
+  const popular = looks.indexOf('Popular looks');
+  assert.ok(heading >= 0 && heading < intensity && intensity < popular);
+  assert.match(looks, /aria-describedby="presetIntensityHint"/);
+  assert.match(styles, /\.presetIntensityControl \{[^}]*border: 1px solid var\(--panel-border\)/);
+});
+
 test('Adjust keeps Bloom and Hallation in Basic and folds Technical controls into Creative', () => {
   const adjust = html.match(/<section class="sidebarPanel" id="adjustPanel"[\s\S]*?<\/section>\s*<section class="sidebarPanel exportTabPanel"/)?.[0] || '';
   const basicStart = adjust.indexOf('<details class="adjustCluster" data-cluster="basic"');
