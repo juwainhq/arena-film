@@ -84,7 +84,7 @@ The Juwain Haque header keeps the portfolio's **24px / 40px / 64px** gutters. On
 
 Film Lab can be installed from Chrome/Edge on Android and desktop, or from Safari's Share menu on iPhone/iPad (**Add to Home Screen**). After the page has been open for 30 seconds, an install banner appears when the browser supports installation; dismissing it is remembered on that device. The app shell, interface scripts, and icons are available offline after the service worker has installed. Large media-processing assets (FFmpeg, MediaPipe, and TFLite models) are intentionally not cached, so exporting or mask inference may still need their first network load.
 
-The PWA icons are generated without dependencies using `node scripts/generate-icons.cjs`. The deployment is hosted below `/film-lab/`; the manifest and service worker use that subpath for the installed start page and scope.
+The PWA icons are generated without dependencies using `node scripts/generate-icons.cjs`. The deployment is hosted below `/film-lab/`; the manifest and service worker resolve the start page and scope relative to the page itself (`./`), so the same files also load unchanged from an Electron desktop build and from a Capacitor Android app.
 
 
 | Shortcut | Action |
@@ -105,6 +105,20 @@ The PWA icons are generated without dependencies using `node scripts/generate-ic
 | ? | Open this shortcuts help · Esc closes dialogs and menus |
 
 Shortcuts do not hijack text fields or native selects; Space still activates a focused button. They are listed in the question-mark dialog and the bottom shortcut bar.
+
+## Desktop and Android builds
+
+The same static files ship as a native desktop app (Electron, packaged for Windows/macOS/Linux via electron-builder) and as an Android APK (Capacitor). Nothing in the editor changes: `index.html` and `manifest.json` use relative asset paths, so they load from `file://`, from GitHub Pages, from the app's own loopback origin, and from `https://localhost` inside the APK.
+
+```sh
+npm install
+npm run electron          # run the desktop app in dev mode
+npm run build:linux       # or build:win / build:mac → dist-electron/
+npm run web:stage         # stage the app shell into www/ for Capacitor
+npm run android:sync      # stage, then npx cap sync android
+```
+
+Pushing a `v*` tag builds all three desktop installers through `.github/workflows/build.yml`. See [README-BUILD.md](README-BUILD.md) for prerequisites, the Android Studio/Gradle APK steps, and the notes on how the packaged apps load the site.
 
 ## Tests
 

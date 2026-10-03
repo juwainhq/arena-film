@@ -1,0 +1,17 @@
+{
+  "appId": "com.filmlab.app",
+  "appName": "Film Lab",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0a0a0a"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "backgroundColor": "#0a0a0a"
+    }
+  }
+}
