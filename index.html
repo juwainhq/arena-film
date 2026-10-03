@@ -2000,7 +2000,7 @@ const advancedControls={
   HallDir:{range:[-180,0,180],legacyZero:0},
   HallFalloff:{range:[0,0.5,1],legacyZero:50},
   HallSat:{range:[0,0.7,1],legacyZero:70},
-  GrainSize:{range:[0.5,1.7,4.5],legacyZero:30},
+  GrainSize:{range:[0.2,0.4,1.5],legacyZero:30},
   GrainRough:{range:[0,0.5,1],legacyZero:50},
   GrainSpeed:{range:[0,1.155,3.5],legacyZero:33},
   GrainColor:{range:[0,0.35,1],legacyZero:35},
@@ -2385,7 +2385,7 @@ void main(){
 
   // Signed Amount inverts the same film-like pattern when negative.
   if(abs(u_grainStrength)>0.001){
-    float size=max(u_grainSize,0.5);
+    float size=max(u_grainSize,0.2);
     vec2 grainCoord=(v_texCoord*u_resolution)/size;
     float roughness=clamp(u_grainRough,0.0,1.0);
     float softness=clamp(u_grainSoft,0.0,1.0);
@@ -2415,7 +2415,7 @@ void main(){
 
     // Film grain is most visible in midtones and falls away toward both tonal extremes.
     float grainLuma=clamp(dot(col,vec3(0.2126,0.7152,0.0722)),0.0,1.0);
-    float lumaCurve=0.35+0.35*clamp(u_grainLuma,0.0,1.0);
+    float lumaCurve=0.55+0.45*clamp(u_grainLuma,0.0,1.0);
     float lumaMask=1.0-abs(grainLuma*2.0-1.0)*lumaCurve;
     float intensity=u_grainStrength*0.22*lumaMask;
     col+=grainNoise*intensity;
