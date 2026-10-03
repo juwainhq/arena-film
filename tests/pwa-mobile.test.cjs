@@ -17,8 +17,10 @@ test('the PWA manifest and generated icons use the Film Lab identity and GitHub 
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
   assert.equal(manifest.name, 'Film Lab');
   assert.equal(manifest.short_name, 'Film Lab');
-  assert.equal(manifest.start_url, '/film-lab/');
-  assert.equal(manifest.scope, '/film-lab/');
+  // Relative (not "/film-lab/") so the same manifest works from a GitHub Pages
+  // subpath, an Electron file:// desktop build, and a Capacitor https://localhost app.
+  assert.equal(manifest.start_url, './');
+  assert.equal(manifest.scope, './');
   assert.equal(manifest.display, 'standalone');
   assert.equal(manifest.theme_color, '#0a0a0a');
   assert.match(html, /<link rel="manifest" href="\.\/manifest\.json">/);

@@ -1,0 +1,46 @@
+{
+  "name": "film-lab",
+  "version": "1.0.0",
+  "description": "Cinematic photo and video editor",
+  "author": "Film Lab",
+  "main": "electron/main.js",
+  "private": true,
+  "scripts": {
+    "electron": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "web:stage": "node scripts/stage-web.cjs",
+    "android:add": "npm run web:stage && cap add android",
+    "android:sync": "npm run web:stage && cap sync android",
+    "android:open": "cap open android",
+    "test": "node --test tests/*.test.cjs"
+  },
+  "build": {
+    "appId": "com.filmlab.app",
+    "productName": "Film Lab",
+    "directories": { "output": "dist-electron" },
+    "files": [
+      "**/*",
+      "!node_modules/**",
+      "!dist-electron/**",
+      "!www/**",
+      "!android/**",
+      "!tests/**",
+      "!scripts/**",
+      "!.github/**"
+    ],
+    "win": { "target": "nsis", "icon": "icons/icon-512.png" },
+    "mac": { "target": "dmg", "icon": "icons/icon-512.png" },
+    "linux": { "target": "AppImage", "icon": "icons/icon-512.png", "category": "Graphics" }
+  },
+  "dependencies": {
+    "@capacitor/core": "^5.0.0",
+    "@capacitor/cli": "^5.0.0",
+    "@capacitor/android": "^5.0.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  }
+}
